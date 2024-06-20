@@ -194,6 +194,7 @@
 #let config(handout: auto, cetz: none, fletcher: none) = {
   (
     slide: slide.with(handout: handout),
+    title-slide: title-slide.with(handout: handout),
     pause: pause.with(handout: handout),
     uncover: uncover.with(handout: handout),
     only: only.with(handout: handout),
