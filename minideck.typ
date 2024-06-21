@@ -29,7 +29,8 @@
 
 // Format `it` as content of a (sub)slide
 #let _subslide-content(it) = {
-  pagebreak(weak: true) + it
+  pagebreak(weak: true)
+  it
 }
 
 // Show one subslide of the slide.
@@ -163,13 +164,6 @@
   }
 }
 
-// Make a new slide with content centered horizontally and vertically.
-// Parameters are the same as for `slide`.
-#let title-slide(..args, it) = slide(..args, {
-  set align(center)
-  pagebreak(weak: true) + v(1fr) + it + v(1fr)
-})
-
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
 // define `slide` and `uncover` functions that work in handout mode. 
@@ -194,7 +188,6 @@
 #let config(handout: auto, cetz: none, fletcher: none) = {
   (
     slide: slide.with(handout: handout),
-    title-slide: title-slide.with(handout: handout),
     pause: pause.with(handout: handout),
     uncover: uncover.with(handout: handout),
     only: only.with(handout: handout),

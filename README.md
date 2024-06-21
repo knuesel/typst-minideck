@@ -14,8 +14,9 @@ The simplest way to use minideck is to import all exported functions with their 
 #set page(paper: "presentation-4-3")
 #set text(24pt)
 
-// A simple `slide` wrapper that centers content
-#title-slide[
+#slide[
+  #set align(horizon+center)
+
   = Slides with `minideck`
   == Some examples
   John Doe
