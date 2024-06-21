@@ -39,7 +39,11 @@
 #let _subslide(n, it) = {
   _subslide-count.update((1,0))
   _subslide-step.update(n)
-  _subslide-content(it)
+  _subslide-content({
+    // Revert page increment unless it's the firts subslide for this slide
+    if n > 0 { counter(page).update(x => calc.max(0, x - 1))  }
+    it
+  })
 }
 
 // Hide content if current subslide step is smaller than pause index.
