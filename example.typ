@@ -1,13 +1,10 @@
-#import "@local/minideck:0.1.0": *
+#import "@local/minideck:0.1.0"
 
-#set page("presentation-4-3", footer: context {
-  set text(18pt)
-  if here().page() > 1 {
-    place(right, dx: 1cm, counter(page).display())
-  }
-})
-#set text(24pt, fill: rgb("#42505a"), font: "Libertinus Sans")
-#show heading: set block(below: 1em)
+#let (theme, slide, title-slide, pause, uncover, only) = minideck.config(
+  theme: minideck.themes.simple.with(a: 1)
+)
+
+#show: theme
 
 #slide[
   #set align(horizon+center)
@@ -61,8 +58,6 @@
 
 
 #import "@preview/cetz:0.2.2" as cetz: *
-
-#import "@local/minideck:0.1.0"
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 

@@ -1,8 +1,12 @@
+TODO:
+- simple theme example
+- pinit example
+
 # typst-minideck
 
 A minimalist package for dynamic slides in typst.
 
-minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...) and leaves theming and layout to plain typst and other packages.
+minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...) and leaves fancy theming to other packages.
 
 ## Usage
 

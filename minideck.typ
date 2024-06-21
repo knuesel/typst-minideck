@@ -1,3 +1,5 @@
+#import "themes/simple.typ"
+
 // Counter for pauses and for automatic tracking of subslide number.
 // First value: number of subslides so far referenced in current slide.
 // Second value: number of pauses so far in current slide.
@@ -168,6 +170,19 @@
   }
 }
 
+// Recognized paper short codes
+#let papers = (
+  "4:3": "presentation-4-3",
+  "16:9": "presentation-16-9",
+)
+
+// Validate config parameters and convert positional arguments to named
+#let process-config-parameters(..args) = {
+  for (k, v) in args.named() {
+    panic("Unknown configuration parameter:", k)
+  }
+}
+
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
 // define `slide` and `uncover` functions that work in handout mode. 
@@ -189,12 +204,15 @@
 // Functions configured for CeTZ and fletcher return non-opaque content, so the
 // caller is responsible for invoking `context` in a suitable scope, typically
 // as in `#context cetz.canvas({...})`.
-#let config(handout: auto, cetz: none, fletcher: none) = {
+#let config(handout: auto, cetz: none, fletcher: none, theme: simple, ..args) = {
+  let paper = process-config-parameters(args)
+  let slide = slide.with(handout: handout) 
+  let theme-funcs = theme.config(slide, paper: paper)
   (
-    slide: slide.with(handout: handout),
     pause: pause.with(handout: handout),
     uncover: uncover.with(handout: handout),
     only: only.with(handout: handout),
+    ..theme-funcs,
   )
   if cetz != none {
     let cetz-update(n) = cetz.draw.content((), update-subslide-count(n))
