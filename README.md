@@ -12,6 +12,7 @@ The simplest way to use minideck is to import all exported functions with their 
 #import "@local/minideck:0.1.0": *
 
 #set page(paper: "presentation-4-3")
+#show heading: set block(below: 1em)
 #set text(24pt)
 
 #slide[
