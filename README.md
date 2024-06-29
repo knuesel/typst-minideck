@@ -279,7 +279,7 @@ Example:
 
 Performance: minideck is currently faster than [Polylux](https://typst.app/universe/package/polylux/) when using `pause`, especially for incremental compilation, but a bit slower than [Touying](https://typst.app/universe/package/touying), according to my tests.
 
-Features: minideck allows using `uncover` and `only` in CeTZ figures and fletcher diagrams, like Touying but unlike Polylux.
+Features: Polylux and Touying have more themes and more features, for example support for [pdfpc](https://pdfpc.github.io/) which provides speaker notes and more. Minideck allows using `uncover` and `only` in CeTZ figures and fletcher diagrams, which Polylux currently doesn't support.
 
 Syntax: package configuration is simpler in minideck than Touying but a bit more involved than in Polylux. The minideck `pause` is more cumbersome to use: one must write `#show: pause` instead of `#pause`. On the other hand minideck's `uncover` and `only` can be used directly in equations without requiring a special math environment as in Touying (I think).
 
