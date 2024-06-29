@@ -106,6 +106,7 @@ The package also works well with [pinit](https://typst.app/universe/package/pini
   #pinit-highlight(5,6, fill: green.transparentize(80%))
   #pinit-point-from(6)[larger than $a^2$ and $b^2$]
 ]
+```
 
 
 ### Handout mode
@@ -145,7 +146,7 @@ The behavior of the minideck functions depends on the settings passed to `minide
 
 `minideck.config` accepts the following named arguments:
 
-* `paper`: a string for one of the paper size names recognized by [`page.paper`](https://typst.app/docs/reference/layout/page/#parameters-paper), or one of the shorthands "16:9" or "4:3". Default: "4:3".
+* `paper`: a string for one of the paper size names recognized by [`page.paper`](https://typst.app/docs/reference/layout/page/#parameters-paper), or one of the shorthands `"16:9"` or `"4:3"`. Default: `"4:3"`.
 * `landscape`: use the paper size in landscape orientation. Default: `true`.
 * `width`: page width as an absolute length. Takes precedence over `paper` and `landscape`.
 * `height`: page height as an absolute length. Takes precedence over `paper` and `landscape`.
@@ -158,7 +159,7 @@ For example to make slides with 16:9 aspect ratio, use `minideck.config(paper: "
 
 ### Themes
 
-Use `minideck.config(theme: ...)` to select a theme. Currently there is only one built-in: `minideck.themes.simple`. However you can also pass a theme implemented by yourself or from a third-party package. See the [theme documentation](themes/Readme.md) for how that works.
+Use `minideck.config(theme: ...)` to select a theme. Currently there is only one built-in: `minideck.themes.simple`. However you can also pass a theme implemented by yourself or from a third-party package. See the [theme documentation](themes/README.md) for how that works.
 
 Themes are functions and can be configured using the standard [`with` method](https://typst.app/docs/reference/foundations/function/#definitions-with):
 
