@@ -1,23 +1,12 @@
-TODO:
-- simple theme example
-- pinit example
-- "16:9"
-- local -> preview
-- theme overrides
-- readme toc
-- fix page numbering in example.pdf
-- check the XXX
-- default font
-
 # typst-minideck
 
 A small package for dynamic slides in typst.
 
-minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...) and minimal infrastructure for theming.
+minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...), integration with [fletcher](https://typst.app/universe/package/fletcher) and [CetZ](https://typst.app/universe/package/cetz/), and some minimal infrastructure for theming.
 
 ## Usage
 
-Call `minideck.config` to get all the functions you want to use:
+Call `minideck.config` to get the functions you want to use:
 
 ```typst
 #import "@local/minideck:0.2.0"
@@ -48,6 +37,9 @@ Call `minideck.config` to get all the functions you want to use:
   3. Three
 ]
 ```
+
+This will show three subslides with progressively more content. (Note that the default theme uses the font Libertinus Sans from the [Libertinus](https://github.com/alerque/libertinus) family, so you may want to install it.)
+
 
 Instead of `#show: pause`, you can use `#uncover(2,3)[...]` to make content visible only on subslides 2 and 3, or `#uncover(from: 2)[...]` to have it visible on subslide 2 and following.
 
@@ -86,6 +78,36 @@ Contrary to `pause`, the `uncover` and `only` functions also work in math mode:
 
 When mixing `pause` with `uncover`/`only`, the sequence of pauses should be taken as reference for the meaning of subslide indices. For example content after the first pause always appears on the second subslide, even if it's preceded by a call to `#uncover(from: 3)[...]`.
 
+The package also works well with [pinit](https://typst.app/universe/package/pinit):
+
+```typst
+#import "@preview/pinit:0.1.4": *
+
+#slide[
+  = Works well with `pinit`
+
+  Pythagorean theorem:
+
+  $ #pin(1)a^2#pin(2) + #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
+
+  #show: pause
+
+  $a^2$ and $b^2$ : squares of triangle legs
+
+  #only(2, {
+    pinit-highlight(1,2)
+    pinit-highlight(3,4)
+  })
+
+  #show: pause
+
+  $c^2$ : square of hypotenuse
+
+  #pinit-highlight(5,6, fill: green.transparentize(80%))
+  #pinit-point-from(6)[larger than $a^2$ and $b^2$]
+]
+
+
 ### Handout mode
 
 minideck can make a handout version of the document, in which dynamic behavior is disabled: the content of all subslides is shown together in a single slide.
@@ -121,57 +143,64 @@ The behavior of the minideck functions depends on the settings passed to `minide
 
 (The default value of `handout` is `auto`, in which case minideck checks for a command line setting as in the previous section.)
 
-#### Named settings
-
 `minideck.config` accepts the following named arguments:
 
-* `handout`
-* `theme`
-* `cetz`
-* `fletcher`
+* `paper`: a string for one of the paper size names recognized by [`page.paper`](https://typst.app/docs/reference/layout/page/#parameters-paper), or one of the shorthands "16:9" or "4:3". Default: "4:3".
+* `landscape`: use the paper size in landscape orientation. Default: `true`.
+* `width`: page width as an absolute length. Takes precedence over `paper` and `landscape`.
+* `height`: page height as an absolute length. Takes precedence over `paper` and `landscape`.
+* `handout`: whether to make a document for handout, with content of all subslides shown together in a single slide.
+* `theme`: the theme (see below).
+* `cetz`: the CeTZ module (see below).
+* `fletcher`: the fletcher module (see below).
 
-The `theme`, `cetz` and `fletcher` settings are described in the next sections.
-
-#### Positional settings
-
-`minideck.config` also accepts special positional values as shorthands to specify the page size:
-
-* `"4:3"` (default for the default theme)
-* `"16:9"`
-
-For example `minideck.config("16:9")` will use the default theme with 16:9 aspect ratio. This is a shortcut for configuring the theme with `paper: "presentation-16-9"`.
-XXX
+For example to make slides with 16:9 aspect ratio, use `minideck.config(paper: "16:9")`.
 
 ### Themes
 
-Use `minideck.config(theme: ...)` to select a theme. Currently there is only one built-in theme: `minideck.themes.simple`. However you can also pass a theme implemented by yourself or from a third-party package. See the [theme documentation](themes/Readme.md) for how that works.
+Use `minideck.config(theme: ...)` to select a theme. Currently there is only one built-in: `minideck.themes.simple`. However you can also pass a theme implemented by yourself or from a third-party package. See the [theme documentation](themes/Readme.md) for how that works.
 
-Themes are functions. They can be configured using the standard [`with` method](https://typst.app/docs/reference/foundations/function/#definitions-with):
+Themes are functions and can be configured using the standard [`with` method](https://typst.app/docs/reference/foundations/function/#definitions-with):
 
-* All themes should accept a `paper` setting to define the size of slides. The value can be either the name of a [standard size](https://typst.app/docs/reference/layout/page/#parameters-paper), or a dict with `width` and `height` lengths. This setting is rarely used directly: instead, pass one of the shorthand values to `minideck.config` as mentioned in the previous section.
-
-* The `simple` theme also has a `variant` setting with values "light" (default) and "dark".
+* The `simple` theme has a `variant` setting with values "light" (default) and "dark".
 
 Here's an example:
 
 ```typst
 #import "@local/minideck:0.2.0"
 
-#let (template, slide, pause) = minideck.config(
-  theme: minideck.themes.simple.with(
-    variant: "dark",
-    paper: (width: 12cm, height: 8cm)
-  ),
+#let (template, slide) = minideck.config(
+  theme: minideck.themes.simple.with(variant: "dark"),
 )
 #show: template
 
 #slide[
-  = Tiny slide
+  = Slide with dark theme
   
   Some text
 ]
 ```
 
+Note that you can override part of a theme with show and set rules:
+
+```typst
+#import "@local/minideck:0.2.0"
+
+#let (template, slide) = minideck.config(
+  theme: minideck.themes.simple.with(variant: "dark"),
+)
+#show: template
+
+#set page(footer: none) // get rid of the page number
+#show heading: it => text(style: "italic", it)
+#set text(red)
+
+#slide[
+  = Slide with dark theme and red text
+  
+  Some text
+]
+```
 
 ### Integration with CeTZ
 
@@ -191,10 +220,8 @@ Example:
 #import "@preview/cetz:0.2.2" as cetz: *
 #import "@local/minideck:0.2.0"
 
-#let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
-
-#set page(paper: "presentation-4-3")
-#set text(24pt)
+#let (template, slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
+#show: template
 
 #slide[
   = In a CeTZ figure
@@ -225,9 +252,8 @@ Example:
 ```typst
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
 #import "@local/minideck:0.2.0"
-#let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
-#set page(paper: "presentation-4-3")
-#set text(24pt)
+#let (template, slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
+#show: template
 
 #slide(steps: 2)[
   = In a fletcher diagram
@@ -250,13 +276,11 @@ Example:
 
 ## Comparison with other slides packages
 
-In short: I made minideck because [Polylux](https://github.com/andreasKroepelin/polylux) makes compilation (especially incremental compilation) slow in some cases, and [Touying](https://github.com/touying-typ/touying) is a bit complicated and overkill for my needs.
+Performance: minideck is currently faster than [Polylux](https://typst.app/universe/package/polylux/) when using `pause`, especially for incremental compilation, but a bit slower than [Touying](https://typst.app/universe/package/touying), according to my tests.
 
-Performance: the implementation of `pause` at least can be much faster than the one in Polylux. Touying is slightly faster than minideck in my tests.
+Features: minideck allows using `uncover` and `only` in CeTZ figures and fletcher diagrams, like Touying but unlike Polylux.
 
-Features: minideck allows using `uncover` and `only` in CeTZ figures and fletcher diagrams (contrary to polylux) but with extra steps (see below).  
-
-Syntax: the minideck `pause` is more cumbersome to use: one must write `#show: pause` instead of `#pause`. On the other hand minideck's `uncover` and `only` can be used directly in equations without requiring a special math environment as in Touying (I think).
+Syntax: package configuration is simpler in minideck than Touying but a bit more involved than in Polylux. The minideck `pause` is more cumbersome to use: one must write `#show: pause` instead of `#pause`. On the other hand minideck's `uncover` and `only` can be used directly in equations without requiring a special math environment as in Touying (I think).
 
 Other: minideck sometimes has better error messages than Touying due to implementation differences: the minideck stack trace points back to the user's code while Touying errors sometimes point only to an output page number.
 

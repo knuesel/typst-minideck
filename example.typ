@@ -59,7 +59,7 @@
 
   Pythagorean theorem:
 
-  $ #pin(1)a^2#pin(2) +#pin("plus") #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
+  $ #pin(1)a^2#pin(2) + #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
 
   #show: pause
 
@@ -72,7 +72,7 @@
 
   #show: pause
 
-  $c^2$ : square of hypothenuse
+  $c^2$ : square of hypotenuse
 
   #pinit-highlight(5,6, fill: green.transparentize(80%))
   #pinit-point-from(6)[larger than $a^2$ and $b^2$]
@@ -133,16 +133,13 @@
 ]
 
 
-#let (template, slide, pause) = minideck.config(
-  paper: "a6",
-  theme: minideck.themes.simple.with(
-    variant: "dark",
-  ),
+#let (template, slide) = minideck.config(
+  theme: minideck.themes.simple.with(variant: "dark"),
 )
 #show: template
 
 #slide[
-  = Tiny slide with dark theme
+  = Slide with dark theme
   
   Some text
 ]

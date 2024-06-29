@@ -191,7 +191,7 @@
 // Named parameters:
 //
 // - paper: a string for one of the paper size names recognized by page.paper
-//   or the shorthands "16:9" and "4:3". Default: "4:3".
+//   or one of the shorthands "16:9" or "4:3". Default: "4:3".
 // - landscape: use the paper size in landscape orientation. Default: `true`
 // - width: page width as an absolute length, takes precedence over `paper`
 // - height: page height as an absolute length, takes precedence over `paper`

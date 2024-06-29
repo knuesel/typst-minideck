@@ -1,30 +1,25 @@
 # minideck themes
 
-A theme is implemented through a configuration function that has the following positional inputs:
+A theme is implemented through a configuration function that has the following positional input:
 
   - `minideck.slide` function
 
 and must accept at least the following named input:
 
-  - `paper`: can be a string specifying a standard paper size such as
-             "presentation-4-3", or a dict with `width` and `height` lengths
+  - `page-size`: a dictionary with absolute lengths `width` and `height`
 
-and return as output a dictionary of configured functions including at least
+and return as output a dictionary of theme functions including at least
 
   - `template`: a template for the whole document
   - `slide`: the input `slide` function or a wrapper for it
   - `title-slide`: the input `slide` function or a wrapper for it
 
-The configuration function can accept additional parameters and return
-additional values in the output dictionary.
-The functions in the output dictionary can also accept non-standard parameters.
+The configuration function can accept additional parameters and return additional values in the output dictionary.
+The theme functions in the output dictionary can also accept non-standard parameters.
 
-The returned functions that make slides (`slide`, `title-slide` and possibly
-others) should generally use the `slide` input function to respect how it was
-configured by the user.
+The theme functions that make slides (`slide`, `title-slide` and possibly others) should be wrappers around the `slide` function given as input.
 
-
-An `ocean` theme from a `fancy-themes` package could be used like this:
+For example an `ocean` theme from a `fancy-themes` package could be used like this:
 
 ```
 import "minideck"

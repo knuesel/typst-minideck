@@ -25,7 +25,7 @@
       set align(bottom+right)
       pad(x: -margin+1cm, y: 1cm, counter(page).display())
     },
-    background: rect(width: 100%, height: 100%, fill: variants.at(variant).bg),
+    fill: variants.at(variant).bg,
   )
   set text(
     24pt,
