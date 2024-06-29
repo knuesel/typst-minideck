@@ -1,4 +1,4 @@
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide, title-slide, pause, uncover, only) = minideck.config()
 
