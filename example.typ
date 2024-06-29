@@ -1,14 +1,10 @@
-#import "@local/minideck:0.1.0"
+#import "@local/minideck:0.2.0"
 
-#let (theme, slide, title-slide, pause, uncover, only) = minideck.config(
-  theme: minideck.themes.simple.with(a: 1)
-)
+#let (template, slide, title-slide, pause, uncover, only) = minideck.config()
 
-#show: theme
+#show: template
 
-#slide[
-  #set align(horizon+center)
-
+#title-slide[
   = Slides with `minideck`
   == Some examples
   John Doe
@@ -56,13 +52,39 @@
   $
 ]
 
+#import "@preview/pinit:0.1.4": *
+
+#slide[
+  = Works well with `pinit`
+
+  Pythagorean theorem:
+
+  $ #pin(1)a^2#pin(2) +#pin("plus") #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
+
+  #show: pause
+
+  $a^2$ and $b^2$ : squares of triangle legs
+
+  #only(2, {
+    pinit-highlight(1,2)
+    pinit-highlight(3,4)
+  })
+
+  #show: pause
+
+  $c^2$ : square of hypothenuse
+
+  #pinit-highlight(5,6, fill: green.transparentize(80%))
+  #pinit-point-from(6)[larger than $a^2$ and $b^2$]
+  
+]
 
 #import "@preview/cetz:0.2.2" as cetz: *
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
 #slide[
-  = In a CeTZ figure
+  = With CeTZ figures
 
   CeTZ figures require
   
@@ -87,7 +109,7 @@
 #let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 
 #slide(steps: 2)[
-  = `only` and `uncover` in a fletcher diagram
+  = With fletcher diagrams
 
   fletcher diagrams require
   
@@ -110,3 +132,17 @@
   Below diagram
 ]
 
+
+#let (template, slide, pause) = minideck.config(
+  paper: "a6",
+  theme: minideck.themes.simple.with(
+    variant: "dark",
+  ),
+)
+#show: template
+
+#slide[
+  = Tiny slide with dark theme
+  
+  Some text
+]

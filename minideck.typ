@@ -1,4 +1,5 @@
-#import "themes/simple.typ"
+#import "themes/themes.typ"
+#import "paper.typ": papers
 
 // Counter for pauses and for automatic tracking of subslide number.
 // First value: number of subslides so far referenced in current slide.
@@ -42,7 +43,7 @@
   _subslide-count.update((1,0))
   _subslide-step.update(n)
   _subslide-content({
-    // Revert page increment unless it's the firts subslide for this slide
+    // Revert page increment unless it's the first subslide for this slide
     if n > 0 { counter(page).update(x => calc.max(0, x - 1))  }
     it
   })
@@ -170,32 +171,38 @@
   }
 }
 
-// Recognized paper short codes
-#let papers = (
-  "4:3": "presentation-4-3",
-  "16:9": "presentation-16-9",
-)
-
-// Validate config parameters and convert positional arguments to named
-#let process-config-parameters(..args) = {
-  for (k, v) in args.named() {
-    panic("Unknown configuration parameter:", k)
+// Calculate paper size from all parameters
+#let paper-size(paper, landscape, width, height) = {
+  let size = papers.at(paper)
+  let (w, h) = (size.width*1mm, size.height*1mm)
+  if landscape and w < h {
+    (w, h) = (h, w)
   }
+  (
+    width: if width == none { w } else { width },
+    height: if height == none { h } else { height },
+  )
 }
 
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
 // define `slide` and `uncover` functions that work in handout mode. 
-// 
-// Available settings:
 //
-// handout: when `true`, dynamic features are disabled: all slide content is
-// shown in a single subslide. When set to `auto`, the value used is `true` if
+// Named parameters:
+//
+// - paper: a string for one of the paper size names recognized by page.paper
+//   or the shorthands "16:9" and "4:3". Default: "4:3".
+// - landscape: use the paper size in landscape orientation. Default: `true`
+// - width: page width as an absolute length, takes precedence over `paper`
+// - height: page height as an absolute length, takes precedence over `paper`
+// - handout: when `true`, dynamic features are disabled: all slide content is
+//   shown in a single subslide. When set to `auto`, the value used is `true` if
 //   `--input handout=true` is passed on the command line, `false` otherwise.
-// cetz: if the CeTZ module is passed here, the returned dictionary will
+// - theme: the theme to use, the default being `themes.simple`
+// - cetz: if the CeTZ module is passed here, the returned dictionary will
 //   include `cetz-uncover` and `cetz-only`, which are versions of `uncover`
 //   and `only` configured to use cetz methods for hiding and state update.
-// fletcher: if the fletcher module is passed here, the returned dictionary
+// - fletcher: if the fletcher module is passed here, the returned dictionary
 //   will include `fletcher-uncover` and `fletcher-only`, which are versions
 //   of `uncover` and `only` that use `fletcher.hide` for hiding and that
 //   disable state update (so the number of slide steps must be given to `slide`
@@ -204,10 +211,19 @@
 // Functions configured for CeTZ and fletcher return non-opaque content, so the
 // caller is responsible for invoking `context` in a suitable scope, typically
 // as in `#context cetz.canvas({...})`.
-#let config(handout: auto, cetz: none, fletcher: none, theme: simple, ..args) = {
-  let paper = process-config-parameters(args)
+#let config(
+  paper: "4:3",
+  landscape: true,
+  width: none,
+  height: none,
+  handout: auto,
+  theme: themes.simple,
+  cetz: none,
+  fletcher: none,
+) = {
   let slide = slide.with(handout: handout) 
-  let theme-funcs = theme.config(slide, paper: paper)
+  let page-size = paper-size(paper, landscape, width, height)
+  let theme-funcs = theme(slide, page-size: page-size)
   (
     pause: pause.with(handout: handout),
     uncover: uncover.with(handout: handout),

@@ -1,6 +1,7 @@
+// Theme variants
 #let variants = (
   light: (
-    bg: rgb("#eff1f3"),
+    bg: white,
     fg: rgb("#3c3c3c"),
   ),
   dark: (
@@ -8,15 +9,21 @@
     fg: rgb("#eff1f3"),
   ),
 )
-#let theme(paper: auto, variant: none, it) = {
+
+// The paper and variant parameters must be set by the caller
+#let template(page-size: none, variant: none, it) = {
   show heading: set block(below: 1em)
+  let margin = calc.min(..page-size.values()) * 2.5 / 21 // same as typst default
   set page(
-    paper: paper,
+    width: page-size.width,
+    height: page-size.height,
+    margin: margin,
+    header-ascent: 0pt,
+    footer-descent: 0pt,
     footer: context {
       set text(0.8em)
-      if here().page() > 1 {
-        place(right, dx: 1cm, counter(page).display())
-      }
+      set align(bottom+right)
+      pad(x: -margin+1cm, y: 1cm, counter(page).display())
     },
     background: rect(width: 100%, height: 100%, fill: variants.at(variant).bg),
   )
@@ -28,18 +35,18 @@
   it
 }
 
+// Layout for title slide: no page numbers, centered content
 #let title-slide(slide, it) = {
   set page(footer: none)
   set align(horizon+center)
   slide(it)
 }
 
-#let config(slide, paper: "presentation-4-3", variant: "light") = {
+// Theme function. Called by minideck with page-size set.
+#let simple(slide, page-size: none, variant: "light") = {
   (
     slide: slide,
     title-slide: title-slide.with(slide),
-    theme: theme.with(paper: paper, variant: variant)
+    template: template.with(page-size: page-size, variant: variant)
   )
 }
-
-#let with(..args) = config.with(..args)

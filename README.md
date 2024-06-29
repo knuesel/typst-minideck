@@ -1,27 +1,31 @@
 TODO:
 - simple theme example
 - pinit example
+- "16:9"
+- local -> preview
+- theme overrides
+- readme toc
+- fix page numbering in example.pdf
+- check the XXX
+- default font
 
 # typst-minideck
 
-A minimalist package for dynamic slides in typst.
+A small package for dynamic slides in typst.
 
-minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...) and leaves fancy theming to other packages.
+minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ...) and minimal infrastructure for theming.
 
 ## Usage
 
-The simplest way to use minideck is to import all exported functions with their default settings:
+Call `minideck.config` to get all the functions you want to use:
 
 ```typst
-#import "@local/minideck:0.1.0": *
+#import "@local/minideck:0.2.0"
 
-#set page(paper: "presentation-4-3")
-#show heading: set block(below: 1em)
-#set text(24pt)
+#let (template, slide, title-slide, pause, uncover, only) = minideck.config()
+#show: template
 
-#slide[
-  #set align(horizon+center)
-
+#title-slide[
   = Slides with `minideck`
   == Some examples
   John Doe
@@ -96,14 +100,13 @@ It is also possible to enable handout mode from within the document, as shown in
 
 ### Configuration
 
-The configuration system is inspired by Touying: to change the behavior of minideck, use the functions returned by a call to `minideck.config`. For example, handout mode can also be enabled like this:
+The behavior of the minideck functions depends on the settings passed to `minideck.config`. For example, handout mode can also be enabled like this:
 
 ```typst
-#import "@local/minideck:0.1.0"
-#set page(paper: "presentation-4-3")
-#set text(24pt)
+#import "@local/minideck:0.2.0"
 
-#let (slide, pause) = minideck.config(handout: true)
+#let (template, slide, pause) = minideck.config(handout: true)
+#show: template
 
 #slide[
   = Slide title
@@ -118,34 +121,57 @@ The configuration system is inspired by Touying: to change the behavior of minid
 
 (The default value of `handout` is `auto`, in which case minideck checks for a command line setting as in the previous section.)
 
-On the left-hand side of `=`, list all the functions you want to use (if you want only one, you can write for example `#let (slide,) = minideck.config(...)`).
+#### Named settings
 
-Technically, this is equivalent to importing the functions with default behavior (as in previous sections) then redefining them with
+`minideck.config` accepts the following named arguments:
+
+* `handout`
+* `theme`
+* `cetz`
+* `fletcher`
+
+The `theme`, `cetz` and `fletcher` settings are described in the next sections.
+
+#### Positional settings
+
+`minideck.config` also accepts special positional values as shorthands to specify the page size:
+
+* `"4:3"` (default for the default theme)
+* `"16:9"`
+
+For example `minideck.config("16:9")` will use the default theme with 16:9 aspect ratio. This is a shortcut for configuring the theme with `paper: "presentation-16-9"`.
+XXX
+
+### Themes
+
+Use `minideck.config(theme: ...)` to select a theme. Currently there is only one built-in theme: `minideck.themes.simple`. However you can also pass a theme implemented by yourself or from a third-party package. See the [theme documentation](themes/Readme.md) for how that works.
+
+Themes are functions. They can be configured using the standard [`with` method](https://typst.app/docs/reference/foundations/function/#definitions-with):
+
+* All themes should accept a `paper` setting to define the size of slides. The value can be either the name of a [standard size](https://typst.app/docs/reference/layout/page/#parameters-paper), or a dict with `width` and `height` lengths. This setting is rarely used directly: instead, pass one of the shorthand values to `minideck.config` as mentioned in the previous section.
+
+* The `simple` theme also has a `variant` setting with values "light" (default) and "dark".
+
+Here's an example:
 
 ```typst
-#let slide = slide.with(handout: true)
-#let pause = pause.with(handout: true)
-```
+#import "@local/minideck:0.2.0"
 
-Also equivalent would be to set the handout parameter in each call:
+#let (template, slide, pause) = minideck.config(
+  theme: minideck.themes.simple.with(
+    variant: "dark",
+    paper: (width: 12cm, height: 8cm)
+  ),
+)
+#show: template
 
-```typst
-#import "@local/minideck:0.1.0": *
-#set page(paper: "presentation-4-3")
-#set text(24pt)
-
-#slide(handout: true)[
-  = Slide title
+#slide[
+  = Tiny slide
   
   Some text
-
-  #show: pause.with(handout: true)
-
-  More text
 ]
 ```
 
-Note: if you reconfigure minideck functions with `config`, make sure you don't import the default functions with `#import "@local/minideck:0.1.0": *` (make sure you remove the `: *`). Otherwise you risk forgetting to reassign a function in the `config` call, and then get the default behavior without noticing.
 
 ### Integration with CeTZ
 
@@ -163,7 +189,7 @@ Example:
 
 ```typst
 #import "@preview/cetz:0.2.2" as cetz: *
-#import "@local/minideck:0.1.0"
+#import "@local/minideck:0.2.0"
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
@@ -198,7 +224,7 @@ Example:
 
 ```typst
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
-#import "@local/minideck:0.1.0"
+#import "@local/minideck:0.2.0"
 #let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 #set page(paper: "presentation-4-3")
 #set text(24pt)
