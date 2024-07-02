@@ -9,7 +9,7 @@ minideck provides basic functionality for dynamic slides (`pause`, `uncover`, ..
 Call `minideck.config` to get the functions you want to use:
 
 ```typst
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide, title-slide, pause, uncover, only) = minideck.config()
 #show: template
@@ -126,7 +126,7 @@ It is also possible to enable handout mode from within the document, as shown in
 The behavior of the minideck functions depends on the settings passed to `minideck.config`. For example, handout mode can also be enabled like this:
 
 ```typst
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide, pause) = minideck.config(handout: true)
 #show: template
@@ -168,7 +168,7 @@ Themes are functions and can be configured using the standard [`with` method](ht
 Here's an example:
 
 ```typst
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide) = minideck.config(
   theme: minideck.themes.simple.with(variant: "dark"),
@@ -185,7 +185,7 @@ Here's an example:
 Note that you can override part of a theme with show and set rules:
 
 ```typst
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide) = minideck.config(
   theme: minideck.themes.simple.with(variant: "dark"),
@@ -219,7 +219,7 @@ Example:
 
 ```typst
 #import "@preview/cetz:0.2.2" as cetz: *
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 
 #let (template, slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 #show: template
@@ -252,7 +252,7 @@ Example:
 
 ```typst
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
-#import "@local/minideck:0.2.0"
+#import "@preview/minideck:0.2.1"
 #let (template, slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 #show: template
 

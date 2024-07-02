@@ -22,8 +22,8 @@ The theme functions that make slides (`slide`, `title-slide` and possibly others
 For example an `ocean` theme from a `fancy-themes` package could be used like this:
 
 ```typst
-import "minideck"
-import "fancy-themes"
+#import "@preview/minideck:0.2.1"
+#import "@preview/fancy-themes:0.1.0" // hypothetical package
 #let (template, slide, title-slide) = minideck.config(theme: fancy-themes.ocean)
 #show: template
 ```
@@ -31,8 +31,8 @@ import "fancy-themes"
 or when theme configuration is required:
 
 ```typst
-import "minideck"
-import "fancy-themes"
+#import "@preview/minideck:0.2.1"
+#import "@preview/fancy-themes:0.1.0" // hypothetical package
 #let (template, slide, title-slide) = minideck.config(
   theme: fancy-themes.ocean.with(variant: "dark"),
 )
