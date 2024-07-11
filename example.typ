@@ -1,15 +1,142 @@
-#import "@preview/minideck:0.2.1"
+// #import "@preview/minideck:0.2.1"
+#import "lib.typ" as minideck
 
-#let (template, slide, title-slide, pause, uncover, only) = minideck.config()
+#let (template, slide, section, title, pause, uncover, only) = minideck.config()
 
 #show: template
 
-#title-slide[
+#show raw: set text(0.8em)
+
+#title[
   = Slides with `minideck`
-  == Some examples
+  == Usage and features
   John Doe
 
   #datetime.today().display()
+]
+
+#slide(outlined: false)[
+  = Table of contents
+
+  #outline()
+]
+
+#section[
+  = Configuration
+]
+
+#slide[
+  = Basic usage
+
+  Use `minideck.config()` to get the slide functions:
+
+  ```typ
+  #import "@preview/minideck:0.3.0"
+  (template, title, section, slide) = minideck.config()
+  #show: template
+
+  #title[
+    = Presentation title
+    == Some subtitle
+    Author...
+  ]
+  // Slide for new section: can include subtitle or other content
+  #section[= Some section ]
+  #slide[
+    = Some normal slide
+    ...
+  ]
+  ```
+]
+
+#slide[
+  = Options for `minideck.config(...)`
+
+  - `format`: can be `"4:3"` (default), `"16:9"`, a paper name, or a\ `(width:, height:)` dictionary
+
+  - `font-scheme`: switch a bunch of font settings with a dict or a name like
+    `"default"`, `"libertinus-sans"` or `"fira-sans-light"`
+
+  - `color-scheme`: switch colors using a name like `"default"` or
+    `"metropolis"`, or a dict like `(shades: (bg, fg), accents: (red, blue))`
+
+  - `theme`: give a theme name, or a theme function with settings
+
+  - `handout`: give `true` to disable dynamic behavior of `pause`, etc.
+
+  - `cetz`, `fletcher`: see #link(<cetz>)[below].
+]
+
+#slide[
+  = Table of contents
+
+  The outline in standard themes shows only section titles by default.
+  To change this:
+
+  ```typ
+  #outline(depth: 5) // show section and slide titles
+  // or:
+  #outline(target: minideck.slide-title) // only slide titles
+  ```
+
+  If you show slide titles, you probably want to exclude the outline slide from
+  the outline:
+  ```typ
+  #slide(outlined: true)[
+    = Table of contents
+    #outline(depth: 5)
+  ]
+  ```
+ 
+]
+
+#slide[
+  = Slide commands
+
+  Main parameters to commands `slide`, `section` and `title`:
+  
+  - `outlined` (see previous slide)
+  - `header-text` and `footer-text`: for simple content in header/footer
+  - any `page` argument, e.g. to change margins just for one slide
+
+  `header-text`/`footer-text` place content using the theme layout.\
+  Use `#slide(footer: ...)` to define the footer from scratch.
+]
+
+#{
+import minideck.themes: *
+let (template, slide) = minideck.config(
+  color-scheme: (shades: (luma(90%), navy)),
+  theme: simple.with(variant: "dark"),
+)
+show: template
+show heading: set text(1.3em)
+
+slide[
+  = Slide with dark theme
+
+  ```typ
+  #import minideck.themes: *
+  #let (template, slide) = minideck.config(
+    // This theme expects shades of increasing brightness
+    color-scheme: (shades: (luma(90%), navy)),
+    // The dark variant reverses the order of shades
+    theme: simple.with(variant: "dark"),
+  )
+  ```
+
+  To have larger slide titles, use for example:
+  ```typ
+  #show XXX
+  ```
+
+  // XXX export modules for colors, styling, etc. and use
+  // slide-title.or(slide-subtitle) in the example above
+]
+}
+
+#section[
+  = Commands for dynamic slides
 ]
 
 #slide[
@@ -101,7 +228,7 @@
     ])
   })
   Below canvas
-]
+]<cetz>
 
 
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
@@ -133,13 +260,3 @@
 ]
 
 
-#let (template, slide) = minideck.config(
-  theme: minideck.themes.simple.with(variant: "dark"),
-)
-#show: template
-
-#slide[
-  = Slide with dark theme
-  
-  Some text
-]

@@ -1,204 +1,96 @@
+// XXX TODO: rename this file to logic.typ, move _paper-size and config() to new minideck.typ
 #import "themes/themes.typ"
-#import "paper.typ": papers
+#import "layouts.typ"
+#import "fonts.typ" as fonts-module
+#import "colors.typ"
+#import "logic.typ"
 
-// Counter for pauses and for automatic tracking of subslide number.
-// First value: number of subslides so far referenced in current slide.
-// Second value: number of pauses so far in current slide.
-// Both values are kept in one state so that an update function can update the
-// number of subslides based on the number of pauses, without requiring a
-// context. This avoids problems with layout convergence.
-#let _subslide-count = state("__minideck-subslide-count", (0, 0))
-
-// Current subslide being generated for current slide
-#let _subslide-step = state("__minideck-subslide-step", 0)
-
-// Return a state update for `_subslide_count` ensuring that the subslide count
-// (first counter value) is at least `n`.
-#let update-subslide-count(n) = _subslide-count.update(((x, y)) => (calc.max(n, x), y))
-
-// Return a state update for `_subslide_count` to increment the pause index
-// (first value) and to ensure that the subslide count is at least equal to the
-// new pause index.
-#let update-by-pause() = _subslide-count.update(((x, y)) => (calc.max(x, y+2), y+1))
-
-// If `handout` is `auto`, infer its value from command-line input
-#let _is-handout(handout) = {
-  if handout == auto {
-    sys.inputs.at("handout", default: none) == "true"
-  } else {
-    handout
+// `field` is "header" or "footer"
+#let _process-head-foot(page-args, field, func, txt) = {
+  if page-args.at(field, default: none) == auto {
+    page-args.remove(field)
   }
+  if field not in page-args and txt != none {
+    page-args.insert(field, func(txt))
+  }
+  return page-args
 }
 
-// Format `it` as content of a (sub)slide
-#let _subslide-content(it) = {
-  pagebreak(weak: true)
-  it
+// XXX rewrite
+// page arguments can be used to override the current page settings for this slide
+// The footer of a slide can be overriden using either `footer` or
+// `footer-text`:
+//
+// - `footer` takes content or `none`, to be used directly as the page footer.
+//   The value `auto` can be passed to disable this behavior and consider
+//   `footer-text` instead (this is the same as leaving `footer` unspecified).
+//   
+// - `footer-text` takes simple content (typically a string) that, if not
+//   `none`, will be passed to a theme function for transformation and layout,
+//   and the result will be  used as page footer. The value `auto` can be used
+//   to let the theme function use the default value for this type of slide.
+//
+// Use `footer: auto` and `footer-text: none` to leave the page footer as it is.
+#let _plain-slide(
+  ..args,
+  header-func: layouts.header,
+  footer-func: layouts.footer,
+  header-text: none,
+  footer-text: none,
+  handout: auto,
+  steps: auto,
+  offset: none,
+  outlined: true,
+  it,
+) = {
+  if args.pos().len() > 0 {
+    panic("too many positional arguments")
+  }
+  if offset == none {
+    panic("offset must be set to an integer value: 0 for title slide, 2 for section slide, 4 for normal slide")
+  }
+  let page-args = args.named()
+  page-args = _process-head-foot(page-args, "header", header-func, header-text)
+  page-args = _process-head-foot(page-args, "footer", footer-func, footer-text)
+  set page(..page-args) if page-args.len() > 0
+  set heading(outlined: false, numbering: none) if not outlined
+  set heading(offset: offset)
+
+  logic.subslides(handout: handout, steps: steps, it)
 }
 
-// Show one subslide of the slide.
-// The subslide counter starts at 0 for every subslide, so that its
-// value can be used in the subslide to compare with `_subslide-step`.
-#let _subslide(n, it) = {
-  _subslide-count.update((1,0))
-  _subslide-step.update(n)
-  _subslide-content({
-    // Revert page increment unless it's the first subslide for this slide
-    if n > 0 { counter(page).update(x => calc.max(0, x - 1))  }
-    it
-  })
-}
+#let _paper(format) = (
+  "4:3": "presentation-4-3",
+  "16:9": "presentation-16-9",
+).at(format, default: format)
 
-// Hide content if current subslide step is smaller than pause index.
-#let _pause(updater, hider, it) = {
-  let pause-index = _subslide-count.get().at(1)
-  if _subslide-step.get() < pause-index{ hider(it) } else { it } 
-}
-
-// Increase pause counter and hide content if current `_subslide-step` is
-// smaller. Use this function as `#show: pause` or `#show: pause.with(...)`.
-// `updater` is a callback that returns a state update for `_subslide-count` to
-// increment the pause index (second counter value) and to ensure that the
-// subslide count (first counter value) is at least the pause index plus 1. This
-// callback is normally `update-by-pause`.
-// `hider` is the callback used to hide `it` when appropriate.
-// If `handout` is `true`, dynamic features are disabled: all slide content is
-// shown in a single subslide. If `auto`, the value is taken as `true` if
-// `--input handout=true` is passed on the command line, `false` otherwise.
-// If `opaque` is true, the result will already have `context` invoked, otherwise
-// the caller is responsible for invoking `context` in a suitable scope.
-#let pause(handout: auto, opaque: true, updater: update-by-pause, hider: hide, it) = {
-  if _is-handout(handout) {
-    return it
-  }
-  update-by-pause()
-  if opaque {
-    context _pause(updater, hider, it)
-  } else {
-    // return non-opaque content: caller must ensure context is available
-    _pause(updater, hider, it)
-  }
-}
-
-// Hide `it` on all given subslide indices and/or starting at `from`.
-// Subslide indices start at 1.
-#let _process-impl(updater, hider, indices, from, it) = {
-  // Convert zero-based subslide step to 1-based user-facing subslide index
-  let j = _subslide-step.get() + 1
-  let from-array = if from == none { () } else { (from,) }
-  if updater != none {
-    updater(calc.max(..indices, ..from-array))
-  }
-  let visible = (from != none and j >= from) or j in indices
-  if visible { it } else { hider(it) }
-}
-
-// Hide `it` on all given subslide indices and/or starting at `from`.
-// Subslide indices start at 1.
-// This is used by `uncover` (hider=hide) and `only` (hider=`it=>none`).
-// `updater` is a callback that takes a number `n` and returns a state update
-// for `_subslide-count` to ensure that the first counter value is at least `n`.
-// This callback is normally `update-subslide-count`, but CeTZ needs one that
-// returns a CeTZ element.
-// `hider` is the callback used to hide `it` when appropriate.
-// If `handout` is `true`, dynamic features are disabled: all slide content is
-// shown in a single subslide. If `auto`, the value is taken as `true` if
-// `--input handout=true` is passed on the command line, `false` otherwise.
-// If `opaque` is true, the result will already have `context` invoked, otherwise
-// the caller is responsible for invoking `context` in a suitable scope.
-#let _process(handout, opaque, updater, hider, indices, from, it) = {
-  if _is-handout(handout) {
-    return it
-  }
-  if opaque {
-    context _process-impl(updater, hider, indices, from, it)
-  } else {
-    // return non-opaque content: caller must ensure context is available
-    _process-impl(updater, hider, indices, from, it)
-  }
-}
-
-// Uncover `it` on all given subslide indices and/or from given index.
-// Subslide indices start at 1.
-// See `_process` for the other parameters.
-#let uncover(from: none,
-             handout: auto,
-             opaque: true,
-             updater: update-subslide-count,
-             hider: hide,
-             ..indices, it) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
-
-// Include `it` on all given subslide indices and/or from given index.
-// Subslide indices start at 1.
-// See `_process` for the other parameters.
-#let only(from: none,
-          handout: auto,
-          opaque: true,
-          updater: update-subslide-count,
-          hider: it => none,
-          ..indices, it) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
-
-// Generate subslides with number of steps given explicitly
-#let _slide-explicit(steps, it) = {
-  for i in range(0, steps) {
-    _subslide(i, it)
-  }
-}
-
-// Generate subslides with number of steps derived from the subslide counter.
-// This requires an up-to-date subslide counter (see `slide`).
-#let _slide-auto(it) = {
-  // Each slide is shown at least once
-  _subslide(0, it)
-  // After showing slide once, _subslide-count holds the number of subslides
-  context for i in range(1, _subslide-count.get().first()) {
-    _subslide(i, it)
-  }
-}
-
-// Make a new slide made of `steps` subslides. If steps is auto, the number of
-// subslides is determined automatically by updating a state (this requires that
-// `uncover` and `only` are configured with a valid updater callback, and that
-// they are called from a place where the update can be inserted).
-#let slide(handout: auto, steps: auto, it) = {
-  if _is-handout(handout) {
-    return _subslide-content(it)
-  }
-  if steps == auto {
-    _slide-auto(it)
-  } else {
-    _slide-explicit(steps, it)
-  }
-}
-
-// Calculate paper size from all parameters
-#let paper-size(paper, landscape, width, height) = {
-  let size = papers.at(paper)
-  let (w, h) = (size.width*1mm, size.height*1mm)
-  if landscape and w < h {
-    (w, h) = (h, w)
-  }
-  (
-    width: if width == none { w } else { width },
-    height: if height == none { h } else { height },
-  )
-}
+#let _get-cfg(format, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
+  paper: _paper(format),
+  fonts: fonts-module.get-fonts(font-scheme, ..fonts),
+  shades: colors.get-shades(color-scheme, ..shades),
+  accents: colors.get-accents(color-scheme, ..accents),
+)
 
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
 // define `slide` and `uncover` functions that work in handout mode. 
+// The dictionary also includes a field `cfg` that holds the configuration
+// (pag and text sizes, font and color schemes) in normalized form:
+// absolute lengths for all sizes, complete font weight list, and gradients
+// for color shades and accents.
 //
 // Named parameters:
 //
-// - paper: a string for one of the paper size names recognized by page.paper
+// - format: a string for one of the paper size names recognized by page.paper
 //   or one of the shorthands "16:9" or "4:3". Default: "4:3".
 // - landscape: use the paper size in landscape orientation. Default: `true`
-// - width: page width as an absolute length, takes precedence over `paper`
-// - height: page height as an absolute length, takes precedence over `paper`
+// - width: page width as an absolute length, takes precedence over `format`
+// - height: page height as an absolute length, takes precedence over `format`
 // - handout: when `true`, dynamic features are disabled: all slide content is
 //   shown in a single subslide. When set to `auto`, the value used is `true` if
 //   `--input handout=true` is passed on the command line, `false` otherwise.
-// - theme: the theme to use, the default being `themes.simple`
+// - theme: the theme to use, either as a name (string) or as a theme function
+//   (defaulting to `themes.simple`)
 // - cetz: if the CeTZ module is passed here, the returned dictionary will
 //   include `cetz-uncover` and `cetz-only`, which are versions of `uncover`
 //   and `only` configured to use cetz methods for hiding and state update.
@@ -211,35 +103,43 @@
 // Functions configured for CeTZ and fletcher return non-opaque content, so the
 // caller is responsible for invoking `context` in a suitable scope, typically
 // as in `#context cetz.canvas({...})`.
+// XXX update docstring above
 #let config(
-  paper: "4:3",
-  landscape: true,
-  width: none,
-  height: none,
+  format: "4:3",
+  font-scheme: auto,
+  color-scheme: auto,
+  theme: "simple",
   handout: auto,
-  theme: themes.simple,
   cetz: none,
   fletcher: none,
 ) = {
-  let slide = slide.with(handout: handout) 
-  let page-size = paper-size(paper, landscape, width, height)
-  let theme-funcs = theme(slide, page-size: page-size)
+  let plain-slide = _plain-slide.with(handout: handout)
+  let get-cfg = _get-cfg.with(format, font-scheme, color-scheme)
+
+  // Resolve theme if given as name
+  if type(theme) == str {
+    theme = dictionary(themes).at(theme)
+  }
+
   (
-    pause: pause.with(handout: handout),
-    uncover: uncover.with(handout: handout),
-    only: only.with(handout: handout),
-    ..theme-funcs,
+    pause: logic.pause.with(handout: handout),
+    uncover: logic.uncover.with(handout: handout),
+    only: logic.only.with(handout: handout),
+    // theme sets template and (updated) cfg and can override all of the above
+    ..theme(get-cfg, plain-slide),
+    // theme cannot override plain-slide
+    plain-slide: plain-slide,
   )
   if cetz != none {
-    let cetz-update(n) = cetz.draw.content((), update-subslide-count(n))
+    let cetz-update(n) = cetz.draw.content((), logic.update-subslide-count(n))
     (
-      cetz-uncover: uncover.with(
+      cetz-uncover: logic.uncover.with(
         handout: handout,
         opaque: false,
         updater: cetz-update,
         hider: it => cetz.draw.hide(it, bounds: true),
-      ),
-      cetz-only: only.with(
+      ), 
+      cetz-only: logic.only.with(
         handout: handout,
         opaque: false,
         updater: cetz-update,
@@ -248,13 +148,13 @@
   }
   if fletcher != none {
     (
-      fletcher-uncover: uncover.with(
+      fletcher-uncover: logic.uncover.with(
         handout: handout,
         opaque: false,
         updater: none,
         hider: it => fletcher.hide(it, bounds: true),
       ),
-      fletcher-only: only.with(
+      fletcher-only: logic.only.with(
         handout: handout,
         opaque: false,
         updater: none,

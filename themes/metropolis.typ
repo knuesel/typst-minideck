@@ -1,0 +1,217 @@
+// XXX check how imports work for an external theme
+#import "../util.typ"
+#import "../colors.typ"
+#import "../layouts.typ"
+#import "../styling.typ": *
+
+#let slide(cfg, plain-slide, ..args, it) = plain-slide(offset: 4, ..args, {
+  v(0.4fr)
+  it
+  v(0.6fr)
+})
+
+#let place-progress-bar(show-progress, colors) = context {
+  if show-progress {
+    let (i, n) = util.progress()
+    place(horizon, line(length: 100%, stroke: colors.bg))
+    place(horizon, line(length: i/n * 100%, stroke: colors.fg))
+  } else {
+    place(horizon, line(length: 100%, stroke: colors.fg))
+  }
+}
+
+#let section(cfg, plain-slide, show-progress: true, ..args, it) = {
+  // TODO: use 50% - 11em once typst supports giving abs margins
+  plain-slide(offset: 2, footer: none, margin: 50% - 11*22pt, ..args, {
+    set align(top)
+    place-progress-bar(show-progress, cfg.colors.progress-bar)
+    block(spacing: 1.2em, height: 50%)
+    it
+  })
+}
+
+#let standout(cfg, plain-slide, ..args, it) = {
+  set text(cfg.colors.bg) // done here to also affect header/footer
+  plain-slide(offset: 4, footer: none, fill: cfg.colors.fg, ..args, {
+    let (bold,) = cfg.font-scheme.text-weights
+    set text(size: 1.4em, weight: bold)
+    set align(horizon+center)
+    it
+  })
+}
+
+#let title(cfg, plain-slide, ..args, it) = {
+  plain-slide(offset: 0, footer: none, ..args, {
+    set align(top)
+    show par: set block(below: 1em)
+    set text(0.9em)
+    place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
+    block(spacing: 2.7em, height: 50%)
+    it
+  })
+}
+
+#let title-block(cfg, transparent: true, ..args, it-title, it-body) = {
+  let title = (inset: 0.4em)
+  let body = (inset: 0.4em)
+  if not transparent {
+    title.fill = cfg.colors.block-title-bg
+    body.fill = cfg.colors.block-body-bg
+  }
+ layouts.title-block(title: title, body: body, ..args, it-title, it-body)
+}
+#let alert-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
+  text(cfg.colors.alert, it-title),
+  it-body,
+)
+#let example-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
+  text(cfg.colors.example, it-title),
+  it-body,
+)
+
+#let footer-func(..args) = text(0.7em, layouts.footer(padding: 1.5em, ..args))
+
+// This doesn't work in a heading show rule when margins are given in ems,
+// as the heading size is typically different from the initial page text size
+#let top-bar(cfg, it) = context layouts.slide-bar(
+  dy: -util.context-margins().top,
+  style: (fill: cfg.colors.fg),
+  top,
+  align(horizon+start, pad(0.85em, text(cfg.colors.bg, it)))
+)
+
+#let template(cfg, it) = {
+  let font-scheme = cfg.fonts.first()
+  let (regular, medium, bold) = font-scheme.text-weights
+
+  show slide-title: top-bar.with(cfg)
+
+  set page(
+    // TODO: use 3em once typst supports giving abs margins
+    margin: 66pt,
+    fill: cfg.colors.bg,
+    footer: footer-func(none),
+  )
+
+  // Set font size before template, so that cfg fonts can override it
+  set text(22pt)
+
+  show: basic-template.with(cfg)
+
+  // Show section titles without numbering (but keep numbering in the TOC)
+  show section-title: it => it.body
+
+  // Heading text styles
+  // typst defaults: H1 1.4em, H2 1.2em
+  // basic-template default: font-scheme.text-weights.bold
+  show presentation-title: set text(1.15em) // 1.4em * 1.15
+  show presentation-subtitle: set text(1.1em, weight: regular) // 1.2em * 1.1
+  show section-title: set text(1.4em)
+  show section-subtitle: set text(1.2em * 1.1, weight: regular)
+  show slide-title: set text(1.2em)
+  show slide-subtitle: set text(1.2em)
+  show block-title.or(block-subtitle): set text(weight: medium)
+
+
+  // Layout for titles
+  show presentation-title: it => layouts.place-relative(
+    presentation-subtitle,
+    anchor: bottom,
+    default: _ => place(bottom, dy: -50%, pad(bottom: 1.38em, it)),
+    pad(bottom: 1.08em, it),
+  )
+  show presentation-subtitle: it => place(bottom, dy: -50%, pad(bottom: 1.6em, it))
+  show section-title: it => place(bottom, dy: -50%, pad(bottom: 0.9em, it))
+
+  // Links
+  show link: strong.with(delta: int(font-scheme.delta/2))
+
+  // Outline
+  show: outline-template.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
+  show outline-sections-and-slides: it => {
+    show outline.entry.where(level: 3): strong
+    it
+  }
+
+  show: bibliography-template.with(cfg)
+
+  // Lists
+  set list(indent: 1em, spacing: 1em)
+  set enum(indent: 0.8em, spacing: 1em)
+  set terms(indent: 0.6em, spacing: 1em)
+
+  // Raw text
+  show raw.where(block: true): it => {
+    set block(above: 1.8em, below: 1.8em)
+    pad(left: 1em, it)
+  }
+
+  // Quotes
+  show quote.where(block: false): set text(style: "italic")
+  show quote.where(block: true): it => {
+    block(width: 100%, above: 2.4em, below: 1.8em, pad(x: 1em, {
+      emph(it.body)
+      v(0.9em, weak: true)
+      align(end, [#sym.dash.em #it.attribution])
+    }))
+  }
+
+  it
+}
+
+#let color-theme(cfg) = {
+  let (bg, bg1, bg2, fg) = cfg.shades
+  let (alert, example) = cfg.accents
+  return (
+    bg: bg,
+    fg: fg,
+    progress-bar: (
+      bg: color.mix((alert, 15%), (fg, 15%), (bg, 70%)),
+      fg: alert,
+    ),
+    block-title-bg: bg2,
+    block-body-bg: bg1,
+    alert: alert,
+    example: example,
+  )
+}
+
+#let metropolis(
+  get-cfg,
+  plain-slide,
+  show-progress: true,
+  variant: "light"
+) = {
+  if variant not in ("light", "dark") {
+    panic("invalid variant: must be \"light\" or \"dark\"")
+  }
+
+  let cfg = get-cfg(
+    shades: (
+      samples: (2%, 10%, 20%, 100%),
+      default: (white, rgb("#23373b")), // dark teal
+      reverse: variant == "dark",
+    ),
+    accents: (n: 2, default: (rgb("#eb811b"), rgb("#14b03d"))), // red, green
+    fonts: (n: 1, default: "fira-sans-light"),
+  )
+  // Add some private fields
+  cfg.font-scheme = cfg.fonts.first()
+  cfg.colors = color-theme(cfg)
+
+  plain-slide = plain-slide.with(footer-func: footer-func)
+
+  return (
+    cfg: cfg,
+    template: template.with(cfg),
+    slide: slide.with(cfg, plain-slide),
+    section: section.with(cfg, plain-slide, show-progress: show-progress),
+    title: title.with(cfg, plain-slide),
+    standout: standout.with(cfg, plain-slide),
+    title-block: title-block.with(cfg),
+    alert-block: alert-block.with(cfg),
+    example-block: example-block.with(cfg),
+    alert: text.with(cfg.colors.alert),
+    example: text.with(cfg.colors.example),
+  )
+}

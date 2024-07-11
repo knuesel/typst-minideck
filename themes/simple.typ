@@ -1,52 +1,47 @@
-// Theme variants
-#let variants = (
-  light: (
-    bg: white,
-    fg: rgb("#3c3c3c"),
-  ),
-  dark: (
-    bg: rgb("#3c3c3c"),
-    fg: rgb("#eff1f3"),
-  ),
-)
+#import "../styling.typ": *
 
-// The paper and variant parameters must be set by the caller
-#let template(page-size: none, variant: none, it) = {
-  show heading: set block(below: 1em)
-  let margin = calc.min(..page-size.values()) * 2.5 / 21 // same as typst default
-  set page(
-    width: page-size.width,
-    height: page-size.height,
-    margin: margin,
-    header-ascent: 0pt,
-    footer-descent: 0pt,
-    footer: context {
-      set text(0.8em)
-      set align(bottom+right)
-      pad(x: -margin+1cm, y: 1cm, counter(page).display())
-    },
-    fill: variants.at(variant).bg,
-  )
-  set text(
-    24pt,
-    fill: variants.at(variant).fg,
-    font: "Libertinus Sans",
-  )
+// Layout for all kinds of slides: centered content and no footer/page numbers
+#let title(plain-slide, ..args, it) = {
+  plain-slide(footer: none, ..args, {
+    set align(horizon+center)
+    it
+  })
+}
+
+#let template(cfg, it) = {
+  // Set font size before template, so that cfg fonts can override it
+  set text(24pt)
+  // Apply basic template
+  show: basic-template.with(cfg)
+  // Make slide titles a bit larger
+  show slide-title.or(section-title): set text(1.2em)
+  // Color for links
+  show link: text.with(cfg.accents.at(0))
+  // Apply some optional templates
+  // show outline: outline-template.with(cfg)
+  show: outline-template.with(cfg, indent: 1em)
+  show outline.entry.where(level: 5): it => box(list.item(it))
+  show bibliography: bibliography-template.with(cfg)
+
   it
 }
 
-// Layout for title slide: no page numbers, centered content
-#let title-slide(slide, it) = {
-  set page(footer: none)
-  set align(horizon+center)
-  slide(it)
-}
+#let simple(get-cfg, plain-slide, variant: "light") = {
+  if variant not in ("light", "dark") {
+    panic("invalid variant: must be \"light\" or \"dark\"")
+  }
 
-// Theme function. Called by minideck with page-size set.
-#let simple(slide, page-size: none, variant: "light") = {
+  let cfg = get-cfg(
+    shades: (reverse: variant == "dark"),
+    accents: (n: 1, default: (blue,)),
+  )
+  cfg.variant = variant // private field, for the record
+  
   (
-    slide: slide,
-    title-slide: title-slide.with(slide),
-    template: template.with(page-size: page-size, variant: variant)
+    cfg: cfg,
+    title: title.with(plain-slide, offset: 0),
+    section: title.with(plain-slide, offset: 2),
+    slide: plain-slide.with(offset: 4),
+    template: template.with(cfg),
   )
 }
