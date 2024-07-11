@@ -39,6 +39,7 @@
 #let title-slide(slide, it) = {
   set page(footer: none)
   set align(horizon+center)
+  set heading(outlined: false)
   slide(it)
 }
 
