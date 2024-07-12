@@ -14,75 +14,17 @@
   - How to make section slides with inverted theme? We don't want to set page properties in slide as that would be hard for the user to override?
   - Idea: sectoin title is a figure of section-title kind, shown as a fulll box in the whole slide
 
-   But what about focus slides then? everything must be inverted.
+   But what about standout slides then? everything must be inverted.
 
-  TODO:
-  add offset parameter to slide, document.
 */
 
 #import "lib.typ" as minideck
 #import "util.typ"
+#import "themes/metropolis-colors.typ" as colors
+#import "paper.typ": papers
 
 #let (template, slide, title-slide, pause) = minideck.config()
 
-#let dark-brown  = rgb("#604c38")
-#let dark-teal   = rgb("#23373b")
-#let light-brown = rgb("#EB811B")
-#let light-green = rgb("#14B03D")
-
-#let variant-colors = (
-  dark: (
-    // fg: luma(98%),
-    fg: luma(90%),
-    bg: dark-teal,
-  ),
-  light: (
-    fg: dark-teal,
-    // bg: luma(98%),
-    bg: luma(90%),
-  ),
-)
-
-#let default-base-colors(variant) = (
-  alert: light-brown,
-  example: light-green,
-  ..variant-colors.at(variant),
-)
-
-// Return a full palette for the given base colors
-#let compute-colors(base-colors) = {
-  let (fg, bg, alert, example) = base-colors
-  let block-title-bg = color.mix((bg, 80%), (fg, 20%))
-  return (
-    fg: fg,
-    bg: bg,
-    alert: alert,
-    example: example,
-    footnote: color.mix((fg, 80%), (bg, 20%)),
-    progress-bar: (
-      fg: alert,
-      bg: color.mix((color.mix(alert, black), 30%), (white, 70%)),
-    ),
-    block-title: (
-      fg: fg,
-      bg: block-title-bg,
-    ),
-    block-body: (
-      fg: fg,
-      bg: color.mix(block-title-bg, bg),
-    ),
-    block-title-alerted: (
-      fg: alert,
-      bg: block-title-bg,
-    ),
-    block-title-example: (
-      fg: example,
-      bg: block-title-bg,
-    ),
-  )
-}
-
-#import "paper.typ": papers
 #let paper-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
 #let text-size = 20pt
 #let user-margin = 2.5em
@@ -94,14 +36,17 @@
 #let slide-title-gap = auto
 #let slide-title-gap-abs = util.length-to-abs(
   util.coalesce(on: auto, slide-title-gap, margin.top), paper-size, text-size)
-#let variant = "dark"
-#let variant = "light"
-#let user-colors = (:)
-#let user-focus-colors = (:)
 
+#let user = (
+  variant: "light",
+  base-colors: (bg: luma(90%), alert: red), // override some base colors from variant
+  palette: (
+    main: (block-title: (fg: blue)),
+    inverted: (block-title: (fg: blue)),
+  ),
+)
 
-#let c = util.palette(compute-colors, default-base-colors(variant), user-colors)
-#let c-other = util.palette(compute-colors, default-base-colors(other-variant), user-colors)
+#let c = colors.palette(user.variant, user.base-colors, user.palette)
 
 // #show heading: set block(below: 1em)
 #set text(font: "Fira Sans", weight: "light", size: 20pt)
@@ -126,15 +71,15 @@
 )
 
 // Colors
-#set text(c.fg)
-#set page(fill: c.bg,)
-#show footnote.entry: set text(c.footnote)
-#set footnote.entry(separator: line(length: 30%, stroke: 0.5pt+c.footnote))
+#set text(c.normal.fg)
+#set page(fill: c.normal.bg,)
+#show footnote.entry: set text(c.normal.footnote)
+#set footnote.entry(separator: line(length: 30%, stroke: 0.5pt+c.normal.footnote))
 
 // To show individual slide titles in outline: set depth 2 and decrease
 // block spacing.
 #set outline(title: [Table of contents], depth: 1)
-#show outline: set block(spacing: 1em)
+#show outline: set block(spacing: 0.5em)
 #show outline.entry: it => {
   h(1em*(it.level - 1))
   it.body
@@ -150,11 +95,11 @@
 #show heading: it => it.body
 
 #show heading.where(level: 2): it => {
-  set text(c.bg, size: slide-title-text-size)
+  set text(c.normal.bg, size: slide-title-text-size)
   let b = box(
     width: paper-size.width,
     height: slide-title-box-height,
-    fill: c.fg,
+    fill: c.normal.fg,
     align(slide-title-align, pad(..slide-title-padding, it)),
   )
   place(top+center, dy: -margin.top, b)
@@ -169,14 +114,14 @@
   slide(offset: 0, it)
 }
 
-#let title-slide(it) = {
+#let title(it) = {
   set page(footer: none)
   set align(horizon+center)
-  set heading(outlined: false)
+  set heading(numbering: none, outlined: false)
   slide(offset: 0, it)
 }
 
-#title-slide[
+#title[
   = Title
 
 ]

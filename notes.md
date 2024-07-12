@@ -1,6 +1,11 @@
 # TODO
 
 * rename 'paper' to 'format'
+* add offset parameter to slide, document.
+* make a theme with variants corresponding to popular base16 themes, or any!
+* rename title-slide to title?
+* convert page number to figure kind:page-number ?
+* document how to get fira math light
 
 # Readme updates:
 

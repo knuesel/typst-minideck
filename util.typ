@@ -30,18 +30,18 @@
 
 // Merge two dictionaries recursively, resolving field clashes by merging when
 // both values are dictionaries, and by keeping the second value otherwise.
-#let merge-two-dicts(d1, d2) = {
+#let merge-dicts(d1, d2) = {
   for (k, v2) in d2 {
     let v1 = d1.at(k, default: none)
     let merge-vals = type(v1) == dictionary and type(v2) == dictionary
-    d1.insert(k, if merge-vals { merge-two-dicts(v1, v2) } else { v2 })
+    d1.insert(k, if merge-vals { merge-dicts(v1, v2) } else { v2 })
   }
   d1
 }
 
 // Merge several dictionaries recursively, processing them in order with
-// `merge-two-dicts`.
-#let merge-dicts(..dicts) = dicts.pos().fold((:), merge-two-dicts)
+// `merge-dicts`.
+#let merge-all-dicts(..dicts) = dicts.pos().fold((:), merge-dicts)
 
 
 // Return the first positional argument after `on` that is different from `on`,
@@ -91,15 +91,20 @@
   )
 }
 
-// Compute color palette (a multi-level dictionary of colors) from base colors
-// by calling `computer` with the base palette, applying values from the
-// `override` palette both before computation (to override base colors) and
-// after computation (to override computed colors).
-#let palette(computer, base, override) = {
-  // Get base colors with overrides applied
-  let updated-base = merge-two-dicts(base, override)
-  // Compute full palette from these base colors
-  let full = computer(updated-base)
-  // Merge computed palette with overrides
-  merge-two-dicts(full, override)
+// Take a color palette (a multi-level dictionary of colors) and recursively
+// switch the bg and fg fields.
+#let switch-bg-fg(d) = {
+  let colors = (:)
+  for (k, v) in d {
+    if k == "bg" {
+      colors.insert("fg", v)
+    } else if k == "fg" {
+      colors.insert("bg", v)
+    } else if type(v) == dictionary {
+      colors.insert(k, switch-bg-fg(v))
+    } else {
+      colors.insert(k, v)
+    }
+  }
+  colors
 }
