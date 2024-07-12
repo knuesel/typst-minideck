@@ -29,6 +29,7 @@
 #let text-size = 20pt
 #let user-margin = 2.5em
 #let margin = util.absolute-margins(user-margin, paper-size, text-size)
+#let title-text-size = 36pt
 #let slide-title-padding = (left: 1em)
 #let slide-title-align = horizon+left
 #let slide-title-box-height = 2.4em
@@ -39,9 +40,9 @@
 
 #let user = (
   variant: "light",
-  base-colors: (bg: luma(90%), alert: red), // override some base colors from variant
+  base-colors: (bg: luma(90%)), // override some base colors from variant
   palette: (
-    main: (block-title: (fg: blue)),
+    normal: (block-title: (fg: blue)),
     inverted: (block-title: (fg: blue)),
   ),
 )
@@ -92,7 +93,7 @@
   it
 }
 
-#show heading: it => it.body
+#show heading: it => block(it.body)
 
 #show heading.where(level: 2): it => {
   set text(c.normal.bg, size: slide-title-text-size)
@@ -106,24 +107,45 @@
   v(measure(b).height - margin.top + slide-title-gap-abs)
 }
 
-// #show heading.where(level: 1): set page(fill: red)
-
 #let section(it) = {
   set page(footer: none)
   set align(horizon+center)
   slide(offset: 0, it)
 }
 
+/*
+  TODO: process title slide content:
+  - find headers and format appropriately
+  - find terms and format appropriately but preserving the order.
+  - content that doesn't match any of the above: discard?
+*/
 #let title(it) = {
   set page(footer: none)
   set align(horizon+center)
   set heading(numbering: none, outlined: false)
-  slide(offset: 0, it)
+  // show heading.where(level: 2): it => text(red, it)
+  // place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
+
+  // repr(it.children)
+  // show: it => it.children
+  let main-title = it.children.find(x => x.func() == heading.where(depth: 1))
+  // main-title
+  repr(it)
+
+  // repr(it.func())
+
+  // slide(offset: 0, it)
 }
 
 #title[
-  = Title
+  = Metropolis
+  == An implementation for minideck
 
+  / author: Jeremie Knuesel
+
+  / date: #datetime.today().display()
+
+  / extra: BFH-TI
 ]
 
 #slide[
@@ -153,7 +175,7 @@
 #slide[
   = Hello
 
-  Adsfsdf#footnote[blob]
+  Adsfsdf#footnote[feet]
 ]
 
 #section[

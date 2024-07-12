@@ -6,6 +6,8 @@
 * rename title-slide to title?
 * convert page number to figure kind:page-number ?
 * document how to get fira math light
+* a dict-merge function that checks that the second dict has no new fields and
+  panic if it has (e.g. for overriding palette with a partial user palette)
 
 # Readme updates:
 
