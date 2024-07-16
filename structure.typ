@@ -16,6 +16,11 @@
 
    But what about standout slides then? everything must be inverted.
 
+
+  = Distinguish headings
+
+  Problem: normal slides have rectangle, title slide and section slides not
+
 */
 
 #import "lib.typ" as minideck
@@ -25,18 +30,17 @@
 
 #let (template, slide, title-slide, pause) = minideck.config()
 
-#let paper-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
+#let page-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
 #let text-size = 20pt
 #let user-margin = 2.5em
-#let margin = util.absolute-margins(user-margin, paper-size, text-size)
-#let title-text-size = 36pt
-#let slide-title-padding = (left: 1em)
+#let margin = util.absolute-margins(user-margin, page-size, text-size)
+#let slide-title-padding = (rest: 1em)
 #let slide-title-align = horizon+left
 #let slide-title-box-height = 2.4em
-#let slide-title-text-size = 24pt
+// #let slide-title-text-size = 24pt
 #let slide-title-gap = auto
 #let slide-title-gap-abs = util.length-to-abs(
-  util.coalesce(on: auto, slide-title-gap, margin.top), paper-size, text-size)
+  util.coalesce(on: auto, slide-title-gap, margin.top), page-size, text-size)
 
 #let user = (
   variant: "light",
@@ -49,8 +53,7 @@
 
 #let c = colors.palette(user.variant, user.base-colors, user.palette)
 
-// #show heading: set block(below: 1em)
-#set text(font: "Fira Sans", weight: "light", size: 20pt)
+#set text(font: "Fira Sans", weight: "light", size: text-size)
 #show math.equation: set text(font: "Fira Math", weight: "light")
 #set strong(delta: 100)
 #set par(justify: true)
@@ -59,8 +62,8 @@
 #show heading: set text(weight: "regular")
 
 #set page(
-  width: paper-size.width,
-  height: paper-size.height,
+  width: page-size.width,
+  height: page-size.height,
   margin: margin,
   // header-ascent: 0pt,
   // footer-descent: 0pt,
@@ -93,63 +96,82 @@
   it
 }
 
-#show heading: it => block(it.body)
+#let plain-slide = slide
 
-#show heading.where(level: 2): it => {
-  set text(c.normal.bg, size: slide-title-text-size)
-  let b = box(
-    width: paper-size.width,
-    height: slide-title-box-height,
-    fill: c.normal.fg,
-    align(slide-title-align, pad(..slide-title-padding, it)),
-  )
-  place(top+center, dy: -margin.top, b)
-  v(measure(b).height - margin.top + slide-title-gap-abs)
-}
+// Show headings without numbering (but keeping numbering enabled for TOC)
+#show heading: it => it.body
+
+#let slide(..args, it) = plain-slide(..args, {
+  show heading.where(level: 2): it => {
+    // Prepare heading rectangle
+    set text(c.inverted.fg)
+    let b = box(
+      width: page-size.width,
+      height: slide-title-box-height,
+      fill: c.inverted.bg,
+      align(slide-title-align, pad(..slide-title-padding, it)),
+    )
+    // Show heading as rectangle at top of slide
+    place(top+center, dy: -margin.top, b)
+    // Add spacing with slide content equal to title gap setting
+    v(measure(b).height - margin.top + slide-title-gap-abs)
+  }
+  it
+})
 
 #let section(it) = {
   set page(footer: none)
   set align(horizon+center)
-  slide(offset: 0, it)
+  plain-slide(offset: 0, it)
 }
 
-/*
-  TODO: process title slide content:
-  - find headers and format appropriately
-  - find terms and format appropriately but preserving the order.
-  - content that doesn't match any of the above: discard?
-*/
-#let title(it) = {
+#let title-gap = 48pt
+
+#let title(slide: slide, it) = {
   set page(footer: none)
-  set align(horizon+center)
   set heading(numbering: none, outlined: false)
-  // show heading.where(level: 2): it => text(red, it)
-  // place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
-
-  // repr(it.children)
-  // show: it => it.children
-  let main-title = it.children.find(x => x.func() == heading.where(depth: 1))
-  // main-title
-  repr(it)
-
-  // repr(it.func())
-
-  // slide(offset: 0, it)
+  show heading.where(depth: 2): it => {
+    set text(weight: "light", 1.1em)
+    place(
+      bottom,
+      dy: -(page-size.height/2 - margin.bottom) - title-gap,
+      [#metadata(none)<title-h2> #it],
+    )
+  }
+  show heading.where(depth: 1): it => {
+    set text(weight: "regular", 1.2em)
+    let h2 = query(<title-h2>)
+    let dy = if h2.len() == 0 {
+      -page-size.height/2 + margin.bottom - title-gap
+    } else {
+      let y2 = h2.first().location().position().y
+      y2 - (page-size.height - margin.bottom) - 1.2em
+    }
+    place(bottom, dy: dy, it)
+  }
+  plain-slide(offset: 0)[
+    #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
+    #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
+    #it
+  ]
 }
 
 #title[
   = Metropolis
   == An implementation for minideck
 
-  / author: Jeremie Knuesel
+  Jeremie Knuesel
 
-  / date: #datetime.today().display()
+  #datetime.today().display("[month repr:long] [day], [year]")
 
-  / extra: BFH-TI
+  #v(0.3em)
+  #text(0.8em)[BFH-TI]
 ]
 
 #slide[
+  #v(1fr)
   #outline()
+  #v(2fr)
 ]
 
 #section[
@@ -157,20 +179,10 @@
 ]
 
 #slide[
-  = blob
-]
-
-#slide[
   = Some slide
 
   $ e = lim_(n -> infinity) $
 ]
-
-
-#slide[
-  = Second section
-]
-
 
 #slide[
   = Hello

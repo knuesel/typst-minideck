@@ -9,6 +9,8 @@
 * a dict-merge function that checks that the second dict has no new fields and
   panic if it has (e.g. for overriding palette with a partial user palette)
 
+* show rule for raw to split on some `pause` line and generate subslides, to allow using pause in e.g. codly and algorithmic
+
 # Readme updates:
 
 * add images
@@ -19,3 +21,14 @@
 
 the package is now in `@preview` and includes some minimal infrastructure for theming. Check the [example](https://github.com/knuesel/typst-minideck/blob/main/themes/simple.typ) and the [documentation](https://github.com/knuesel/typst-minideck/blob/main/themes/README.md) if you want to try and make a theme, and let me know if you find anything more difficult than it should be...
 
+metropolis:
+
+
+https://github.com/matze/mtheme?tab=readme-ov-file
+
+https://polylux.dev/book/utils/sections.html
+https://github.com/andreasKroepelin/polylux/issues/175
+https://github.com/andreasKroepelin/polylux/issues/179
+https://github.com/andreasKroepelin/polylux/issues/118
+https://github.com/andreasKroepelin/polylux/issues/98
+http://bloerg.net/posts/a-modern-beamer-theme/
