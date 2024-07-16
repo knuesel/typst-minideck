@@ -5,11 +5,15 @@
 * make a theme with variants corresponding to popular base16 themes, or any!
 * rename title-slide to title?
 * convert page number to figure kind:page-number ?
-* document how to get fira math light
 * a dict-merge function that checks that the second dict has no new fields and
   panic if it has (e.g. for overriding palette with a partial user palette)
 
 * show rule for raw to split on some `pause` line and generate subslides, to allow using pause in e.g. codly and algorithmic
+
+# Document
+
+* how to get fira math light
+* changing slide title padding
 
 # Readme updates:
 

@@ -32,15 +32,8 @@
 
 #let page-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
 #let text-size = 20pt
-#let user-margin = 2.5em
+#let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
-#let slide-title-padding = (rest: 1em)
-#let slide-title-align = horizon+left
-#let slide-title-box-height = 2.4em
-// #let slide-title-text-size = 24pt
-#let slide-title-gap = auto
-#let slide-title-gap-abs = util.length-to-abs(
-  util.coalesce(on: auto, slide-title-gap, margin.top), page-size, text-size)
 
 #let user = (
   variant: "light",
@@ -57,6 +50,7 @@
 #show math.equation: set text(font: "Fira Math", weight: "light")
 #set strong(delta: 100)
 #set par(justify: true)
+#set align(horizon)
 
 #set heading(numbering: "1.")
 #show heading: set text(weight: "regular")
@@ -103,18 +97,16 @@
 
 #let slide(..args, it) = plain-slide(..args, {
   show heading.where(level: 2): it => {
-    // Prepare heading rectangle
     set text(c.inverted.fg)
     let b = box(
       width: page-size.width,
-      height: slide-title-box-height,
       fill: c.inverted.bg,
-      align(slide-title-align, pad(..slide-title-padding, it)),
+      align(horizon+left, pad(0.9em, it)),
     )
-    // Show heading as rectangle at top of slide
+    // Place title box at top of slide
     place(top+center, dy: -margin.top, b)
-    // Add spacing with slide content equal to title gap setting
-    v(measure(b).height - margin.top + slide-title-gap-abs)
+    // Push other slide content down by height of box
+    v(measure(b).height)
   }
   it
 })
@@ -125,10 +117,11 @@
   plain-slide(offset: 0, it)
 }
 
-#let title-gap = 48pt
 
 #let title(slide: slide, it) = {
+  let title-gap = 48pt
   set page(footer: none)
+  set align(top)
   set heading(numbering: none, outlined: false)
   show heading.where(depth: 2): it => {
     set text(weight: "light", 1.1em)
@@ -169,9 +162,7 @@
 ]
 
 #slide[
-  #v(1fr)
   #outline()
-  #v(2fr)
 ]
 
 #section[
@@ -179,7 +170,7 @@
 ]
 
 #slide[
-  = Some slide
+  = Metropolis
 
   $ e = lim_(n -> infinity) $
 ]
@@ -201,9 +192,13 @@
 ]
 
 
-
 #slide[
   = Another
+
+  sadfsdf
+
+
+  #lorem(200)
 ]
 
 
