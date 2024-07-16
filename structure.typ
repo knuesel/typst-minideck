@@ -53,14 +53,12 @@
 #set align(horizon)
 
 #set heading(numbering: "1.")
-#show heading: set text(weight: "regular")
+#show heading: set text(1.05em, weight: "regular")
 
 #set page(
   width: page-size.width,
   height: page-size.height,
   margin: margin,
-  // header-ascent: 0pt,
-  // footer-descent: 0pt,
   footer: context {
     set text(0.8em)
     set align(bottom+right)
@@ -93,7 +91,7 @@
 #let plain-slide = slide
 
 // Show headings without numbering (but keeping numbering enabled for TOC)
-#show heading: it => it.body
+#show heading: it => block(it.body)
 
 #let slide(..args, it) = plain-slide(..args, {
   show heading.where(level: 2): it => {
@@ -111,10 +109,27 @@
   it
 })
 
-#let section(it) = {
-  set page(footer: none)
-  set align(horizon+center)
-  plain-slide(offset: 0, it)
+#let progress-bar-done() = context {
+  let i = counter(page).get().first()
+  let n = counter(page).final().first()
+  line(length: i/n * 100%, stroke: c.normal.progress-bar.fg)
+}
+
+#let section(slide: slide, it) = {
+  set page(margin: (x: 50% - 12em), footer: none)
+  set align(top)
+  let title-gap = 28pt
+  show heading.where(depth: 1): it => {
+    let dy = -page-size.height/2 + margin.bottom - title-gap
+    place(bottom, dy: dy, it)
+  }
+  show heading.where(depth: 2): set text(weight: "light")
+  plain-slide(offset: 0)[
+    #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
+    #place(horizon, progress-bar-done())
+    #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
+    #it
+  ]
 }
 
 
@@ -124,16 +139,16 @@
   set align(top)
   set heading(numbering: none, outlined: false)
   show heading.where(depth: 2): it => {
-    set text(weight: "light", 1.1em)
+    set text(weight: "light")
     place(
       bottom,
       dy: -(page-size.height/2 - margin.bottom) - title-gap,
-      [#metadata(none)<title-h2> #it],
+      [#metadata(none)<__minideck-title-h2> #it],
     )
   }
   show heading.where(depth: 1): it => {
     set text(weight: "regular", 1.2em)
-    let h2 = query(<title-h2>)
+    let h2 = query(<__minideck-title-h2>)
     let dy = if h2.len() == 0 {
       -page-size.height/2 + margin.bottom - title-gap
     } else {
@@ -166,7 +181,7 @@
 ]
 
 #section[
-  = First section
+  = Introduction
 ]
 
 #slide[
