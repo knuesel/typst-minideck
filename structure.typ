@@ -56,14 +56,17 @@
 // This heading rule must come first to be processed last, since it returns
 // a non-heading object which will prevent further heading rules to be applied.
 #show heading: it => block(below: 1.2em, it.body)
+
 #set heading(numbering: "1.")
 
+// Presentation and section title
 #show heading.where(level: 1): set text(1.1em, weight: "regular")
+// Presentation and section subtitle
 #show heading.where(level: 2, depth: 2): set text(1.1em, weight: "light")
+// Slide title
 #show heading.where(level: 2, depth: 1): set text(1.05em, weight: "regular")
-
-// #set text(font: "DejaVu Sans")
-// #set text(font: "Libertinus Sans")
+// Slide subtitle
+#show heading.where(level: 3, depth: 2): set text(1.1em, weight: "regular")
 
 
 #set list(indent: 1em)
@@ -120,10 +123,7 @@
       fill: c.inverted.bg,
       align(horizon+left, pad(0.9em, it)),
     )
-    // Place title box at top of slide
-    place(top+center, dy: -margin.top, b)
-    // Push other slide content down by height of box
-    v(measure(b).height)
+    place(top+center, dy: -margin.top, float: true, clearance: 0pt, b)
   }
   it
 })
@@ -221,7 +221,10 @@
 ]
 
 #slide[
+  #set align(top)
   = Metropolis
+
+  Blob
 ]
 
 #slide[
