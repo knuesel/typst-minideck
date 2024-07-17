@@ -52,8 +52,30 @@
 #set par(justify: true)
 #set align(horizon)
 
+// Show headings without numbering (but keeping numbering enabled for TOC)
+// This heading rule must come first to be processed last, since it returns
+// a non-heading object which will prevent further heading rules to be applied.
+#show heading: it => block(below: 1.2em, it.body)
 #set heading(numbering: "1.")
-#show heading: set text(1.05em, weight: "regular")
+
+#show heading.where(level: 1): set text(1.1em, weight: "regular")
+#show heading.where(level: 2, depth: 2): set text(1.1em, weight: "light")
+#show heading.where(level: 2, depth: 1): set text(1.05em, weight: "regular")
+
+// #set text(font: "DejaVu Sans")
+// #set text(font: "Libertinus Sans")
+
+
+#set list(indent: 1em)
+#set enum(indent: 0.8em)
+
+#set bibliography(title: none)
+#show bibliography: it => {
+  set block(spacing: 2em)
+  show regex("\[[0-9]+\]"): set align(top)
+  it
+}
+
 
 #set page(
   width: page-size.width,
@@ -69,29 +91,26 @@
 // Colors
 #set text(c.normal.fg)
 #set page(fill: c.normal.bg,)
-#show footnote.entry: set text(c.normal.footnote)
-#set footnote.entry(separator: line(length: 30%, stroke: 0.5pt+c.normal.footnote))
+#set footnote.entry(separator: line(length: 30%, stroke: 0.5pt+c.normal.fg))
 
 // To show individual slide titles in outline: set depth 2 and decrease
 // block spacing.
 #set outline(title: [Table of contents], depth: 1)
-#show outline: set block(spacing: 0.5em)
+#show outline: it => {
+  set block(spacing: 0.5em)
+  set heading(offset: 1)
+  show heading.where(level: 1): [#it.title#parbreak()]
+  it
+}
 #show outline.entry: it => {
   h(1em*(it.level - 1))
   it.body
   parbreak()
 }
 
-#show outline: it => {
-  set heading(offset: 1)
-  show heading.where(level: 1): [#it.title#parbreak()]
-  it
-}
+
 
 #let plain-slide = slide
-
-// Show headings without numbering (but keeping numbering enabled for TOC)
-#show heading: it => block(it.body)
 
 #let slide(..args, it) = plain-slide(..args, {
   show heading.where(level: 2): it => {
@@ -111,7 +130,13 @@
 
 #let progress-bar-done() = context {
   let i = counter(page).get().first()
-  let n = counter(page).final().first()
+  let appendix = query(<appendix>)
+  let n = if appendix.len() > 0 {
+    // If an appendix label was found, count slides only till there
+    counter(page).at(appendix.first().location()).first()
+  } else {
+    counter(page).final().first()
+  }
   line(length: i/n * 100%, stroke: c.normal.progress-bar.fg)
 }
 
@@ -123,7 +148,6 @@
     let dy = -page-size.height/2 + margin.bottom - title-gap
     place(bottom, dy: dy, it)
   }
-  show heading.where(depth: 2): set text(weight: "light")
   plain-slide(offset: 0)[
     #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
     #place(horizon, progress-bar-done())
@@ -132,14 +156,20 @@
   ]
 }
 
+#let standout(slide: slide, it) = {
+  set page(fill: c.inverted.bg, footer: none)
+  set text(1.6em, c.inverted.fg, weight: "regular")
+  set align(center)
+  plain-slide(offset: 0, it)
+}
 
 #let title(slide: slide, it) = {
   let title-gap = 48pt
   set page(footer: none)
-  set align(top)
+  set align(top) // content below the middle line should be top-aligned
   set heading(numbering: none, outlined: false)
+  show par: set block(spacing: 1em)
   show heading.where(depth: 2): it => {
-    set text(weight: "light")
     place(
       bottom,
       dy: -(page-size.height/2 - margin.bottom) - title-gap,
@@ -147,7 +177,7 @@
     )
   }
   show heading.where(depth: 1): it => {
-    set text(weight: "regular", 1.2em)
+    // set text(1.1em)
     let h2 = query(<__minideck-title-h2>)
     let dy = if h2.len() == 0 {
       -page-size.height/2 + margin.bottom - title-gap
@@ -164,15 +194,19 @@
   ]
 }
 
+#let alert = text.with(c.normal.alert)
+
 #title[
   = Metropolis
   == An implementation for minideck
 
   Jeremie Knuesel
 
+  Matthias Vogelgesang
+
   #datetime.today().display("[month repr:long] [day], [year]")
 
-  #v(0.3em)
+  #v(0.5em)
   #text(0.8em)[BFH-TI]
 ]
 
@@ -182,39 +216,81 @@
 
 #section[
   = Introduction
+
+  == blob
 ]
 
 #slide[
   = Metropolis
+]
 
-  $ e = lim_(n -> infinity) $
+#slide[
+  = Lists
+
+  #grid(columns: (1fr,)*3, align: top)[
+    Items:
+
+    - Milk
+
+    - Eggs
+
+    - Potatos
+  ][
+    Enumerations:
+
+    + First,
+
+    + Second and
+
+    + Last
+  ][
+    Descriptions:
+
+    / PowerPoint: Meeh.
+    / Beamer: Yeeeha.
+  ]
+]
+
+#slide[
+  = Math
+  
+  $ e = lim_(n -> infinity) (1 + 1/n)^n $
 ]
 
 #slide[
   = Hello
 
+  Text
+
+  ```
+  raw
+  ```
+
   Adsfsdf#footnote[feet]
+
+  #lorem(20)
+
+  #lorem(20)
 ]
 
 #section[
   = Second section
   
-  blabla
+  == Blob
+
+  Text
 ]
+
+#standout[
+  Questions?
+]
+
+<appendix>
 
 #slide[
-  = Another
+  = Bibliography
+
+  #place(hide[@knuth @nash51])
+
+  #bibliography("works.bib") <bib>
 ]
-
-
-#slide[
-  = Another
-
-  sadfsdf
-
-
-  #lorem(200)
-]
-
-
-

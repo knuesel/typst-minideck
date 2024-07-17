@@ -10,10 +10,21 @@
 
 * show rule for raw to split on some `pause` line and generate subslides, to allow using pause in e.g. codly and algorithmic
 
+* progress bar toggle
+
+## Waiting on typst improvements
+
+* make `alert` aware of context: use `c.inverted.alert` for standout slides
+
+* nicer formatting for bibliography
+
 # Document
 
 * how to get fira math light
 * changing slide title padding
+* bibliograpy with correct slide title and non-referenced elements
+* how to e.g. change page background, headings: make slide wrapper
+* page numbers in appendix unlike original metropolis: seems more useful that way
 
 # Readme updates:
 

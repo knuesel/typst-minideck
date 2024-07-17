@@ -38,7 +38,6 @@
     bg: bg,
     alert: alert,
     example: example,
-    footnote: color.mix((fg, 80%), (bg, 20%)),
     progress-bar: (
       fg: alert,
       bg: color.mix((color.mix(alert, black), 30%), (white, 70%)),
