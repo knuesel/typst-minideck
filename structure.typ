@@ -39,6 +39,7 @@
   color-theme: 
 */
 
+// Settings for `text` and `strong`
 #let font-themes = (
   default: (
     text: (:),
@@ -50,13 +51,21 @@
     section-subtitle: (:),
     slide-title: (:),
     slide-subtitle: (:),
+    standout: (:),
     strong: (:),
+    semi-strong: (delta: 150),
   ),
   fira-sans: (
     text: (font: "Fira Sans",),
-    raw: (font: "Fira Mono",),
+    raw: (font: "Fira Mono", weight: "medium"),
     math: (font: "Fira Math",),
+    presentation-title: (weight: "medium",),
     presentation-subtitle: (weight: "regular",),
+    section-title: (weight: "medium",),
+    section-subtitle: (weight: "regular",),
+    slide-title: (weight: "medium",),
+    standout: (weight: "medium",),
+    semi-strong: (delta: 100),
   ),
   fira-sans-light: (
     text: (font: "Fira Sans", weight: "light"),
@@ -68,7 +77,9 @@
     section-subtitle: (weight: "light",),
     slide-title: (weight: "regular",),
     slide-subtitle: (weight: "regular",),
+    standout: (weight: "regular",),
     strong: (delta: 100),
+    semi-strong: (delta: 50),
   ),
   libertinus-sans: (
     text: (font: "Libertinus Sans",),
@@ -86,8 +97,9 @@
 #import "themes/metropolis-colors.typ" as colors
 #import "paper.typ": papers
 
-#let font-theme = "libertinus-sans"
+// #let font-theme = "libertinus-sans"
 #let font-theme = "fira-sans-light"
+// #let font-theme = "fira-sans"
 #let text-size = 22pt
 
 // Resolve font theme name to value
@@ -104,6 +116,8 @@
 #let presentation-title-gap = 44pt
 #let section-title-gap = 28pt
 #let progress-bar = true
+#let footer-padding = 1.5em
+#let show-footer = false
 
 // Text smaller than normal size in lower half of title slide
 #let title-slide-text-scale = 0.9
@@ -111,7 +125,8 @@
 #let user = (
   variant: "light",
   // base-colors: (:),
-  base-colors: (bg: luma(90%)), // override some base colors from variant
+  // base-colors: (bg: luma(90%)), // override some base colors from variant
+  base-colors: (:),
   palette: (
     // normal: (block-title: (fg: blue)),
     inverted: (block-title: (fg: blue)),
@@ -158,8 +173,11 @@
 #let heading-presentation-title = heading.where(offset: 3, depth: 1)
 #let heading-presentation-subtitle = heading.where(offset: 3, depth: 2)
 
-// Set a reasonable default text size relative to level 4 and 5
-// (and compensate for scaling of text on the title slide)
+// Set a reasonable default text size relative to level 4 and 5,
+// and compensate for scaling of text on the title slide.
+// (The 1.4em and 1.2em are not put in font-theme.default because the values
+// there should be relative to this reasonable default, as they are for other
+// headings).
 #show heading-presentation-title: set text(1.4em / title-slide-text-scale)
 #show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
 
@@ -214,7 +232,7 @@
   }
   let dy = -page-size.height/2 + margin.bottom
   place(bottom, dy: dy, pad(bottom: 0.9em, it))
-  block(spacing: 0pt, height: 50%)
+  block(spacing: 1.2em, height: 50%)
 }
 
 // Layout for slide title
@@ -229,8 +247,9 @@
 }
 
 
-#set list(indent: 1em)
-#set enum(indent: 0.8em)
+#set list(indent: 1em, spacing: 1em)
+#set enum(indent: 0.8em, spacing: 1em)
+#set terms(indent: 0.6em, spacing: 1em)
 
 #set bibliography(title: none)
 #show bibliography: it => {
@@ -239,16 +258,28 @@
   it
 }
 
+#let footer = []
+
+#let footer-code(footer) = context {
+  set text(0.7em)
+  set align(bottom)
+  pad(
+    left: -page.margin.left + footer-padding,
+    right: -page.margin.right + footer-padding,
+    bottom: footer-padding,
+    {
+      place(bottom+end, counter(page).display())
+      footer
+    },
+  )
+}
 
 #set page(
   width: page-size.width,
   height: page-size.height,
-  margin: margin,
-  footer: context {
-    set text(0.8em)
-    set align(bottom+right)
-    pad(x: -margin.right+1.5em, y: 1.5em, counter(page).display())
-  },
+  // Add noise to margins to prevent them getting normalized to a single value
+  margin: (..margin, left: margin.left+1pt*1e-6, top: margin.top+1pt*1e-6),
+  footer: footer-code(footer),
 )
 
 // Colors
@@ -283,28 +314,29 @@
 #let plain-slide = slide
 
 #let slide(..args, it) = plain-slide(..args, {
-  v(4fr)
+  v(0.4fr)
   it
-  v(6fr)
+  v(0.6fr)
 })
 
 #let section(it) = {
-  set page(margin: (x: 50% - 12em), footer: none)
+  set page(margin: (x: 50% - 12em))
+  set page(footer: none) if not show-footer
   // Use top alignment for content below the middle line
   set align(top)
   plain-slide(offset: 0, it)
 }
 
 #let standout(it) = {
-  set page(fill: c.inverted.bg, footer: none)
-  set text(1.4em, c.inverted.fg, weight: "regular")
-  // set text(1.6em, c.inverted.fg) // XXX check weight
+  set page(fill: c.inverted.bg)
+  set page(footer: none) if not show-footer
+  set text(1.4em, c.inverted.fg, ..font-theme.standout)
   set align(horizon+center)
   plain-slide(offset: 0, it)
 }
 
 #let title(slide: slide, it) = {
-  set page(footer: none)
+  set page(footer: none) if not show-footer
 
   // Settings for content in the lower half:
   set align(top)
@@ -374,9 +406,10 @@
 #slide[
   = Metropolis
 
-  The *Metropolis* theme was created by Matthias Vogelgesang for Beamer. @metropolis
+  The *Metropolis* theme was created by Matthias Vogelgesang.@metropolis
 
-  This is an implementation for the minideck Typst package. @minideck@typst
+  This is a Typst@typst reimplementation for the Minideck@minideck package.
+
 
   Enable this theme with
 
@@ -388,14 +421,35 @@
   ```
 
   (On the `#let` line, list all the theme functions you want to use.)
+
+  #v(1em)
+  For other Typst implementations see Polylux@polylux and Touying@touying.
 ]
+
+#slide[
+  = Typography
+
+  The default font theme is `fira-sans-light`. To use it, make sure you have _Fira Sans_ and _Fira Math_ installed!
+
+  There is also a font theme `fira-sans` that uses regular weight for text and medium weight for titles. To use it, load the `metropolis` theme as
+
+  ```typ
+  minideck.config(
+    theme: metropolis.with(font-theme: "fira-sans"))
+  ```
+
+  #v(1em)
+  The theme provides an `alert` function for #alert[special emphasis].
+]
+
+#section[= Structure]
 
 #slide[
   = Presentation title
 
   The `#title` command creates a title slide.
   
-  Headers are defined with the usual typst syntax.
+  Headers are defined with the usual typst syntax:
 
   ```typ
   #title[
@@ -420,31 +474,28 @@
   ]
   ```
 
-  This will create a slide with the section title and a progress bar.
+  This will create a slide with the section title and a progress bar, plus optional subtitle(s) or other content.
 
+  #v(1em)
   The progress bar can be disabled by loading the theme as\
   `metropolis.with(progress-bar: false)`
   
+  #v(1em)
   By default the `#outline` function will show only the sections.
 ]
 
 #section[
   = Elements
 
-  sfadsf
-]
-
-#slide[
-  = Typography
-
   
 ]
+
 
 #slide[
   = Lists
 
   #grid(columns: (1fr,)*3, align: top)[
-    Items:
+    List:
 
     - Milk
 
@@ -452,7 +503,7 @@
 
     - Potatos
   ][
-    Enumerations:
+    Enumeration:
 
     + First,
 
@@ -460,9 +511,10 @@
 
     + Last
   ][
-    Descriptions:
+    Terms:
 
     / PowerPoint: Meeh.
+
     / Beamer: Yeeeha.
   ]
 ]
@@ -470,13 +522,21 @@
 #slide[
   = Blocks
 
+  Show titled blocks with `title-block`, `alert-block` and `example-block`.
+
+  Syntax: `#title-block(options...)[Title][Body]`.
+
+  Options: `transparent: false` shows a background, `width` sets a fixed width.
+
+  #set text(0.8em)
+
   #columns(2)[
-    #title-block(width: auto)[Default][#lorem(20)]
+    #title-block(width: auto)[Default][#lorem(8)]
     #alert-block(width: 16em)[Alert][Block content.]
     #example-block(width: 16em)[Example][Block content.]
     #colbreak()
 
-    #title-block(transparent: false)[Default][#lorem(20)]
+    #title-block(transparent: false)[Default][#lorem(8)]
     #alert-block(transparent: false, width: 12em)[Alert][Block content.]
     #example-block(transparent: false, width: 12em)[Example][Block content.]
   ]
@@ -484,8 +544,27 @@
 
 #slide[
   = Math
+
+  The default math font (Fira Math) has many weights.
   
-  $ e = lim_(n -> infinity) (1 + 1/n)^n $
+  Here are some:
+
+  #let cells =  for w in ("light", 350, "regular", "medium", "semibold", "bold", "extrabold", "black") {
+      (
+        [#w],
+        [
+          #show math.equation: set text(weight: w)
+          $ e = lim_(n -> infinity) (1 + 1/n)^n $
+        ],
+      )
+    }
+
+  #grid(columns: 4, align: horizon, column-gutter: (1em, 2em, 1em), row-gutter: 3pt,
+    ..cells
+  )
+
+  #v(1em)
+  To choose one, use `#show math.equation: set text(weight: ...)`
 ]
 
 #slide[
@@ -493,28 +572,29 @@
   #quote(attribution: [Julius Caesar])[Veni, vidi, vici]
 ]
 
-#slide[
+#{
+set page(footer: footer-code[My custom footer])
+slide[
   = Frame footer
 
-  Text
+  Choose a footer with the `footer` theme option:
 
+  ```typ
+  minideck.config(
+    theme: metropolis.with(footer: [My custom footer]))
   ```
-  raw
-  ```
 
-  Adsfsdf#footnote[feet]
+  You can also override the complete footer (with page number) using `set page(footer:...)`
 
-  #lorem(20)
-
-  #lorem(20)
+  #v(1em)
+  Note: the footer is disabled by default on special slides. To override this behavior call e.g. `#section(show-footer: true)[...]`.
 ]
+}
 
 #section[
-  = Second section
-  
-  == Second section subtitle
+  = Conclusion
 
-  Text
+  Give it a try!
 ]
 
 #standout[
@@ -526,13 +606,14 @@
 #slide[
   = Backup slides
 
+  #set par(justify: false)
   Any slide after the `<appendix>` label is ignored by the progress indicator.
-
-  The page number is still shown (contrary to the original Metropolis theme) as it seems harmless and potentially useful to me.
 ]
 
+#show link: strong.with(..font-theme.semi-strong)
+
 #slide[
-  = Bibliography
+  = References
 
   #bibliography("works.bib") <bib>
 ]

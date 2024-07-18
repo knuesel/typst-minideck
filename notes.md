@@ -12,6 +12,8 @@
 
 * progress bar toggle
 
+* check the XXX
+
 ## Waiting on typst improvements
 
 * make `alert` aware of context: use `c.inverted.alert` for standout slides
@@ -25,6 +27,7 @@
 * bibliograpy with correct slide title and non-referenced elements
 * add to bibliography:  #place(hide[@knuth @nash51])
 * changing margins
+* 1fr on normal slides: 0.4 above, 0.6 below. So use `1fr` anyway to get half of the free space. To have `1fr` give the expected 100%, enclose all the slide content after the title(s) in a block.
 
 * how to e.g. change page background, headings: make slide wrapper
 * page numbers in appendix unlike original metropolis: seems more useful that way
