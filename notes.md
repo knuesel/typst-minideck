@@ -23,6 +23,8 @@
 * how to get fira math light
 * changing slide title padding
 * bibliograpy with correct slide title and non-referenced elements
+* add to bibliography:  #place(hide[@knuth @nash51])
+
 * how to e.g. change page background, headings: make slide wrapper
 * page numbers in appendix unlike original metropolis: seems more useful that way
 * centere title in blocks

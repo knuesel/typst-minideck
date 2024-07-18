@@ -23,6 +23,8 @@
 
 */
 
+#show raw: set underline(stroke: 0pt)
+
 #import "lib.typ" as minideck
 #import "util.typ"
 #import "themes/metropolis-colors.typ" as colors
@@ -31,7 +33,7 @@
 #let (template, slide, title-slide, pause) = minideck.config()
 
 #let page-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
-#let text-size = 20pt
+#let text-size = 22pt
 #let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
 
@@ -51,7 +53,10 @@
 #show math.equation: set text(font: "Fira Math", weight: "light")
 #set strong(delta: 100)
 #set par(justify: true)
-#set align(horizon)
+
+// #show raw.where(block: true): pad.with(left: 2em)
+#show raw.where(block: true): set par(justify: false)
+#show raw.where(block: true): set block(above: 1.8em, below: 1.8em)
 
 // Show headings without numbering (but keeping numbering enabled for TOC)
 // This heading rule must come first to be processed last, since it returns
@@ -60,15 +65,16 @@
 
 #set heading(numbering: "1.")
 
-// Presentation and section title
-#show heading.where(level: 1): set text(1.1em, weight: "regular")
-// Presentation and section subtitle
-#show heading.where(level: 2, depth: 2): set text(1.1em, weight: "light")
-// Slide title
-#show heading.where(level: 2, depth: 1): set text(1.05em, weight: "regular")
-// Slide subtitle
-#show heading.where(level: 3, depth: 2): set text(1.1em, weight: "regular")
-
+/*
+  Most headings are in "regular" weight, which is bolder than the "light" text.
+  To customize the various headings, select on level and depth:
+   - level 1: presentation and section titles
+   - level 2 depth 1: slide title
+   - level 2 depth 2: presentation and section subtitle
+   - level 3 depth 2: slide subtitle
+*/
+#show heading: set text(weight: "regular")
+#show heading.where(level: 2, depth: 2): set text(weight: "light")
 
 #set list(indent: 1em)
 #set enum(indent: 0.8em)
@@ -97,15 +103,13 @@
 #set page(fill: c.normal.bg,)
 #set footnote.entry(separator: line(length: 30%, stroke: 0.5pt+c.normal.fg))
 
+// Disable outline title for consistency with bilbiography (which doesn't react
+// to heading.offset like outline does), and other slides in general which all
+// get their titles from `= ...` syntax.
 // To show individual slide titles in outline: set depth 2 and decrease
 // block spacing.
-#set outline(title: [Table of contents], depth: 1)
-#show outline: it => {
-  set block(spacing: 0.5em)
-  set heading(offset: 1)
-  show heading.where(level: 1): [#it.title#parbreak()]
-  it
-}
+#set outline(title: none, depth: 1)
+#show outline: set block(spacing: 0.5em)
 #show outline.entry: it => {
   h(1em*(it.level - 1))
   it.body
@@ -131,11 +135,13 @@
     let b = box(
       width: page-size.width,
       fill: c.inverted.bg,
-      align(horizon+left, pad(0.9em, it)),
+      align(horizon+left, pad(0.85em, it)),
     )
     place(top+center, dy: -margin.top, float: true, clearance: 0pt, b)
   }
+  v(4fr)
   it
+  v(6fr)
 })
 
 #let progress-bar-done() = context {
@@ -150,7 +156,7 @@
   line(length: i/n * 100%, stroke: c.normal.progress-bar.fg)
 }
 
-#let section(slide: slide, it) = {
+#let section(slide: slide, progress-bar: true, it) = {
   set page(margin: (x: 50% - 12em), footer: none)
   // Use top alignment for content below the middle line
   set align(top)
@@ -160,8 +166,12 @@
     place(bottom, dy: dy, it)
   }
   plain-slide(offset: 0)[
-    #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
-    #place(horizon, progress-bar-done())
+    #if progress-bar {
+      place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
+      place(horizon, progress-bar-done())
+    } else {
+      place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
+    }
     #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
     #it
   ]
@@ -174,6 +184,9 @@
   plain-slide(offset: 0, it)
 }
 
+// Layout of title and subtitle is a bit complicated as it must work
+// whether a subtitle is present or not: in both cases it must fill the page
+// up to the middle line.
 #let title(slide: slide, it) = {
   let title-gap = 48pt
   set page(footer: none)
@@ -182,9 +195,6 @@
   set heading(numbering: none, outlined: false)
   // Decrease spacing between paragraph for text in lower half
   show par: set block(spacing: 1em)
-  // Layout of title and subtitle is a bit complicated as it must work
-  // whether a subtitle is present or not: in both cases it must fill the page
-  // up to the middle line.
   show heading.where(depth: 2): it => {
     place(
       bottom,
@@ -193,7 +203,6 @@
     )
   }
   show heading.where(depth: 1): it => {
-    // set text(1.1em)
     let h2 = query(<__minideck-title-h2>)
     let dy = if h2.len() == 0 {
       -page-size.height/2 + margin.bottom - title-gap
@@ -255,25 +264,83 @@
   Jeremie Knuesel
 
   #datetime.today().display("[month repr:long] [day], [year]")
-
-  #v(0.5em)
-  #text(0.8em)[BFH-TI]
 ]
 
 #slide[
+  = Table of contents
+  
   #outline()
 ]
 
 #section[
   = Introduction
-
-  == blob
 ]
 
 #slide[
   = Metropolis
 
-  Blob
+  The *Metropolis* theme was created by Matthias Vogelgesang for Beamer. @metropolis
+
+  This is an implementation for the minideck Typst package. @minideck@typst
+
+  Enable this theme with
+
+  ```typ
+  #import "@preview/minideck:0.2.1"
+  #let (template, slide, title, section) = minideck.config(
+    theme: minideck.themes.metropolis)
+  #show: template
+  ```
+
+  (On the `#let` line, list all the theme functions you want to use.)
+]
+
+#slide[
+  = Presentation title
+
+  The `#title` command creates a title slide.
+  
+  Headers are defined with the usual typst syntax.
+
+  ```typ
+  #title[
+    = Presentation title
+    == Subtitle
+
+    Author
+
+    Date
+  ]
+  ```
+]
+
+#slide[
+  = Sections
+
+  Use `#section` to separate groups of slides:
+
+  ```typst
+  #section[
+    = Section title
+  ]
+  ```
+
+  This will create a slide with the section title and a progress bar.
+
+  The progress bar can be disabled by loading the theme as\
+  `metropolis.with(progress-bar: false)`
+  
+  By default the `#outline` function will show only the sections.
+]
+
+#section[
+  = Elements
+]
+
+#slide[
+  = Typography
+
+  
 ]
 
 #slide[
@@ -369,8 +436,6 @@
 
 #slide[
   = Bibliography
-
-  #place(hide[@knuth @nash51])
 
   #bibliography("works.bib") <bib>
 ]
