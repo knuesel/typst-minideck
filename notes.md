@@ -25,6 +25,7 @@
 * bibliograpy with correct slide title and non-referenced elements
 * how to e.g. change page background, headings: make slide wrapper
 * page numbers in appendix unlike original metropolis: seems more useful that way
+* centere title in blocks
 
 # Readme updates:
 

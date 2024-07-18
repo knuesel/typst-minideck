@@ -37,9 +37,10 @@
 
 #let user = (
   variant: "light",
+  // base-colors: (:),
   base-colors: (bg: luma(90%)), // override some base colors from variant
   palette: (
-    normal: (block-title: (fg: blue)),
+    // normal: (block-title: (fg: blue)),
     inverted: (block-title: (fg: blue)),
   ),
 )
@@ -111,6 +112,15 @@
   parbreak()
 }
 
+#set quote(block: true)
+#show quote.where(block: false): set text(style: "italic")
+#show quote.where(block: true): it => {
+  block(width: 100%, above: 2.4em, below: 1.8em, pad(x: 1em, {
+    emph(it.body)
+    v(0.9em, weak: true)
+    align(end, [— #it.attribution])
+  }))
+}
 
 
 #let plain-slide = slide
@@ -142,6 +152,7 @@
 
 #let section(slide: slide, it) = {
   set page(margin: (x: 50% - 12em), footer: none)
+  // Use top alignment for content below the middle line
   set align(top)
   let title-gap = 28pt
   show heading.where(depth: 1): it => {
@@ -166,9 +177,14 @@
 #let title(slide: slide, it) = {
   let title-gap = 48pt
   set page(footer: none)
-  set align(top) // content below the middle line should be top-aligned
+  // Use top alignment for content below the middle line
+  set align(top)
   set heading(numbering: none, outlined: false)
+  // Decrease spacing between paragraph for text in lower half
   show par: set block(spacing: 1em)
+  // Layout of title and subtitle is a bit complicated as it must work
+  // whether a subtitle is present or not: in both cases it must fill the page
+  // up to the middle line.
   show heading.where(depth: 2): it => {
     place(
       bottom,
@@ -196,13 +212,47 @@
 
 #let alert = text.with(c.normal.alert)
 
+#let title-block(title-colors: c.normal.block-title, transparent: true, width: auto, title, it) = {
+  let b1 = block.with(
+    below: 0pt,
+    inset: 0.4em,
+    fill: if transparent { none } else { title-colors.bg},
+    text(title-colors.fg, strong(title)),
+  )
+  let b2 = block.with(
+    above: 0pt,
+    inset: 0.4em,
+    fill: if transparent { none } else { c.normal.block-body.bg },
+    text(c.normal.block-body.fg, it),
+  )
+  block({
+    if width == auto {
+      // Calculate width as the largest between the two blocks but at most 100%.
+      // This computation can be expensive. Note that even in case of
+      // transparent background, having the same width for the title as the content can matter e.g. when centering the title. 
+      layout(size => {
+        let w1 = measure(b1()).width
+        let w2 = measure(b2()).width
+        let w = calc.min(size.width, calc.max(w1, w2))
+        b1(width: w)
+        b2(width: w)
+      })
+    } else {
+      b1(width: width)
+      b2(width: width)
+    }
+  })
+}
+
+#let example-block = title-block.with(title-colors: c.normal.block-title-example)
+#let alert-block = title-block.with(title-colors: c.normal.block-title-alert)
+
+
 #title[
   = Metropolis
   == An implementation for minideck
 
   Jeremie Knuesel
-
-  Matthias Vogelgesang
 
   #datetime.today().display("[month repr:long] [day], [year]")
 
@@ -221,7 +271,6 @@
 ]
 
 #slide[
-  #set align(top)
   = Metropolis
 
   Blob
@@ -255,13 +304,33 @@
 ]
 
 #slide[
+  = Blocks
+
+  #columns(2)[
+    #title-block(width: auto)[Default][#lorem(20)]
+    #alert-block(width: 16em)[Alert][Block content.]
+    #example-block(width: 16em)[Example][Block content.]
+    #colbreak()
+
+    #title-block(transparent: false)[Default][#lorem(20)]
+    #alert-block(transparent: false, width: 12em)[Alert][Block content.]
+    #example-block(transparent: false, width: 12em)[Example][Block content.]
+  ]
+]
+
+#slide[
   = Math
   
   $ e = lim_(n -> infinity) (1 + 1/n)^n $
 ]
 
 #slide[
-  = Hello
+  = Quotes
+  #quote(attribution: [Julius Caesar])[Veni, vidi, vici]
+]
+
+#slide[
+  = Frame footer
 
   Text
 
@@ -289,6 +358,14 @@
 ]
 
 <appendix>
+
+#slide[
+  = Backup slides
+
+  Any slide after the `<appendix>` label is ignored by the progress indicator.
+
+  The page number is still shown (contrary to the original Metropolis theme) as it seems harmless and potentially useful to me.
+]
 
 #slide[
   = Bibliography

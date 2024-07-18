@@ -50,7 +50,7 @@
       fg: fg,
       bg: color.mix(block-title-bg, bg),
     ),
-    block-title-alerted: (
+    block-title-alert: (
       fg: alert,
       bg: block-title-bg,
     ),
