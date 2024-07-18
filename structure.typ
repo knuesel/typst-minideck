@@ -181,7 +181,9 @@
   place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
   let h2 = query(<__minideck-title-h2>)
   let dy = if h2.len() == 0 {
-    -page-size.height/2 + margin.bottom
+    // The bottom padding is for the case with h2
+    // -> add a small offset here to increase spacing when there's no h2
+    -page-size.height/2 + margin.bottom - 0.3em
   } else {
     let y2 = h2.first().location().position().y
     y2 - (page-size.height - margin.bottom)
@@ -260,7 +262,7 @@
 // To show individual slide titles in outline: set depth 2, decrease
 // block spacing, and make sure outline and bibliography have outlined: false
 #set outline(title: none, depth: 1)
-#show outline: set block(spacing: 0.5em)
+#show outline: set block(spacing: 0.8em)
 #show outline.entry: it => {
   h(1em*(it.level - 1))
   it.body
@@ -353,8 +355,6 @@
 #title[
   = Metropolis
   == An implementation for minideck
-
-  Matthias Vogelgesang
 
   Jeremie Knuesel
 
