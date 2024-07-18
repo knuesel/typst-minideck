@@ -108,3 +108,19 @@
   }
   colors
 }
+
+// Current progress in the presentation as an array
+// `(current-slide, total-slides)`, counting all subslides as a single slide
+// and ignoring slides after the first <appendix> label.
+// Must be called with appropriate context available.
+#let progress() = {
+  let i = counter(page).get().first()
+  let appendix = query(<appendix>)
+  let n = if appendix.len() > 0 {
+    // If an appendix label was found, count slides only till there
+    counter(page).at(appendix.first().location()).first()
+  } else {
+    counter(page).final().first()
+  }
+  return (i, n)
+}

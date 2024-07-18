@@ -44,8 +44,8 @@
     text: (:),
     raw: (:), 
     math: (:),
-    presentation-title: (size: 1.4em), // relative to level 4 default
-    presentation-subtitle: (size: 1.2em), // relative to level 5 default
+    presentation-title: (:),
+    presentation-subtitle: (:),
     section-title: (:),
     section-subtitle: (:),
     slide-title: (:),
@@ -101,6 +101,13 @@
 #let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
 
+#let presentation-title-gap = 48pt
+#let section-title-gap = 28pt
+#let progress-bar = true
+
+// Text smaller than normal size in lower half of title slide
+#let title-slide-text-scale = 0.9
+
 #let user = (
   variant: "light",
   // base-colors: (:),
@@ -144,14 +151,80 @@
   The presentation title uses offset 3 so that `outline` with depth 1 or 2 can
   pick up the appropriate headings.
 */
-#show heading.where(offset: 0, depth: 1): set text(..font-theme.section-title)
-#show heading.where(offset: 0, depth: 2): set text(..font-theme.section-subtitle)
-#show heading.where(offset: 1, depth: 1): set text(..font-theme.slide-title)
-#show heading.where(offset: 1, depth: 2): set text(..font-theme.slide-subtitle)
-#show heading.where(offset: 3, depth: 1): set text(..font-theme.presentation-title)
-#show heading.where(offset: 3, depth: 2): set text(..font-theme.presentation-subtitle)
+#let heading-section-title = heading.where(offset: 0, depth: 1)
+#let heading-section-subtitle = heading.where(offset: 0, depth: 2)
+#let heading-slide-title = heading.where(offset: 1, depth: 1)
+#let heading-slide-subtitle = heading.where(offset: 1, depth: 2)
+#let heading-presentation-title = heading.where(offset: 3, depth: 1)
+#let heading-presentation-subtitle = heading.where(offset: 3, depth: 2)
 
-#show heading.where(offset: 0, depth: 2): set heading(outlined: false)
+// Set a reasonable default text size relative to level 4 and 5
+// (and compensate for scaling of text on the title slide)
+#show heading-presentation-title: set text(1.4em / title-slide-text-scale)
+#show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
+
+// Apply title text settings
+#show heading-section-title: set text(..font-theme.section-title)
+#show heading-section-subtitle: set text(..font-theme.section-subtitle)
+#show heading-slide-title: set text(..font-theme.slide-title)
+#show heading-slide-subtitle: set text(..font-theme.slide-subtitle)
+#show heading-presentation-title: set text(..font-theme.presentation-title)
+#show heading-presentation-subtitle: set text(..font-theme.presentation-subtitle)
+
+// Exclude section subtitles from outline
+// (in case the user sets outline(depth: 2))
+#show heading-section-subtitle: set heading(outlined: false)
+
+// Layout for presentation title. A bit complicated as it must work whether a
+// subtitle is present or not.
+#show heading-presentation-title: it => {
+  let h2 = query(<__minideck-title-h2>)
+  let dy = if h2.len() == 0 {
+    -page-size.height/2 + margin.bottom - presentation-title-gap
+  } else {
+    let y2 = h2.first().location().position().y
+    y2 - (page-size.height - margin.bottom) - 1.2em
+  }
+  place(bottom, dy: dy, it)
+  place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
+  block(spacing: 0pt, height: 50% + presentation-title-gap - 1.2em)
+}
+
+// Layout for presentation subtitle
+#show heading-presentation-subtitle: it => {
+  place(
+    bottom,
+    dy: -(page-size.height/2 - margin.bottom) - presentation-title-gap,
+    [#metadata(none)<__minideck-title-h2> #it],
+  )
+}
+
+// Layout for section title
+#show heading-section-title: it => {
+  let dy = -page-size.height/2 + margin.bottom - section-title-gap
+  place(bottom, dy: dy, it)
+  if progress-bar {
+    place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
+    context {
+      let (i, n) = util.progress()
+      place(horizon, line(length: i/n * 100%, stroke: c.normal.progress-bar.fg))
+    }
+  } else {
+    place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
+  }
+  block(spacing: 0pt, height: 50% + section-title-gap - 1.2em)
+}
+
+// Layout for slide title
+#show heading-slide-title: it => {
+  set text(c.inverted.fg)
+  let b = box(
+    width: page-size.width,
+    fill: c.inverted.bg,
+    align(horizon+left, pad(0.85em, it)),
+  )
+  place(top+center, dy: -margin.top, float: true, clearance: 0pt, b)
+}
 
 
 #set list(indent: 1em)
@@ -208,93 +281,35 @@
 #let plain-slide = slide
 
 #let slide(..args, it) = plain-slide(..args, {
-  show heading.where(level: 2): it => {
-    set text(c.inverted.fg)
-    let b = box(
-      width: page-size.width,
-      fill: c.inverted.bg,
-      align(horizon+left, pad(0.85em, it)),
-    )
-    place(top+center, dy: -margin.top, float: true, clearance: 0pt, b)
-  }
   v(4fr)
   it
   v(6fr)
 })
 
-#let progress-bar-done() = context {
-  let i = counter(page).get().first()
-  let appendix = query(<appendix>)
-  let n = if appendix.len() > 0 {
-    // If an appendix label was found, count slides only till there
-    counter(page).at(appendix.first().location()).first()
-  } else {
-    counter(page).final().first()
-  }
-  line(length: i/n * 100%, stroke: c.normal.progress-bar.fg)
-}
-
-#let section(slide: slide, progress-bar: true, it) = {
+#let section(it) = {
   set page(margin: (x: 50% - 12em), footer: none)
   // Use top alignment for content below the middle line
   set align(top)
-  let title-gap = 28pt
-  show heading.where(depth: 1): it => {
-    let dy = -page-size.height/2 + margin.bottom - title-gap
-    place(bottom, dy: dy, it)
-  }
-  plain-slide(offset: 0)[
-    #if progress-bar {
-      place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
-      place(horizon, progress-bar-done())
-    } else {
-      place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
-    }
-    #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
-    #it
-  ]
+  plain-slide(offset: 0, it)
 }
 
-#let standout(slide: slide, it) = {
+#let standout(it) = {
   set page(fill: c.inverted.bg, footer: none)
-  set text(1.6em, c.inverted.fg, weight: "regular")
+  set text(1.4em, c.inverted.fg, weight: "regular")
+  // set text(1.6em, c.inverted.fg) // XXX check weight
   set align(horizon+center)
   plain-slide(offset: 0, it)
 }
 
-// Layout of title and subtitle is a bit complicated as it must work
-// whether a subtitle is present or not: in both cases it must fill the page
-// up to the middle line.
 #let title(slide: slide, it) = {
-  let title-gap = 48pt
   set page(footer: none)
-  // Use top alignment for content below the middle line
+
+  // Settings for content in the lower half:
   set align(top)
-  set heading(numbering: none, outlined: false)
-  // Decrease spacing between paragraph for text in lower half
   show par: set block(spacing: 1em)
-  show heading.where(depth: 2): it => {
-    place(
-      bottom,
-      dy: -(page-size.height/2 - margin.bottom) - title-gap,
-      [#metadata(none)<__minideck-title-h2> #it],
-    )
-  }
-  show heading.where(depth: 1): it => {
-    let h2 = query(<__minideck-title-h2>)
-    let dy = if h2.len() == 0 {
-      -page-size.height/2 + margin.bottom - title-gap
-    } else {
-      let y2 = h2.first().location().position().y
-      y2 - (page-size.height - margin.bottom) - 1.2em
-    }
-    place(bottom, dy: dy, it)
-  }
-  plain-slide(offset: 3)[
-    #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
-    #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
-    #it
-  ]
+  set text(0.9em)
+
+  plain-slide(offset: 3, it)
 }
 
 #let alert = text.with(c.normal.alert)
@@ -413,6 +428,8 @@
 
 #section[
   = Elements
+
+  sfadsf
 ]
 
 #slide[
