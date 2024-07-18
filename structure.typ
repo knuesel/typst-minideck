@@ -101,7 +101,7 @@
 #let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
 
-#let presentation-title-gap = 48pt
+#let presentation-title-gap = 44pt
 #let section-title-gap = 28pt
 #let progress-bar = true
 
@@ -178,31 +178,29 @@
 // Layout for presentation title. A bit complicated as it must work whether a
 // subtitle is present or not.
 #show heading-presentation-title: it => {
+  place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
   let h2 = query(<__minideck-title-h2>)
   let dy = if h2.len() == 0 {
-    -page-size.height/2 + margin.bottom - presentation-title-gap
+    -page-size.height/2 + margin.bottom
   } else {
     let y2 = h2.first().location().position().y
-    y2 - (page-size.height - margin.bottom) - 1.2em
+    y2 - (page-size.height - margin.bottom)
   }
-  place(bottom, dy: dy, it)
-  place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
-  block(spacing: 0pt, height: 50% + presentation-title-gap - 1.2em)
+  place(bottom, dy: dy, pad(bottom: 1.08em, it))
+  block(spacing: 1.7em, height: 50%)
 }
 
 // Layout for presentation subtitle
 #show heading-presentation-subtitle: it => {
   place(
     bottom,
-    dy: -(page-size.height/2 - margin.bottom) - presentation-title-gap,
-    [#metadata(none)<__minideck-title-h2> #it],
+    dy: -(page-size.height/2 - margin.bottom),
+    [#metadata(none)<__minideck-title-h2> #pad(bottom: 1.6em, it)],
   )
 }
 
 // Layout for section title
 #show heading-section-title: it => {
-  let dy = -page-size.height/2 + margin.bottom - section-title-gap
-  place(bottom, dy: dy, it)
   if progress-bar {
     place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
     context {
@@ -212,7 +210,9 @@
   } else {
     place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
   }
-  block(spacing: 0pt, height: 50% + section-title-gap - 1.2em)
+  let dy = -page-size.height/2 + margin.bottom
+  place(bottom, dy: dy, pad(bottom: 0.9em, it))
+  block(spacing: 0pt, height: 50%)
 }
 
 // Layout for slide title
@@ -221,7 +221,7 @@
   let b = box(
     width: page-size.width,
     fill: c.inverted.bg,
-    align(horizon+left, pad(0.85em, it)),
+    align(horizon+start, pad(0.85em, it)),
   )
   place(top+center, dy: -margin.top, float: true, clearance: 0pt, b)
 }
@@ -306,8 +306,8 @@
 
   // Settings for content in the lower half:
   set align(top)
-  show par: set block(spacing: 1em)
-  set text(0.9em)
+  show par: set block(below: 1em)
+  set text(title-slide-text-scale*1em)
 
   plain-slide(offset: 3, it)
 }
@@ -353,6 +353,8 @@
 #title[
   = Metropolis
   == An implementation for minideck
+
+  Matthias Vogelgesang
 
   Jeremie Knuesel
 
