@@ -23,6 +23,7 @@
 
 */
 
+// Document-specific settings
 #show raw: set underline(stroke: 0pt)
 
 /*
@@ -38,61 +39,47 @@
   color-theme: 
 */
 
-#let weight-schemes = (
-  regular: (
-    text: "regular",
-    raw: "regular",
-    math: "regular",
-    title: "bold",
-    subtitle: "regular",
-    slide-title: "bold",
-    slide-subtitle: "bold",
-    strong-delta: 300,
-  ),
-  light: (
-    text: "light",
-    raw: "regular",
-    math: "light",
-    title: "regular",
-    subtitle: "light",
-    slide-title: "regular",
-    slide-subtitle: "regular",
-    strong-delta: 100,
-  ),
-)
-
-#let size-schemes = (
-  default: (
-    text: 1em,
-    raw: 1em,
-    math: 1em,
-  ),
-)
-
 #let font-themes = (
   default: (
-    text: "Linux Libertine",
-    raw: "DejaVu Sans Mono",
-    math: "New Computer Modern Math",
-    default-weight-scheme: "regular",
-    default-text-size: 22pt,
+    text: (:),
+    raw: (:), 
+    math: (:),
+    presentation-title: (size: 1.4em), // relative to level 4 default
+    presentation-subtitle: (size: 1.2em), // relative to level 5 default
+    section-title: (:),
+    section-subtitle: (:),
+    slide-title: (:),
+    slide-subtitle: (:),
+    strong: (:),
   ),
   fira-sans: (
-    text: "Fira Sans",
-    raw: "Fira Mono",
-    math: "Fira Math",
-    default-weight-scheme: "light", // we want bolder raw for regular weight...
-    default-text-size: 22pt, // we also want default raw and math size...
+    text: (font: "Fira Sans",),
+    raw: (font: "Fira Mono",),
+    math: (font: "Fira Math",),
+    presentation-subtitle: (weight: "regular",),
+  ),
+  fira-sans-light: (
+    text: (font: "Fira Sans", weight: "light"),
+    raw: (font: "Fira Mono", weight: "regular"),
+    math: (font: "Fira Math", weight: "light"),
+    presentation-title: (weight: "regular",),
+    presentation-subtitle: (weight: "light",),
+    section-title: (weight: "regular",),
+    section-subtitle: (weight: "light",),
+    slide-title: (weight: "regular",),
+    slide-subtitle: (weight: "regular",),
+    strong: (delta: 100),
   ),
   libertinus-sans: (
-    text: "Libertinus Sans",
-    raw: "DejaVu Sans Mono",
-    math: "New Computer Modern Math",
-    default-weight-scheme: "regular",
-    default-text-size: 22pt,
+    text: (font: "Libertinus Sans",),
+    raw: (font: "DejaVu Sans Mono",),
+    math: (font: "New Computer Modern Math",),
   ),
 )
 
+// Get field from dict if x is a string, or return x if not a string
+// (this function should not be used when the value can be a string)
+#let field-or-value(dict, x) = if type(x) == str { dict.at(x) } else { x }
 
 #import "lib.typ" as minideck
 #import "util.typ"
@@ -100,19 +87,13 @@
 #import "paper.typ": papers
 
 #let font-theme = "libertinus-sans"
-#(font-theme = "fira-sans")
-#let weight-scheme = auto
+#let font-theme = "fira-sans-light"
 #let text-size = 22pt
 
-#if type(font-theme) == str {
-  font-theme = font-themes.at(font-theme)
-}
-#let weight-scheme = util.coalesce(weight-scheme, font-theme.default-weight-scheme)
-#if type(weight-scheme) == str {
-  weight-scheme = weight-schemes.at(weight-scheme)
-}
-
-#let text-size = util.coalesce(text-size, font-theme.default-text-size)
+// Resolve font theme name to value
+#let font-theme = field-or-value(font-themes, font-theme)
+// Fill in default values for missing fields
+#let font-theme = util.merge-dicts(font-themes.default, font-theme)
 
 #let (template, slide, title-slide, pause) = minideck.config()
 
@@ -132,15 +113,17 @@
 
 #let c = colors.palette(user.variant, user.base-colors, user.palette)
 
-#set text(font: font-theme.text, weight: weight-scheme.text, size: text-size)
-#show math.equation: set text(font: font-theme.math, weight: weight-scheme.math)
-#set strong(delta: weight-scheme.strong-delta)
+#set text(text-size, ..font-theme.text)
+#show math.equation: set text(..font-theme.math)
+#set strong(..font-theme.strong)
 #set par(justify: true)
 
-#show raw.where(block: true): pad.with(left: 1em)
-#show raw.where(block: true): set par(justify: false)
-#show raw.where(block: true): set block(above: 1.8em, below: 1.8em)
-#show raw: set text(font: font-theme.raw, weight: weight-scheme.raw)
+#show raw: set text(..font-theme.raw)
+#show raw.where(block: true): it => {
+  set par(justify: false)
+  set block(above: 1.8em, below: 1.8em)
+  pad(left: 1em, it)
+}
 
 // Show headings without numbering (but keeping numbering enabled for TOC)
 // This heading rule must come first to be processed last, since it returns
@@ -150,17 +133,25 @@
 #set heading(numbering: "1.")
 
 /*
-  Most headings are in "regular" weight, which is bolder than the "light" text.
-  To customize the various headings, select on level and depth:
-   - level 1: presentation and section titles
-   - level 2 depth 1: slide title
-   - level 2 depth 2: presentation and section subtitle
-   - level 3 depth 2: slide subtitle
-*/
-#show heading: set text(weight: "regular")
-#show heading.where(level: 2, depth: 2): set text(weight: "light")
+  To customize the various headings, select on offset/depth/level:
+   - offset 0 depth 1 level 1: section titles
+   - offset 0 depth 2 level 2: section subtitle
+   - offset 1 depth 1 level 2: slide title
+   - offset 1 depth 2 level 3: slide subtitle
+   - offset 3 depth 1 level 4: presentation titles
+   - offset 3 depth 2 level 5: presentation subtitle
 
-// #show heading.where(level: 2, depth: 2): set text(weight: "regular")
+  The presentation title uses offset 3 so that `outline` with depth 1 or 2 can
+  pick up the appropriate headings.
+*/
+#show heading.where(offset: 0, depth: 1): set text(..font-theme.section-title)
+#show heading.where(offset: 0, depth: 2): set text(..font-theme.section-subtitle)
+#show heading.where(offset: 1, depth: 1): set text(..font-theme.slide-title)
+#show heading.where(offset: 1, depth: 2): set text(..font-theme.slide-subtitle)
+#show heading.where(offset: 3, depth: 1): set text(..font-theme.presentation-title)
+#show heading.where(offset: 3, depth: 2): set text(..font-theme.presentation-subtitle)
+
+#show heading.where(offset: 0, depth: 2): set heading(outlined: false)
 
 
 #set list(indent: 1em)
@@ -193,8 +184,8 @@
 // Disable outline title for consistency with bilbiography (which doesn't react
 // to heading.offset like outline does), and other slides in general which all
 // get their titles from `= ...` syntax.
-// To show individual slide titles in outline: set depth 2 and decrease
-// block spacing.
+// To show individual slide titles in outline: set depth 2, decrease
+// block spacing, and make sure outline and bibliography have outlined: false
 #set outline(title: none, depth: 1)
 #show outline: set block(spacing: 0.5em)
 #show outline.entry: it => {
@@ -267,7 +258,7 @@
 #let standout(slide: slide, it) = {
   set page(fill: c.inverted.bg, footer: none)
   set text(1.6em, c.inverted.fg, weight: "regular")
-  set align(center)
+  set align(horizon+center)
   plain-slide(offset: 0, it)
 }
 
@@ -299,7 +290,7 @@
     }
     place(bottom, dy: dy, it)
   }
-  plain-slide(offset: 0)[
+  plain-slide(offset: 3)[
     #place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
     #block(spacing: 0pt, height: 50% + title-gap - 1.2em)
     #it
@@ -502,7 +493,7 @@
 #section[
   = Second section
   
-  == Blob
+  == Second section subtitle
 
   Text
 ]
