@@ -46,7 +46,7 @@
 
 // Return the first positional argument after `on` that is different from `on`,
 // and returns `on` if none is different.
-#let coalesce(on: none, ..args) = {
+#let coalesce(on: auto, ..args) = {
   for x in args.pos() {
     if x != on { return x }
   }
@@ -82,7 +82,7 @@
   let default-val = calc.min(page-size.width, page-size.height) * 2.5/21
   let user = standard-margin-fields(margins)
   let dflt = standard-margin-fields(default)
-  let merged = map-dict(user, (k,v) => coalesce(on: auto, v, dflt.at(k), default-val))
+  let merged = map-dict(user, (k,v) => coalesce(v, dflt.at(k), default-val))
   (
     left:   length-to-abs(merged.left,   page-size.width,  text-size),
     right:  length-to-abs(merged.right,  page-size.width,  text-size),

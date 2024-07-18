@@ -25,15 +25,98 @@
 
 #show raw: set underline(stroke: 0pt)
 
+/*
+  font theme:
+  font, math font, font weight, math font weight, heading weights, strong delta
+
+
+  metropolis.with(
+    font-theme: "fira-sans",
+    weight: "light",
+  )
+
+  color-theme: 
+*/
+
+#let weight-schemes = (
+  regular: (
+    text: "regular",
+    raw: "regular",
+    math: "regular",
+    title: "bold",
+    subtitle: "regular",
+    slide-title: "bold",
+    slide-subtitle: "bold",
+    strong-delta: 300,
+  ),
+  light: (
+    text: "light",
+    raw: "regular",
+    math: "light",
+    title: "regular",
+    subtitle: "light",
+    slide-title: "regular",
+    slide-subtitle: "regular",
+    strong-delta: 100,
+  ),
+)
+
+#let size-schemes = (
+  default: (
+    text: 1em,
+    raw: 1em,
+    math: 1em,
+  ),
+)
+
+#let font-themes = (
+  default: (
+    text: "Linux Libertine",
+    raw: "DejaVu Sans Mono",
+    math: "New Computer Modern Math",
+    default-weight-scheme: "regular",
+    default-text-size: 22pt,
+  ),
+  fira-sans: (
+    text: "Fira Sans",
+    raw: "Fira Mono",
+    math: "Fira Math",
+    default-weight-scheme: "light", // we want bolder raw for regular weight...
+    default-text-size: 22pt, // we also want default raw and math size...
+  ),
+  libertinus-sans: (
+    text: "Libertinus Sans",
+    raw: "DejaVu Sans Mono",
+    math: "New Computer Modern Math",
+    default-weight-scheme: "regular",
+    default-text-size: 22pt,
+  ),
+)
+
+
 #import "lib.typ" as minideck
 #import "util.typ"
 #import "themes/metropolis-colors.typ" as colors
 #import "paper.typ": papers
 
+#let font-theme = "libertinus-sans"
+#(font-theme = "fira-sans")
+#let weight-scheme = auto
+#let text-size = 22pt
+
+#if type(font-theme) == str {
+  font-theme = font-themes.at(font-theme)
+}
+#let weight-scheme = util.coalesce(weight-scheme, font-theme.default-weight-scheme)
+#if type(weight-scheme) == str {
+  weight-scheme = weight-schemes.at(weight-scheme)
+}
+
+#let text-size = util.coalesce(text-size, font-theme.default-text-size)
+
 #let (template, slide, title-slide, pause) = minideck.config()
 
 #let page-size = (width: papers.presentation-4-3.width*1mm, height: papers.presentation-4-3.height*1mm)
-#let text-size = 22pt
 #let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
 
@@ -49,14 +132,15 @@
 
 #let c = colors.palette(user.variant, user.base-colors, user.palette)
 
-#set text(font: "Fira Sans", weight: "light", size: text-size)
-#show math.equation: set text(font: "Fira Math", weight: "light")
-#set strong(delta: 100)
+#set text(font: font-theme.text, weight: weight-scheme.text, size: text-size)
+#show math.equation: set text(font: font-theme.math, weight: weight-scheme.math)
+#set strong(delta: weight-scheme.strong-delta)
 #set par(justify: true)
 
-// #show raw.where(block: true): pad.with(left: 2em)
+#show raw.where(block: true): pad.with(left: 1em)
 #show raw.where(block: true): set par(justify: false)
 #show raw.where(block: true): set block(above: 1.8em, below: 1.8em)
+#show raw: set text(font: font-theme.raw, weight: weight-scheme.raw)
 
 // Show headings without numbering (but keeping numbering enabled for TOC)
 // This heading rule must come first to be processed last, since it returns
@@ -75,6 +159,9 @@
 */
 #show heading: set text(weight: "regular")
 #show heading.where(level: 2, depth: 2): set text(weight: "light")
+
+// #show heading.where(level: 2, depth: 2): set text(weight: "regular")
+
 
 #set list(indent: 1em)
 #set enum(indent: 0.8em)
