@@ -106,6 +106,16 @@
 #let font-theme = field-or-value(font-themes, font-theme)
 // Fill in default values for missing fields
 #let font-theme = util.merge-dicts(font-themes.default, font-theme)
+// Convert all length fields of d to absolute lengths
+#let map-to-abs(d, text-size) = util.map-dict(d, (_, v) => {
+  if type(v) == length {
+    util.simple-length-to-abs(v, text-size)
+  } else {
+    v
+  }
+})
+// Convert font theme em sizes to absolute
+#let font-theme = util.map-dict(font-theme, (_, v) => map-to-abs(v, text-size))
 
 #let (template, slide, title-slide, pause) = minideck.config()
 
@@ -113,8 +123,6 @@
 #let user-margin = 3em
 #let margin = util.absolute-margins(user-margin, page-size, text-size)
 
-#let presentation-title-gap = 44pt
-#let section-title-gap = 28pt
 #let progress-bar = true
 #let footer-padding = 1.5em
 #let show-footer = false
@@ -125,8 +133,8 @@
 #let user = (
   variant: "light",
   // base-colors: (:),
-  // base-colors: (bg: luma(90%)), // override some base colors from variant
-  base-colors: (:),
+  base-colors: (bg: luma(90%)), // override some base colors from variant
+  // base-colors: (:),
   palette: (
     // normal: (block-title: (fg: blue)),
     inverted: (block-title: (fg: blue)),

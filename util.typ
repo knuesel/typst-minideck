@@ -55,7 +55,8 @@
 
 /*
   Return a dict with fields `left`, `right`, `top`, `bottom`.
-  `margins` can take the same values as typst's page.margin.
+  `margins` can take the same values as typst's page.margin, except for `inside`
+  and `outside` which are ignored.
   Fields that can't be determined from `margins` are set to `auto`.
 */
 #let standard-margin-fields(margins) = {
@@ -66,8 +67,8 @@
     panic("Unsupported margins type " + repr(type(margins)) + " (value " + repr(margins) + ")")
   }
   (
-    left:   dict-at-any(margins, ("left",   "x", "inside", "outside", "rest"), default: auto),
-    right:  dict-at-any(margins, ("right",  "x", "inside", "outside", "rest"), default: auto),
+    left:   dict-at-any(margins, ("left",   "x", "rest"), default: auto),
+    right:  dict-at-any(margins, ("right",  "x", "rest"), default: auto),
     top:    dict-at-any(margins, ("top",    "y", "rest"), default: auto),
     bottom: dict-at-any(margins, ("bottom", "y", "rest"), default: auto),
   )
