@@ -39,19 +39,24 @@
   color-theme: 
 */
 
-// Settings for `text` and `strong`
+// Font themes.
+// Note that text color is typically set by layout rules using the color theme.
 #let font-themes = (
   default: (
+    // Settings for text function:
     text: (:),
     raw: (:), 
     math: (:),
-    presentation-title: (:),
-    presentation-subtitle: (:),
-    section-title: (:),
-    section-subtitle: (:),
-    slide-title: (:),
-    slide-subtitle: (:),
     standout: (:),
+    h:  (weight: "bold"), // all headings
+    h1: (:), // presentation title
+    h2: (:), // presentation subtitle
+    h3: (:), // section title
+    h4: (:), // section subtitle
+    h5: (:), // slide title
+    h6: (:), // slide subtitle
+    h7: (weight: "medium"), // block title
+    // Settings for strong function:
     strong: (:),
     semi-strong: (delta: 150),
   ),
@@ -59,25 +64,21 @@
     text: (font: "Fira Sans",),
     raw: (font: "Fira Mono", weight: "medium"),
     math: (font: "Fira Math",),
-    presentation-title: (weight: "medium",),
-    presentation-subtitle: (weight: "regular",),
-    section-title: (weight: "medium",),
-    section-subtitle: (weight: "regular",),
-    slide-title: (weight: "medium",),
     standout: (weight: "medium",),
+    h:  (weight: "medium"),
+    h2: (weight: "regular",),
+    h4: (weight: "regular",),
     semi-strong: (delta: 100),
   ),
   fira-sans-light: (
     text: (font: "Fira Sans", weight: "light"),
     raw: (font: "Fira Mono", weight: "regular"),
     math: (font: "Fira Math", weight: "light"),
-    presentation-title: (weight: "regular",),
-    presentation-subtitle: (weight: "light",),
-    section-title: (weight: "regular",),
-    section-subtitle: (weight: "light",),
-    slide-title: (weight: "regular",),
-    slide-subtitle: (weight: "regular",),
     standout: (weight: "regular",),
+    h:  (weight: "regular",),
+    h2: (weight: "light",),
+    h4: (weight: "light",),
+    h7:  (weight: "regular",),
     strong: (delta: 100),
     semi-strong: (delta: 50),
   ),
@@ -106,6 +107,10 @@
 #let font-theme = field-or-value(font-themes, font-theme)
 // Fill in default values for missing fields
 #let font-theme = util.merge-dicts(font-themes.default, font-theme)
+// Merge hX fields with default h fiel
+#let font-theme = util.map-dict(font-theme, (k, v) => {
+  if k.contains(regex("^h[0-9]")) { font-theme.h+v } else { v }
+})
 // Convert all length fields of d to absolute lengths
 #let map-to-abs(d, text-size) = util.map-dict(d, (_, v) => {
   if type(v) == length {
@@ -155,57 +160,48 @@
   pad(left: 1em, it)
 }
 
-// Show headings without numbering (but keeping numbering enabled for TOC)
-// This heading rule must come first to be processed last, since it returns
-// a non-heading object which will prevent further heading rules to be applied.
-#show heading: it => block(below: 1.2em, it.body)
-
-#set heading(numbering: "1.")
-
 /*
   To customize the various headings, select on offset/depth/level:
-   - offset 0 depth 1 level 1: section titles
-   - offset 0 depth 2 level 2: section subtitle
-   - offset 1 depth 1 level 2: slide title
-   - offset 1 depth 2 level 3: slide subtitle
-   - offset 3 depth 1 level 4: presentation titles
-   - offset 3 depth 2 level 5: presentation subtitle
-
-  The presentation title uses offset 3 so that `outline` with depth 1 or 2 can
-  pick up the appropriate headings.
+   - offset 0 depth 1 level 1: presentation titles
+   - offset 0 depth 2 level 2: presentation subtitle
+   - offset 2 depth 1 level 3: section titles
+   - offset 2 depth 2 level 4: section subtitle
+   - offset 4 depth 1 level 5: slide title
+   - offset 4 depth 2 level 6: slide subtitle
+   - offset 6 depth 1 level 7: block title
 */
-#let heading-section-title = heading.where(offset: 0, depth: 1)
-#let heading-section-subtitle = heading.where(offset: 0, depth: 2)
-#let heading-slide-title = heading.where(offset: 1, depth: 1)
-#let heading-slide-subtitle = heading.where(offset: 1, depth: 2)
-#let heading-presentation-title = heading.where(offset: 3, depth: 1)
-#let heading-presentation-subtitle = heading.where(offset: 3, depth: 2)
+
+// Show headings without numbering (but keeping numbering enabled for TOC)
+// This heading rule must come first to be processed last, as it returns a
+// non-heading object which prevents further heading rules from being applied.
+#show heading: it => block(below: 1.2em, it.body)
 
 // Set a reasonable default text size relative to level 4 and 5,
 // and compensate for scaling of text on the title slide.
 // (The 1.4em and 1.2em are not put in font-theme.default because the values
 // there should be relative to this reasonable default, as they are for other
 // headings).
-#show heading-presentation-title: set text(1.4em / title-slide-text-scale)
-#show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
+// #show heading-presentation-title: set text(1.4em / title-slide-text-scale)
+// #show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
 
 // Apply title text settings
-#show heading-section-title: set text(..font-theme.section-title)
-#show heading-section-subtitle: set text(..font-theme.section-subtitle)
-#show heading-slide-title: set text(..font-theme.slide-title)
-#show heading-slide-subtitle: set text(..font-theme.slide-subtitle)
-#show heading-presentation-title: set text(..font-theme.presentation-title)
-#show heading-presentation-subtitle: set text(..font-theme.presentation-subtitle)
+#show heading.where(level: 1): set text(..font-theme.h1)
+#show heading.where(level: 2): set text(..font-theme.h2)
+#show heading.where(level: 3): set text(..font-theme.h3)
+#show heading.where(level: 4): set text(..font-theme.h4)
+#show heading.where(level: 5): set text(..font-theme.h5)
+#show heading.where(level: 6): set text(..font-theme.h6)
+#show heading.where(level: 7): set text(..font-theme.h7)
 
 // Exclude section subtitles from outline
 // (in case the user sets outline(depth: 2))
-#show heading-section-subtitle: set heading(outlined: false)
+#show heading.where(level: 4): set heading(outlined: false)
 
 // Layout for presentation title. A bit complicated as it must work whether a
 // subtitle is present or not.
-#show heading-presentation-title: it => {
+#show heading.where(level: 1): it => {
   place(horizon, line(length: 100%, stroke: c.normal.progress-bar.fg))
-  let h2 = query(<__minideck-title-h2>)
+  let h2 = query(<__minideck-h2>)
   let dy = if h2.len() == 0 {
     // The bottom padding is for the case with h2
     // -> add a small offset here to increase spacing when there's no h2
@@ -219,16 +215,16 @@
 }
 
 // Layout for presentation subtitle
-#show heading-presentation-subtitle: it => {
+#show heading.where(level: 2): it => {
   place(
     bottom,
     dy: -(page-size.height/2 - margin.bottom),
-    [#metadata(none)<__minideck-title-h2> #pad(bottom: 1.6em, it)],
+    [#metadata(none)<__minideck-h2> #pad(bottom: 1.6em, it)],
   )
 }
 
 // Layout for section title
-#show heading-section-title: it => {
+#show heading.where(level: 3): it => {
   if progress-bar {
     place(horizon, line(length: 100%, stroke: c.normal.progress-bar.bg))
     context {
@@ -244,7 +240,7 @@
 }
 
 // Layout for slide title
-#show heading-slide-title: it => {
+#show heading.where(level: 5): it => {
   set text(c.inverted.fg)
   let b = box(
     width: page-size.width,
@@ -308,6 +304,23 @@
   parbreak()
 }
 
+
+#let heading-numbering(..args) = {
+  let nums = args.pos()
+  if nums.len() >= 3 {
+    nums.slice(2).map(str).join(".") + ")"
+  }
+}
+
+#set heading(numbering: heading-numbering)
+    
+#set outline(target: heading.where(level: 3))
+// #show outline: set heading(numbering: f)
+#outline()
+
+#show heading.where(offset: 0): set heading(bookmarked: false)
+
+
 #set quote(block: true)
 #show quote.where(block: false): set text(style: "italic")
 #show quote.where(block: true): it => {
@@ -332,7 +345,7 @@
   set page(footer: none) if not show-footer
   // Use top alignment for content below the middle line
   set align(top)
-  plain-slide(offset: 0, it)
+  plain-slide(offset: 2, it)
 }
 
 #let standout(it) = {
@@ -340,7 +353,7 @@
   set page(footer: none) if not show-footer
   set text(1.4em, c.inverted.fg, ..font-theme.standout)
   set align(horizon+center)
-  plain-slide(offset: 0, it)
+  plain-slide(offset: 4, it)
 }
 
 #let title(slide: slide, it) = {
@@ -351,17 +364,18 @@
   show par: set block(below: 1em)
   set text(title-slide-text-scale*1em)
 
-  plain-slide(offset: 3, it)
+  plain-slide(offset: 0, it)
 }
 
 #let alert = text.with(c.normal.alert)
 
 #let title-block(title-colors: c.normal.block-title, transparent: true, width: auto, title, it) = {
+  set heading(offset: 6)
   let b1 = block.with(
     below: 0pt,
     inset: 0.4em,
     fill: if transparent { none } else { title-colors.bg},
-    text(title-colors.fg, strong(title)),
+    text(title-colors.fg, heading(bookmarked: false, title)),
   )
   let b2 = block.with(
     above: 0pt,
@@ -539,14 +553,18 @@
   #set text(0.8em)
 
   #columns(2)[
-    #title-block(width: auto)[Default][#lorem(8)]
-    #alert-block(width: 16em)[Alert][Block content.]
-    #example-block(width: 16em)[Example][Block content.]
+    #title-block()[Default][
+      Block with `auto` width and enough text to require several lines.
+    ]
+    #alert-block()[Alert][Block with `auto` width.]
+    #example-block(width: 16em)[Example][Block with fixed width.]
     #colbreak()
 
-    #title-block(transparent: false)[Default][#lorem(8)]
-    #alert-block(transparent: false, width: 12em)[Alert][Block content.]
-    #example-block(transparent: false, width: 12em)[Example][Block content.]
+    #title-block(transparent: false)[Default][
+      Block with `auto` width and enough text to require several lines.
+    ]
+    #alert-block(transparent: false)[Alert][Block with `auto` width.]
+    #example-block(transparent: false, width: 14em)[Example][Block with fixed width.]
   ]
 ]
 

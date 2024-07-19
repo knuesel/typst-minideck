@@ -163,10 +163,10 @@
 }
 
 // Make a new slide made of `steps` subslides. If steps is auto, the number of
-// subslides is determined automatically by updating a state (this requires that
-// `uncover` and `only` are configured with a valid updater callback, and that
-// they are called from a place where the update can be inserted).
-#let slide(handout: auto, steps: auto, offset: 1, it) = {
+// subslides is determined automatically by updating a state (this requires
+// that `uncover` and `only` are configured with a valid updater callback,
+// and that they are called from a place where the update can be inserted).
+#let slide(handout: auto, steps: auto, offset: 4, it) = {
   set heading(offset: offset)
   if _is-handout(handout) {
     return _subslide-content(it)
