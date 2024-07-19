@@ -47,15 +47,20 @@
     text: (:),
     raw: (:), 
     math: (:),
-    standout: (:),
+    standout: (size: 1.4em, weight: "bold"),
+    small: (size: 0.9em),
+    footer: (size: 0.7em),
+    // All heading must have a size defined here (which will be converted to
+    // absolute based on the global text size) to reset the default show rule,
+    // same for the weight.
     h:  (weight: "bold"), // all headings
-    h1: (:), // presentation title
-    h2: (:), // presentation subtitle
-    h3: (:), // section title
-    h4: (:), // section subtitle
-    h5: (:), // slide title
-    h6: (:), // slide subtitle
-    h7: (weight: "medium"), // block title
+    h1: (size: 1.45em), // presentation title
+    h2: (size: 1.2em), // presentation subtitle
+    h3: (size: 1.45em), // section title
+    h4: (size: 1.2em), // section subtitle
+    h5: (size: 1.2em), // slide title
+    h6: (size: 1em), // slide subtitle
+    h7: (size: 1em, weight: "medium"), // block title
     // Settings for strong function:
     strong: (:),
     semi-strong: (delta: 150),
@@ -176,14 +181,6 @@
 // non-heading object which prevents further heading rules from being applied.
 #show heading: it => block(below: 1.2em, it.body)
 
-// Set a reasonable default text size relative to level 4 and 5,
-// and compensate for scaling of text on the title slide.
-// (The 1.4em and 1.2em are not put in font-theme.default because the values
-// there should be relative to this reasonable default, as they are for other
-// headings).
-// #show heading-presentation-title: set text(1.4em / title-slide-text-scale)
-// #show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
-
 // Apply title text settings
 #show heading.where(level: 1): set text(..font-theme.h1)
 #show heading.where(level: 2): set text(..font-theme.h2)
@@ -193,8 +190,13 @@
 #show heading.where(level: 6): set text(..font-theme.h6)
 #show heading.where(level: 7): set text(..font-theme.h7)
 
+// Compensate for scaling of text on the title slide.
+// #show heading-presentation-title: set text(1.4em / title-slide-text-scale)
+// #show heading-presentation-subtitle: set text(1.2em / title-slide-text-scale)
+
+
 // Exclude section subtitles from outline
-// (in case the user sets outline(depth: 2))
+// XXX
 #show heading.where(level: 4): set heading(outlined: false)
 
 // Layout for presentation title. A bit complicated as it must work whether a
@@ -265,7 +267,7 @@
 #let footer = []
 
 #let footer-code(footer) = context {
-  set text(0.7em)
+  set text(..font-theme.footer)
   set align(bottom)
   pad(
     left: -page.margin.left + footer-padding,
@@ -304,6 +306,7 @@
   parbreak()
 }
 
+// XXX
 
 #let heading-numbering(..args) = {
   let nums = args.pos()
@@ -351,7 +354,7 @@
 #let standout(it) = {
   set page(fill: c.inverted.bg)
   set page(footer: none) if not show-footer
-  set text(1.4em, c.inverted.fg, ..font-theme.standout)
+  set text(c.inverted.fg, ..font-theme.standout)
   set align(horizon+center)
   plain-slide(offset: 4, it)
 }
@@ -362,7 +365,7 @@
   // Settings for content in the lower half:
   set align(top)
   show par: set block(below: 1em)
-  set text(title-slide-text-scale*1em)
+  set text(..font-theme.small)
 
   plain-slide(offset: 0, it)
 }
@@ -408,7 +411,8 @@
 
 #title[
   = Metropolis
-  == An implementation for minideck
+  // == An implementation for minideck
+  == A modern beamer theme
 
   Jeremie Knuesel
 
@@ -620,7 +624,7 @@ slide[
 #section[
   = Conclusion
 
-  Give it a try!
+  == Give it a try!
 ]
 
 #standout[
