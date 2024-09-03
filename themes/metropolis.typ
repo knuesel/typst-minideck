@@ -1,8 +1,4 @@
-// XXX check how imports work for an external theme
-#import "../util.typ"
-#import "../colors.typ"
-#import "../layouts.typ"
-#import "../styling.typ": *
+#import "../lib/lib.typ": *
 
 #let slide(cfg, plain-slide, ..args, it) = plain-slide(offset: 4, ..args, {
   v(0.4fr)

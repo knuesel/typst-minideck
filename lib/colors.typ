@@ -24,7 +24,7 @@
 // with the `accents` indices of the two diffed colors. The returned value is
 // an array of elements of the form `((i1, i2), hue-diff)`.
 // Colors must be given in Oklch space.
-#let sorted-hue-diffs(accents) = {
+#let _sorted-hue-diffs(accents) = {
   // List of hues
   let hues = accents.map(c => c.components().at(2))
   // List of (index, hue) sorted by hue
@@ -47,7 +47,7 @@
 }
 
 // Return number of colors to pick in the largest hue gap
-#let n-to-pick(n-missing, sorted-diffs) = {
+#let _n-to-pick(n-missing, sorted-diffs) = {
   if sorted-diffs.len() == 1 {
     return n-missing
   }
@@ -75,7 +75,7 @@
 
 // Pick n colors between Oklch colors `c1` and `c2` with evenly spaced hue,
 // always taking the path of increasing hue angles.
-#let pick-n-between(n, c1, c2) = {
+#let _pick-n-between(n, c1, c2) = {
   let g = gradient.linear(c1, c2, space: oklch)
   let pos-with-ends = util.linspace(0%, 100%, n + 2)
   let new-colors = g.samples(..pos-with-ends.slice(1, -1))
@@ -93,39 +93,39 @@
 // Expand array of colors if required to have it contain at least `n`
 // elements while maximizing the hue difference between colors.
 // Colors must be given in Oklch space.
-#let expand-accents(accents, n) = {
+#let _expand-accents(accents, n) = {
   if accents.len() >= n {
     return accents
   }
 
   // Get sorted array of ((i1, i2), hue-diff) elements
-  let sorted-diffs = sorted-hue-diffs(accents)
+  let sorted-diffs = _sorted-hue-diffs(accents)
 
   // Number of colors to pick in largest hue gap
-  let n-new = n-to-pick(n - accents.len(), sorted-diffs)
+  let n-new = _n-to-pick(n - accents.len(), sorted-diffs)
 
   // Indices of colors on each side of the gap
   let (i1, i2) = sorted-diffs.last().first()
 
-  let new-colors = pick-n-between(n-new, accents.at(i1), accents.at(i2))
+  let new-colors = _pick-n-between(n-new, accents.at(i1), accents.at(i2))
 
   // Recurse
-  return expand-accents(accents + new-colors, n)
+  return _expand-accents(accents + new-colors, n)
 }
 
 // Return the requested number of accent colors.
 // The returned colors are in RGB space.
-#let n-accents(accents, n) = {
+#let _n-accents(accents, n) = {
   if accents.len() >= n {
     return accents.slice(0, count: n).map(rgb)
   }
   // We need to generate more colors
-  return expand-accents(accents.map(oklch), n).map(rgb)
+  return _expand-accents(accents.map(oklch), n).map(rgb)
 }
 
 // Get shades specified either as a number or as gradient positions.
 // The returned colors are in RGB space.
-#let sample-shades(shades, ts) = {
+#let _sample-shades(shades, ts) = {
   if type(shades) == array and type(ts) == int and ts == shades.len() {
     return shades.map(rgb)
   }
@@ -140,11 +140,20 @@
   return shades.samples(..ts).map(rgb)
 }
 
+// Reverse the order of shade colors (if given as array) or mirror the gradient.
+#let _reverse-shades(shades) = {
+  if type(shades) == gradient {
+    gradient.linear(shades.stops().rev().map(((c, s)) => (c, 100% - s)))
+  } else {
+    shades.rev()
+  }
+}
+
 // Get given field (`shades` or `accents`) from scheme, or return `default`
 // if scheme is `auto` or contains no such field.
 // The scheme can be given by name to refer to a standard scheme in the
 // `schemes` dict.
-#let scheme-field(scheme, field, default) = {
+#let _scheme-field(scheme, field, default) = {
   if scheme == auto {
     return default
   }
@@ -165,19 +174,9 @@
 // maximizes the hue contrast.
 // The returned colors are in RGB space.
 #let get-accents(scheme, n: 1, default: schemes.default.accents) = {
-  let accents = scheme-field(scheme, "accents", default)
-  return n-accents(accents, n)
+  let accents = _scheme-field(scheme, "accents", default)
+  return _n-accents(accents, n)
 }
-
-// Reverse the order of shade colors (if given as array) or mirror the gradient.
-#let reverse-shades(shades) = {
-  if type(shades) == gradient {
-    gradient.linear(shades.stops().rev().map(((c, s)) => (c, 100% - s)))
-  } else {
-    shades.rev()
-  }
-}
-
 // Return some shades sampled from the source `scheme.shades`, or from `default`
 // if `scheme` is `auto` or has no such field. The source can be either
 // an array of two or more colors, or a gradient. The `ts` argument can be
@@ -189,9 +188,9 @@
 // The source is reversed before use if `reverse` is true.
 // The returned colors are in RGB space.
 #let get-shades(scheme, samples: 2, default: schemes.default.shades, reverse: false) = {
-  let shades = scheme-field(scheme, "shades", default)
+  let shades = _scheme-field(scheme, "shades", default)
   if reverse {
-    shades = reverse-shades(shades)
+    shades = _reverse-shades(shades)
   }
-  return sample-shades(shades, samples)
+  return _sample-shades(shades, samples)
 }

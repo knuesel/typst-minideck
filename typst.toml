@@ -1,7 +1,7 @@
 [package]
 name = "minideck"
-version = "0.2.1"
-entrypoint = "lib.typ"
+version = "0.3.0"
+entrypoint = "package.typ"
 authors = ["Jeremie Knuesel <https://github.com/knuesel>"]
 license = "MIT"
 description = "Simple dynamic slides."

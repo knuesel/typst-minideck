@@ -1,6 +1,6 @@
-#import "../styling.typ": *
+#import "../lib/lib.typ": *
 
-// Layout for all kinds of slides: centered content and no footer/page numbers
+// Layout for all kinds of slides: centeed content and no footer/page numbers
 #let title(plain-slide, ..args, it) = {
   plain-slide(footer: none, ..args, {
     set align(horizon+center)

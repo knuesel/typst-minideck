@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.2.2"
-#import "colors.typ": *
+#import "../lib/colors.typ": *
 
 #let show-colors(colors) = colors.enumerate().map(((i, c)) =>
   box(square(size: 1cm, fill: c)[#i])).join()
@@ -20,7 +20,7 @@
 })
 
 #let show-accents(accents, n) = {
-  let new = n-accents(accents, n)
+  let new = _n-accents(accents, n)
   show-colors(new)
   h(1cm)
   let dots = range(calc.min(accents.len(), new.len())).map(_ => black)
@@ -48,8 +48,8 @@ Other example:\
 #show-colors((c, c.rotate(40deg)))
 
 `sample-shades`:\
-#show-colors(sample-shades((white, red, black), 2))\
-#show-colors(sample-shades((white, red, black), 3))\
-#show-colors(sample-shades((white, red, black), 4))\
-#show-colors(sample-shades(gradient.linear(white, navy), 4))\
-#show-colors(sample-shades(gradient.linear(white, navy), (10%, 90%, 100%)))\
+#show-colors(_sample-shades((white, red, black), 2))\
+#show-colors(_sample-shades((white, red, black), 3))\
+#show-colors(_sample-shades((white, red, black), 4))\
+#show-colors(_sample-shades(gradient.linear(white, navy), 4))\
+#show-colors(_sample-shades(gradient.linear(white, navy), (10%, 90%, 100%)))\

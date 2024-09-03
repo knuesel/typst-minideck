@@ -1,6 +1,6 @@
 #import "util.typ"
 
-#let std-weights = (
+#let _std-weights = (
   thin: 100,
   extralight: 200,
   light: 300,
@@ -12,9 +12,9 @@
   black: 900,
 )
 
-#let default-text-weights = {
+#let _default-text-weights = {
   let new = (:)
-  for key in std-weights.keys() { new.insert(key, key) }
+  for key in _std-weights.keys() { new.insert(key, key) }
   new
 }
 
@@ -39,7 +39,7 @@
   // The `default` scheme defines the valid keys
   default: (
     text: (font: "Linux Libertine"),
-    text-weights: default-text-weights,
+    text-weights: _default-text-weights,
     raw: (font: "DejaVu Sans Mono"),
     math: (font: "New Computer Modern Math"),
     delta: 300,
@@ -62,10 +62,10 @@
   ),
 )
 
-#let weight-value(v) = if type(v) == str { std-weights.at(v) } else { v }
+#let _weight-value(v) = if type(v) == str { _std-weights.at(v) } else { v }
 
 // Interpolate the value at position `i` from its nearest non-`none` neighbors
-#let interpolate(values, i) = {
+#let _interpolate(values, i) = {
   let i-prev = range(i - 1, -1, step: -1).find(j => values.at(j) != none)
   let i-next = range(i + 1, values.len()).find(j => values.at(j) != none)
   let prev = values.at(i-prev)
@@ -76,7 +76,7 @@
 // Return full dict of weights in standard order, interpolating missing values.
 // The standard weights are used for the extreme (thin and black) and regular
 // weights if unspecified.
-#let weights-full(weights) = {
+#let _weights-full(weights) = {
   // Use default for regular and extreme weights if unspecified
   for w in ("thin", "regular", "black") {
     if not w in weights {
@@ -84,17 +84,17 @@
     }
   }
 
-  let keys = std-weights.keys()
+  let keys = _std-weights.keys()
 
   // Make array of values in order of increasing weight
   // (using `none` where values are missing)
-  let values = keys.map(k => weights.at(k, default: none)).map(weight-value)
+  let values = keys.map(k => weights.at(k, default: none)).map(_weight-value)
 
   // Make full dict, interpolating missing values
   let new = (:)
   for (i, (k, v)) in array.zip(keys, values).enumerate() {
     if v == none {
-      new.insert(k, int(interpolate(values, i)))
+      new.insert(k, int(_interpolate(values, i)))
     } else {
       // Use `weights` rather than `values` to preserve values given as string
       new.insert(k, weights.at(k))
@@ -103,7 +103,7 @@
   new
 }
 
-#let normalize(scheme) = {
+#let _normalize(scheme) = {
   // Resolve scheme value if given as name
   if type(scheme) == str {
     scheme = schemes.at(scheme)
@@ -115,7 +115,7 @@
     }
   }
   // Ensure all weights are set, interpolating missing values
-  scheme.text-weights = weights-full(scheme.at("text-weights", default: (:)))
+  scheme.text-weights = _weights-full(scheme.at("text-weights", default: (:)))
   // Fill in default values for missing fields
   scheme = schemes.default + scheme
 
@@ -128,7 +128,7 @@
   // If single scheme, wrap in array
   let schemes-array = if type(schemes) == array { schemes } else { (schemes,) }
   // Normalize each scheme
-  let normal = schemes-array.map(normalize)
+  let normal = schemes-array.map(_normalize)
   // Fill in with first scheme if more are requested than given
   for _ in range(normal.len(), n) {
     normal.push(normal.first())

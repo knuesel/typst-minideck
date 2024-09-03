@@ -1,8 +1,8 @@
-#import "themes/themes.typ"
-#import "lib/layouts.typ"
-#import "lib/colors.typ"
-#import "lib/fonts.typ" as fonts-module
-#import "lib/logic.typ"
+#import "../themes/themes.typ"
+#import "layouts.typ"
+#import "fonts.typ" as fonts-module
+#import "colors.typ"
+#import "logic.typ"
 
 // `field` is "header" or "footer"
 #let _process-head-foot(page-args, field, func, txt) = {

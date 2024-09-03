@@ -1,10 +1,5 @@
-#import "lib.typ" as minideck
+#import "@local/minideck:0.3.0" // XXX
 #import minideck.themes: *
-
-// XXX remove
-#import "layouts.typ"
-#import "util.typ"
-#import "styling.typ": *
 
 #let (cfg, template, slide, section, title, standout, pause, alert, example,
       title-block, alert-block, example-block) = minideck.config(
@@ -282,5 +277,5 @@
 #slide[
   = References
 
-  #bibliography("works.bib") <bib>
+  #bibliography("metropolis-works.bib") <bib>
 ]
