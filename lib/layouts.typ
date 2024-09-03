@@ -30,7 +30,7 @@
   pad(..pads, it)
 }
 
-#let anchor-x-shift(anchor, size) = {
+#let _anchor-x-shift(anchor, size) = {
   if anchor.x == right {
     -size.width
   } else if anchor.x == center {
@@ -40,7 +40,7 @@
   }
 }
 
-#let anchor-y-shift(anchor, size) = {
+#let _anchor-y-shift(anchor, size) = {
   if anchor.y == bottom {
     -size.height
   } else if anchor.y == horizon {
@@ -69,8 +69,8 @@
     let this = here().position()
     let other = targets.at(index).location().position()
     let size = measure(it)
-    let x-shift = other.x - this.x + anchor-x-shift(anchor, size) + dx
-    let y-shift = other.y - this.y + anchor-y-shift(anchor, size) + dy
+    let x-shift = other.x - this.x + _anchor-x-shift(anchor, size) + dx
+    let y-shift = other.y - this.y + _anchor-y-shift(anchor, size) + dy
     place(dx: x-shift, dy: y-shift, it)
   }
 }
@@ -84,9 +84,31 @@
 // with the page border.
 // Options can be passed to the block wrapper using the `style` parameter.
 #let slide-bar(dy: 0pt, overlay: false, style: (:), y-align, it) = {
-  let b = context block(width: page.width, ..style, it)
+  let b = block(width: page.width, ..style, it)
   place(y-align+center, dy: dy, float: not overlay, clearance: 0pt, b)
 }
+
+// Place a full-width block at the top of the slide, displacing the margin
+// below itself. The `style` argument can be used to configure th block.
+// Note: This won't work in a heading show rule when margins are given in ems,
+// as the heading size is typically different from the initial page text size
+#let top-bar(style: (:), it) = context slide-bar(
+  dy: -util.context-margins().top,
+  style: style,
+  top,
+  it,
+)
+
+// Place a full-width block at the bottom of the slide, displacing the margin
+// above itself. The `style` argument can be used to configure th block.
+// Note: This won't work in a heading show rule when margins are given in ems,
+// as the heading size is typically different from the initial page text size
+#let bottom-bar(style: (:), it) = context slide-bar(
+  dy: util.context-margins().bottom,
+  style: style,
+  bottom,
+  it,
+)
 
 // Return a header layout with the given content.
 // The default value is used content if `it` is `auto`.

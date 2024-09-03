@@ -69,21 +69,16 @@
 
 #let footer-func(..args) = text(0.7em, layouts.footer(padding: 1.5em, ..args))
 
-// This doesn't work in a heading show rule when margins are given in ems,
-// as the heading size is typically different from the initial page text size
-// XXX move some of this to layouts
-#let top-bar(cfg, it) = context layouts.slide-bar(
-  dy: -util.context-margins().top,
+#let title-bar(cfg, it) = layouts.top-bar(
   style: (fill: cfg.colors.fg),
-  top,
-  align(horizon+start, pad(0.85em, text(cfg.colors.bg, it)))
+  align(horizon+start, pad(0.85em, text(cfg.colors.bg, it))),
 )
 
 #let template(cfg, it) = {
   let font-scheme = cfg.fonts.first()
   let (regular, medium, bold) = font-scheme.text-weights
 
-  show slide-title: top-bar.with(cfg)
+  show slide-title: title-bar.with(cfg)
 
   set page(
     // TODO: use 3em once typst supports giving abs margins

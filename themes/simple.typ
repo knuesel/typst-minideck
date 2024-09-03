@@ -16,7 +16,7 @@
   // Make slide titles a bit larger
   show slide-title.or(section-title): set text(1.2em)
   // Color for links
-  show link: text.with(cfg.accents.at(0))
+  show link: set text(cfg.accents.at(0))
 
   // Outline
   show: outline-templates.with(cfg, indent: 1em)

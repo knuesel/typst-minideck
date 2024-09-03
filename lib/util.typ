@@ -73,7 +73,7 @@
 
   // Replace auto with default length
   let auto-length = auto-margin(page.width, page.height)
-  map-dict(margins, (k, v) => coalesce(v, auto-length))
+  margins = map-dict(margins, (k, v) => coalesce(v, auto-length))
 
   // Convert all lengths to absolute values  
   text-size = coalesce(text-size, text.size)

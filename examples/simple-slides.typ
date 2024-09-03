@@ -104,52 +104,98 @@
 ]
 
 #slide[
+  #show heading: set text(font: "DejaVu Sans Mono", maroon)
+  #let bar = (fill: orange.lighten(70%))
+  #show minideck.slide-title: it => minideck.layouts.top-bar(
+    align(left, pad(8mm, it)), style: bar)
+  #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
+    align(left, pad(top: -2mm, rest: 8mm, text(0.7em, it))), style: bar)
+
   = Customization
+  == Hand-made, without themes
 
   Use standard show/set rules. Minideck offers some helpers:
 
   - selectors such as `slide-title`
+
   - layouts like `place-relative`, `protrude`, `top-bar` and
     `bottom-bar`
 
-  // #show slide-subtitle: 
-]
+  #v(1em)
+  Example used in this slide:
 
-#slide[
-  = Themes
-
-  Appearance can be 
+  ```typ
+  #show heading: set text(font: "DejaVu Sans Mono", maroon)
+  #let bar = (fill: orange.lighten(70%))
+  #show minideck.slide-title: it => minideck.layouts.top-bar(
+    align(left, pad(8mm, it)), style: bar)
+  #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
+    align(left, pad(top: -2mm, rest: 8mm, text(0.7em, it))), style: bar)
+  ```
 ]
 
 #{
 import minideck.themes: *
 let (template, slide) = minideck.config(
+  color-scheme: (
+    shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
+    accents: (olive,)), // used by default theme for links
+  font-scheme: "libertinus-sans")
+show: template
+slide[
+  = Themes and schemes
+
+  ```typ
+  minideck.config(
+    color-scheme: (
+      shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
+      accents: (olive,)), // default theme uses this for links
+    font-scheme: "libertinus-sans") // specify scheme by name
+  ```
+
+  #v(1fr)
+
+  Three related concepts (see #link("https://github.com/knuesel/typst-minideck/tree/main/themes")[README] for a discussion) // XXX update link
+
+  - *theme:* controls the layout and general appearance
+
+  - *color scheme:* palettes of colors the theme can use
+
+  - *font scheme(s):* fonts and related settings
+  
+  Themes and schemes can be passed as values or by name.
+
+  Schemes: easy to exchange / use with any theme.
+]
+}
+
+#{
+import minideck.themes: *
+let (template, slide) = minideck.config(
+  font-scheme: "libertinus-sans",
   color-scheme: (shades: (luma(90%), navy)),
   theme: simple.with(variant: "dark"),
 )
 show: template
-show heading: set text(1.3em)
+show heading: set text(1.2em)
 
 slide[
   = Slide with dark theme
 
+  A theme can be specified by name, but to set options the theme function
+  must be used:
+
   ```typ
-  #import minideck.themes: *
+  #import minideck.themes: * // for easy access to theme functions
   #let (template, slide) = minideck.config(
-    // This theme expects shades of increasing brightness
+    // This requires Libertinus Sans to be installed
+    font-scheme: "libertinus-sans",
+    // The simple theme expects shades of increasing brightness
     color-scheme: (shades: (luma(90%), navy)),
-    // The dark variant reverses the order of shades
+    // Configure theme function (dark variant = reverse order of shades)
     theme: simple.with(variant: "dark"),
   )
   ```
-
-  To have larger slide titles, use for example:
-  ```typ
-  #show XXX
-  ```
-
-  // XXX export modules for colors, styling, etc. and use
-  // slide-title.or(slide-subtitle) in the example above
 ]
 }
 
@@ -158,7 +204,7 @@ slide[
 #slide[
   = Subslides with `pause`
 
-  #grid(columns: (1fr, 1fr))[
+  #grid(columns: (2fr, 3fr))[
     First part
 
     #show: pause
@@ -167,7 +213,7 @@ slide[
   ][
     #show: pause
 
-    Enums need explicit numbering
+    Enums work with explicit numbering
 
     1. One
     2. Two
@@ -179,11 +225,19 @@ slide[
 #slide[
   = Subslides with `uncover` and `only`
 
-  #uncover(1, from:3)[Content visible on subslides 1 and 3+ (space reserved on 2).]
+  #set par(justify: true)
 
-  #only(2,3)[Content included on subslides 2 and 3 (no space reserved on 1).]
+  #uncover(1, from: 3)[
+    `#uncover(1, from: 3)[...]`\
+    #sym.arrow visible on subslides 1 and 3+ (space reserved on 2)
+  ]
 
-  Content always visible.
+  #only(2, 3)[
+    `#only(2, 3)[...]`\
+    #sym.arrow included on subslides 2 and 3 (no space reserved on 1)
+  ]
+
+  Normal text: this content is always visible
 ]
 
 #slide[
@@ -193,6 +247,8 @@ slide[
     f(x) &= x^2 + 2x + 1  \
          #uncover(2, $&= (x + 1)^2$)
   $
+
+  // XXX add numbering once fixed
 ]
 
 #import "@preview/pinit:0.1.4": *
@@ -226,6 +282,8 @@ slide[
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
+#let _subslide-count = state("__minideck-subslide-count", (0, 0))
+
 #slide[
   = With CeTZ figures
 
@@ -234,34 +292,67 @@ slide[
   - cetz-specific `uncover` and `only` from `minideck.config`
   - a `context` outside the `canvas` call
 
+  == Example
+  ```typ
+  #context canvas({
+    import draw: *
+    cetz-only(3, rect((0,-2), (14,4), stroke: 3pt))
+    cetz-uncover(from: 2, rect((0,-2), (16,2), stroke: blue+3pt))
+    content((8,0), box(stroke: red+3pt, inset: 1em)[
+      A typst box #only(2)[on subslide 1]
+    ])
+  })
+  ```
+]<cetz>
+
+#slide[
+  == Result: subslide #context (state("__minideck-subslide-step", 0).get()+1)
+
   Above canvas
   #context canvas({
     import draw: *
     cetz-only(3, rect((0,-2), (14,4), stroke: 3pt))
     cetz-uncover(from: 2, rect((0,-2), (16,2), stroke: blue+3pt))
     content((8,0), box(stroke: red+3pt, inset: 1em)[
-      A typst box #only(2)[on 2nd subslide]
+      A typst box #only(2)[on subslide 2]
     ])
   })
   Below canvas
-]<cetz>
+]
 
 
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
 
 #let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 
-#slide(steps: 2)[
+#slide[
   = With fletcher diagrams
 
   fletcher diagrams require
   
   - fletcher-specific `uncover` and `only` from `minideck.config`
-  - a `context` outside the `diagram` call
+  - a `context` outside the `diagram` call (but in the slide)
   - an explicit number of steps passed to the `slide` function
 
-  #set align(center)
+  == Example
 
+  ```typ
+  #slide(steps: 2)[
+    #context diagram(
+      node-stroke: 1pt,
+      node((0,0), [Start], corner-radius: 2pt, extrude: (0, 3)),
+      edge("-|>"),
+      node((1,0), align(center)[A]),
+      fletcher-uncover(from:2,edge("d,r,u,l","-|>",[x],label-pos:0.1)))
+  ]
+  ```
+]
+
+
+#slide(steps: 2)[
+  == Result: subslide #context (state("__minideck-subslide-step", 0).get()+1)
+
+  #set align(center)
   Above diagram
 
   #context diagram(
