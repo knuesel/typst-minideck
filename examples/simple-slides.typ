@@ -57,9 +57,9 @@
   - `color-scheme`: switch colors using a name like `"default"` or
     `"metropolis"`, or a dict like `(shades: (bg, fg), accents: (red, blue))`
 
-  - `theme`: give a theme name, or a theme function with settings
+  - `theme`: give a theme name ortheme function
 
-  - `handout`: give `true` to disable dynamic behavior of `pause`, etc.
+  - `handout`: use `true` to disable dynamic behavior of `pause`, etc.
 
   - `cetz`, `fletcher`: see #link(<cetz>)[below].
 ]
@@ -76,10 +76,10 @@
   #outline(target: minideck.slide-title) // only slide titles
   ```
 
-  If you show slide titles, you probably want to exclude the outline slide from
-  the outline:
+  For example:
+  
   ```typ
-  #slide(outlined: false)[
+  #slide(outlined: false)[ // hide this slide from table of contents
     = Table of contents
     #outline(depth: 5)
   ]
