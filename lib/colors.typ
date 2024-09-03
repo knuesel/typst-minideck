@@ -7,9 +7,10 @@
 
   - accents: colors of contrasting hues. Used for distinguishing elements based on hue.
  
-  The shades can be given as an array of at least two colors, or as a gradient. Accent colors must be given as an array of at least one color.
+  The shades can be given as an array of at least two colors, or as a gradient,
+  or as a string. Accent colors must be given as an array of at least one color, or as a string. Strings refer to the names of standard color schemes.
 
-  The theme can request any number of shades by specifying a desired number or specific gradient positions. If shades were given as an array and the theme requests a different number of colors or any number of gradient samples, minideck will generate a gradient using the given shades at evenly spaced stops.
+  The theme can request any number of shades by specifying a desired number or specific gradient positions. If shades were specified as an array, it is used directly when the theme requests the same number of shades (gradient positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
 
   The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors with the aim of maximizing the hue contrasts.
 */
@@ -18,7 +19,11 @@
     shades: (white, black),
     accents: (red, green, blue, purple),
   ),
-)
+  metropolis: (
+    shades: (white, rgb("#23373b")), // dark teal
+    accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
+  )
+ )
 
 // Return array of hue differences between accent colors sorted by hue, together
 // with the `accents` indices of the two diffed colors. The returned value is
@@ -126,7 +131,10 @@
 // Get shades specified either as a number or as gradient positions.
 // The returned colors are in RGB space.
 #let _sample-shades(shades, ts) = {
-  if type(shades) == array and type(ts) == int and ts == shades.len() {
+  let n-requested = if type(ts) == int { ts } else { ts.len() }
+  // If shades array matches requested number, return array shades
+  // return the given shades.
+  if type(shades) == array and shades.len() == n-requested {
     return shades.map(rgb)
   }
   // For all other cases use gradient to sample requested number of colors
@@ -149,11 +157,19 @@
   }
 }
 
-// Get given field (`shades` or `accents`) from scheme, or return `default`
+// Get given field (`shades` or `accents`) from scheme, or use `default`
 // if scheme is `auto` or contains no such field.
+// Default can be either a scheme or a field (shades or accent as appropriate).
 // The scheme can be given by name to refer to a standard scheme in the
 // `schemes` dict.
 #let _scheme-field(scheme, field, default) = {
+  if type(default) == str {
+    default = schemes.at(default)
+  }
+  if type(default) == dictionary {
+    // Scheme -> extract field
+    default = default.at(field)
+  }
   if scheme == auto {
     return default
   }
@@ -172,22 +188,26 @@
 // than requested with `n`, the remaining color(s) are dropped. If fewer colors
 // are given than requested, additional colors are generated in a way that
 // maximizes the hue contrast.
+// Default can be a scheme or an accents value (an array of colors).
+// Schemes can be given as a dict or as a name referring to a standard scheme.
 // The returned colors are in RGB space.
-#let get-accents(scheme, n: 1, default: schemes.default.accents) = {
+#let get-accents(scheme, n: 1, default: "default") = {
   let accents = _scheme-field(scheme, "accents", default)
   return _n-accents(accents, n)
 }
+
 // Return some shades sampled from the source `scheme.shades`, or from `default`
 // if `scheme` is `auto` or has no such field. The source can be either
 // an array of two or more colors, or a gradient. The `ts` argument can be
 // either the desired number of shades (two or more) or an
 // array of gradient positions. If the source is an array of colors, it
-// is first converted to a gradient with evenly spaced stops in cases where a
-// different number of shades is requested or if shades are requested at
-// specific gradient positions.
+// is first converted to a gradient with evenly spaced stops if a
+// different number of shades is requested.
 // The source is reversed before use if `reverse` is true.
+// Default can be a scheme or a shades value (array or gradient).
+// Schemes can be given as a dict or as a name referring to a standard scheme.
 // The returned colors are in RGB space.
-#let get-shades(scheme, samples: 2, default: schemes.default.shades, reverse: false) = {
+#let get-shades(scheme, samples: 2, default: "default", reverse: false) = {
   let shades = _scheme-field(scheme, "shades", default)
   if reverse {
     shades = _reverse-shades(shades)

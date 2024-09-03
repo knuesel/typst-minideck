@@ -53,3 +53,8 @@ Other example:\
 #show-colors(_sample-shades((white, red, black), 4))\
 #show-colors(_sample-shades(gradient.linear(white, navy), 4))\
 #show-colors(_sample-shades(gradient.linear(white, navy), (10%, 90%, 100%)))\
+// Gradient samples in matching number -> disregard gradient positions
+#show-colors(_sample-shades((white, red, black), (10%, 90%, 100%)))\
+
+
+#show-colors(get-shades(auto, samples: 4, default: "metropolis"))

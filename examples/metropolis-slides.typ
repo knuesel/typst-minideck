@@ -20,9 +20,6 @@
 #title[
   = Metropolis
   == An implementation for minideck
-  // == A modern beamer theme // XXX remove
-
-  // Matthias Vogelgesang// XXX remove
 
   Jeremie Knuesel
 
@@ -35,9 +32,7 @@
   #outline()
 ]
 
-#section[
-  = Introduction
-]
+#section[ = Introduction ]
 
 #slide[
   = Metropolis
@@ -83,7 +78,7 @@
   `example` for an #example[alternative color].
 ]
 
-#section[= Structure]
+#section[ = Structure ]
 
 #slide[
   = Presentation title
@@ -110,10 +105,7 @@
   Use `#section` to separate groups of slides:
 
   ```typst
-  #section[
-    = Section title
-    ...
-  ]
+  #section[ = Section title ]
   ```
 
   This will create a slide with the section title and a progress bar, plus optional subtitle(s) or other content.
@@ -129,29 +121,24 @@
 ]
 
 #slide[
-  By default `#outline` will show only sections, but you can
-  include the titles of normal slides (see result below):
-
+  = Outline
+  
+  By default `#outline` will show only sections. To include slide titles:
+  
   ```typ
   #slide(outlined: false)[ // exclude TOC slide from TOC
     #set outline(depth: 5) // 5 = slide titles
     #show par: block.with(breakable: false) // optional
-    #columns(2, outline())
-  ]
+    #columns(2, outline())]
   ```
 
   #show outline: set text(0.8em)
   #set outline(depth: 5)
   #show par: block.with(breakable: false)
   #columns(2, outline())
-
-  The `show par:` prevents a column break in the middle of a section.
 ]
 
-
-#section[
-  = Elements
-]
+#section[ = Elements ]
 
 #slide[
   = Lists

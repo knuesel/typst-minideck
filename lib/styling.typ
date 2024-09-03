@@ -24,7 +24,7 @@
 
   Minideck supports outlines with section titles, with slide titles, or both.
   
-  Typst lets users select outline content in three ways:
+  Typst lets users select outline content in at least three ways:
 
   1. `set outline(depth: 3)`
   2. `set outline(target: slide-title)`
@@ -40,8 +40,8 @@
 // Selector for an outline with only section titles
 // (only works if slide titles are excluded through outline `depth` and
 // `target` rather than with `outlined: false` on slide headings.
-#let outline-only-sections = outline.where(depth: 3)
-  .or(outline.where(target: section-title))
+#let outline-only-sections = outline.where(depth: 3).or(
+  outline.where(target: section-title))
 
 // Selector for an outline with only slide titles (no section title)
 // (only works if section titles are exluded through `outline.target` rather
@@ -60,18 +60,26 @@
     .or(outline.where(target: slide-title.or(section-title)))
 )
 
-// This template is written to be used as `show: outline-template` rather than
+// Template to format the outline using one paragraph per section, with section
+// title on the first line and slide titles (if enabled by `outline.depth` and
+// `outline.target` as additional lines. One block/paragraph per section makes
+// it easy to style a section and its slides as a single unit.
+// Control the spacing between sections with `spacing`, the indentation of
+// slide titles with `indent` and the spacing between section and first slide
+// title with `title-gap`.
+// This template is written to be used as `show: outline-templates` rather than
 // `show outline: outline-template` as otherwise the nested show-it rule for
 // `outline.entry` would be hard for users to override.
-#let outline-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
+#let outline-templates(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
   // Spacing between sections (paragraphs)
   show outline: set block(spacing: spacing)
+  
   // Indent slide titles (every line after first paragraph line) under section
   show outline-sections-and-slides: set par(hanging-indent: indent)
 
   /*
     Outline entry: avoid `par` manipulations here as they would cause a new
-    paragraph (which affects vertical spacing). We want a new paragraph between
+    paragraph. We want a new paragraph between
     sections but not between slide titles.
   */
 
@@ -79,6 +87,7 @@
   // This rule must come first to be processed last, as it returns a
   // non-outline.entry object which prevents further rules from being applied.
   show outline.entry: it => it.body
+
   // Make each section its own paragraph (with large spacing between
   // paragraphs using the outline block spacing).
   show outline.entry.where(level: 3): it => {
@@ -92,20 +101,17 @@
 }
 
 // Bibliography template
-#let bibliography-template(cfg, doc) = {
-  show bibliography: it => {
-    let (font-scheme, ..) = cfg.fonts
-    set block(spacing: 2em)
-    set par(justify: false) // in case it's true globally
-    show regex("\[[0-9]+\]"): set align(top)
-    show "[Online]. Available: ": none
-    it
-  }
-  doc
+#let bibliography-template(cfg, it) = {
+  let (font-scheme, ..) = cfg.fonts
+  set block(spacing: 2em)
+  set par(justify: false) // in case it's true globally
+  show regex("\[[0-9]+\]"): set align(top)
+  show "[Online]. Available: ": none
+  it
 }
 
 // Basic template: settings that most themes should apply.
-#let basic-template(cfg, it) = {
+#let basic-template(cfg, doc) = {
   let (paper, fonts, shades) = cfg
   let (font-scheme, ..) = fonts
   let (regular, medium, bold) = font-scheme.text-weights
@@ -168,5 +174,5 @@
   // Better default spacing for headings that are not "placed"
   show heading: set block(below: 1.5em)
 
-  it
+  doc
 }

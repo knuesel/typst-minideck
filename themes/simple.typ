@@ -17,10 +17,11 @@
   show slide-title.or(section-title): set text(1.2em)
   // Color for links
   show link: text.with(cfg.accents.at(0))
-  // Apply some optional templates
-  // show outline: outline-template.with(cfg)
-  show: outline-template.with(cfg, indent: 1em)
+
+  // Outline
+  show: outline-templates.with(cfg, indent: 1em)
   show outline.entry.where(level: 5): it => box(list.item(it))
+
   show bibliography: bibliography-template.with(cfg)
 
   it
@@ -32,7 +33,7 @@
   }
 
   let cfg = get-cfg(
-    shades: (reverse: variant == "dark"),
+    shades: (default: (white, luma(15%)), reverse: variant == "dark"),
     accents: (n: 1, default: (blue,)),
   )
   cfg.variant = variant // private field, for the record

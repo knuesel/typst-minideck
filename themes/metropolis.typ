@@ -39,7 +39,7 @@
 #let title(cfg, plain-slide, ..args, it) = {
   plain-slide(offset: 0, footer: none, ..args, {
     set align(top)
-    show par: set block(below: 1em)
+    show par: set block(below: 1em) // TODO: change once #4390 is released
     set text(0.9em)
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
     block(spacing: 2.7em, height: 50%)
@@ -126,13 +126,13 @@
   show link: strong.with(delta: int(font-scheme.delta/2))
 
   // Outline
-  show: outline-template.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
+  show: outline-templates.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
   show outline-sections-and-slides: it => {
     show outline.entry.where(level: 3): strong
     it
   }
 
-  show: bibliography-template.with(cfg)
+  show bibliography: bibliography-template.with(cfg)
 
   // Lists
   set list(indent: 1em, spacing: 1em)
@@ -188,10 +188,10 @@
   let cfg = get-cfg(
     shades: (
       samples: (2%, 10%, 20%, 100%),
-      default: (white, rgb("#23373b")), // dark teal
+      default: "metropolis",
       reverse: variant == "dark",
     ),
-    accents: (n: 2, default: (rgb("#eb811b"), rgb("#14b03d"))), // red, green
+    accents: (n: 2, default: "metropolis"),
     fonts: (n: 1, default: "fira-sans-light"),
   )
   // Add some private fields

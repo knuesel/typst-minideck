@@ -20,9 +20,7 @@
   #outline()
 ]
 
-#section[
-  = Configuration
-]
+#section[ = Configuration ]
 
 #slide[
   = Basic usage
@@ -67,9 +65,9 @@
 ]
 
 #slide[
-  = Table of contents
+  = Outline
 
-  The outline in standard themes shows only section titles by default.
+  Default in standard themes is to show only section titles.\
   To change this:
 
   ```typ
@@ -81,7 +79,7 @@
   If you show slide titles, you probably want to exclude the outline slide from
   the outline:
   ```typ
-  #slide(outlined: true)[
+  #slide(outlined: false)[
     = Table of contents
     #outline(depth: 5)
   ]
@@ -91,15 +89,36 @@
 
 #slide[
   = Slide commands
-
+  
   Main parameters to commands `slide`, `section` and `title`:
   
-  - `outlined` (see previous slide)
+  - `outlined`: whether to include the slide in the outline
   - `header-text` and `footer-text`: for simple content in header/footer
-  - any `page` argument, e.g. to change margins just for one slide
+  - any `page` argument like `footer` or `margin` (to change margins just for one slide)
 
-  `header-text`/`footer-text` place content using the theme layout.\
-  Use `#slide(footer: ...)` to define the footer from scratch.
+  // XXX add freeze
+
+  #v(0.5em)
+  Use `footer-text` to place content using the theme layout.\
+  Use `footer` to define the footer from scratch.
+]
+
+#slide[
+  = Customization
+
+  Use standard show/set rules. Minideck offers some helpers:
+
+  - selectors such as `slide-title`
+  - layouts like `place-relative`, `protrude`, `top-bar` and
+    `bottom-bar`
+
+  // #show slide-subtitle: 
+]
+
+#slide[
+  = Themes
+
+  Appearance can be 
 ]
 
 #{
@@ -134,9 +153,7 @@ slide[
 ]
 }
 
-#section[
-  = Commands for dynamic slides
-]
+#section[ = Commands for dynamic slides ]
 
 #slide[
   = Subslides with `pause`
