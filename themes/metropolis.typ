@@ -56,10 +56,12 @@
   }
  layouts.title-block(title: title, body: body, ..args, it-title, it-body)
 }
+
 #let alert-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
   text(cfg.colors.alert, it-title),
   it-body,
 )
+
 #let example-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
   text(cfg.colors.example, it-title),
   it-body,
@@ -69,6 +71,7 @@
 
 // This doesn't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
+// XXX move some of this to layouts
 #let top-bar(cfg, it) = context layouts.slide-bar(
   dy: -util.context-margins().top,
   style: (fill: cfg.colors.fg),
@@ -89,7 +92,7 @@
     footer: footer-func(none),
   )
 
-  // Set font size before template, so that cfg fonts can override it
+  // Set default font size before template, so that cfg fonts can override it
   set text(22pt)
 
   show: basic-template.with(cfg)

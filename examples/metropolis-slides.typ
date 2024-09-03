@@ -79,8 +79,8 @@
 
 
   #v(1em)
-  The theme provides an `alert` function for #alert[special emphasis], and an
-  `example` function for display in an #example[alternative color].
+  The theme provides an `alert` function for #alert[special emphasis], and
+  `example` for an #example[alternative color].
 ]
 
 #section[= Structure]
@@ -119,7 +119,7 @@
   This will create a slide with the section title and a progress bar, plus optional subtitle(s) or other content.
 
   #v(1fr)
-  To disable the progress bar, import the `metropolis` function with
+  To disable the progress bar, import the `metropolis` function:
 
   
   `  #import minideck.themes: *`
@@ -134,7 +134,7 @@
 
   ```typ
   #slide(outlined: false)[ // exclude TOC slide from TOC
-    #set outline(depth: 5)
+    #set outline(depth: 5) // 5 = slide titles
     #show par: block.with(breakable: false) // optional
     #columns(2, outline())
   ]
@@ -251,8 +251,7 @@
 
   You can override the complete footer (including page number) using `slide(footer: ...)`
 
-  Actually this works for any `page` setting: pass them to `slide`, they will be forwarded to `page`.
-
+  The `slide` function accepts all `page` settings: for example use `slide(margin: ...)` to change margins just for one slide.
 ]
 
 #section[
