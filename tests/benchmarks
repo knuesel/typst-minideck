@@ -1,0 +1,12 @@
+hyperfine 'typst compile examples/metropolis-slides.typ'
+
+Benchmark 1: typst compile examples/metropolis-slides.typ
+  Time (mean ± σ):     559.4 ms ±  15.0 ms    [User: 425.7 ms, System: 134.9 ms]
+  Range (min … max):   553.0 ms … 601.9 ms    10 runs
+
+
+hyperfine 'typst compile examples/simple-slides.typ'
+
+Benchmark 1: typst compile examples/simple-slides.typ
+  Time (mean ± σ):     746.6 ms ±  11.5 ms    [User: 540.1 ms, System: 204.9 ms]
+  Range (min … max):   730.3 ms … 768.6 ms    10 runs
