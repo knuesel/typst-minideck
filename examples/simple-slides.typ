@@ -129,11 +129,12 @@
 
 #slide[
   #show heading: set text(font: "DejaVu Sans Mono", eastern)
-  #let bar = (fill: yellow.lighten(95%))
+  #let bar1 = (fill: yellow.lighten(70%))
+  #let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
   #show minideck.slide-title: it => minideck.layouts.top-bar(
-    align(left, pad(8mm, it)), style: bar)
+    align(left, pad(6mm, it)), style: bar1)
   #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
-    align(left, pad(top: -2mm, rest: 8mm, text(0.7em, it))), style: bar)
+    align(left, pad(6mm, text(0.7em, it))), style: bar2)
 
   = Customization
   == Hand-made, without themes
@@ -151,11 +152,12 @@
 
   ```typ
   #show heading: set text(font: "DejaVu Sans Mono", eastern)
-  #let bar = (fill: yellow.lighten(95%))
+  #let bar1 = (fill: yellow.lighten(70%))
+  #let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
   #show minideck.slide-title: it => minideck.layouts.top-bar(
-    align(left, pad(8mm, it)), style: bar)
+    align(left, pad(6mm, it)), style: bar1)
   #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
-    align(left, pad(top: -2mm, rest: 8mm, text(0.7em, it))), style: bar)
+    align(left, pad(6mm, text(0.7em, it))), style: bar2)
   ```
 ]
 

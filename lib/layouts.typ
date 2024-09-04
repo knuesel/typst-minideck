@@ -92,8 +92,8 @@
 // below itself. The `style` argument can be used to configure th block.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
-#let top-bar(style: (:), it) = context slide-bar(
-  dy: -util.context-margins().top,
+#let top-bar(dy: 0pt, style: (:), it) = context slide-bar(
+  dy: -util.context-margins().top + dy,
   style: style,
   top,
   it,
@@ -103,8 +103,8 @@
 // above itself. The `style` argument can be used to configure th block.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
-#let bottom-bar(style: (:), it) = context slide-bar(
-  dy: util.context-margins().bottom,
+#let bottom-bar(dy: 0pt, style: (:), it) = context slide-bar(
+  dy: util.context-margins().bottom + dy,
   style: style,
   bottom,
   it,
@@ -122,7 +122,7 @@
 #let footer(it, padding: 1.5em, default: none) = {
   set align(bottom)
   protrude((left, right), pad(x: padding, bottom: padding, {
-    place(bottom+end, context counter(page).display()) // XXX remove context?
+    place(bottom+end, context counter(page).display())
     util.coalesce(it, default)
   }))
 }
