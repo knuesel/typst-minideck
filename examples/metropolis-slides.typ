@@ -221,27 +221,6 @@
   To choose one, use `#show math.equation: set text(weight: ...)`
 ]
 
-#slide(footer-text: [Some footer text])[
-  = Frame footer
-
-  Add text in the footer using the `footer-text` parameter of `slide`:
-
-  ```typ
-  #slide(footer-text: [Some footer text])[
-    ...
-  ]
-  ```
-
-  To make this the default use
-  ```
-  #let slide = slide.with(footer-text: [Some footer text])
-  ```
-
-  You can override the complete footer (including page number) using `slide(footer: ...)`
-
-  The `slide` function accepts all `page` settings: for example use `slide(margin: ...)` to change margins just for one slide.
-]
-
 #section[
   = Conclusion
 

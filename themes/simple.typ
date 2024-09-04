@@ -1,6 +1,6 @@
 #import "../lib/lib.typ": *
 
-// Layout for all kinds of slides: centeed content and no footer/page numbers
+// Layout for title slides: centered content and no footer/page numbers
 #let title(plain-slide, ..args, it) = {
   plain-slide(footer: none, ..args, {
     set align(horizon+center)
@@ -31,6 +31,10 @@
   if variant not in ("light", "dark") {
     panic("invalid variant: must be \"light\" or \"dark\"")
   }
+
+  plain-slide = plain-slide.with(
+    footer-func: (..args) => text(0.8em, layouts.footer(..args)),
+  )
 
   let cfg = get-cfg(
     shades: (default: (white, luma(15%)), reverse: variant == "dark"),

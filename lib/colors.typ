@@ -160,26 +160,35 @@
 // Get given field (`shades` or `accents`) from scheme, or use `default`
 // if scheme is `auto` or contains no such field.
 // Default can be either a scheme or a field (shades or accent as appropriate).
-// The scheme can be given by name to refer to a standard scheme in the
-// `schemes` dict.
+// The scheme or scheme values can be given by name to refer to a standard scheme
+// in the `schemes` dict.
 #let _scheme-field(scheme, field, default) = {
+  // Resolve default given as scheme name
   if type(default) == str {
     default = schemes.at(default)
   }
+  // Extract default value from default scheme
   if type(default) == dictionary {
-    // Scheme -> extract field
     default = default.at(field)
   }
+  // Return default value for `auto` scheme
   if scheme == auto {
     return default
   }
+  // Resolve scheme given as name
   if type(scheme) == str {
     scheme = schemes.at(scheme)
   }
   if type(scheme) != dictionary {
     panic("Color scheme must be a string, dictionary or auto")
   }
-  return scheme.at(field, default: default)
+  // Get value from scheme
+  let value = scheme.at(field, default: default)
+  // Resolve value given as name
+  if type(value) == str {
+    value = schemes.at(value).at(field)
+  }
+  return value
 }
 
 // Return the requested number of accent colors from the source
@@ -190,6 +199,8 @@
 // maximizes the hue contrast.
 // Default can be a scheme or an accents value (an array of colors).
 // Schemes can be given as a dict or as a name referring to a standard scheme.
+// When giving a dict, `scheme.accents` can also be a string to refer to a
+// standar scheme's accents.
 // The returned colors are in RGB space.
 #let get-accents(scheme, n: 1, default: "default") = {
   let accents = _scheme-field(scheme, "accents", default)
@@ -206,6 +217,8 @@
 // The source is reversed before use if `reverse` is true.
 // Default can be a scheme or a shades value (array or gradient).
 // Schemes can be given as a dict or as a name referring to a standard scheme.
+// When giving a dict, `scheme.shades` can also be a string to refer to a
+// standar scheme's shades.
 // The returned colors are in RGB space.
 #let get-shades(scheme, samples: 2, default: "default", reverse: false) = {
   let shades = _scheme-field(scheme, "shades", default)

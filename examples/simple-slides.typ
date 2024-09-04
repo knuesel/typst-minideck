@@ -20,10 +20,10 @@
   #outline()
 ]
 
-#section[ = Configuration ]
+#section[ = Basic usage ]
 
 #slide[
-  = Basic usage
+  = Getting started
 
   Use `minideck.config()` to get the slide functions:
 
@@ -94,17 +94,41 @@
   - `outlined`: whether to include the slide in the outline
   - `header-text` and `footer-text`: for simple content in header/footer
   - any `page` argument like `footer` or `margin` (to change margins just for one slide)
-
-  // XXX add freeze
-
-  #v(0.5em)
-  Use `footer-text` to place content using the theme layout.\
-  Use `footer` to define the footer from scratch.
 ]
 
+#slide(footer-text: [Some footer text])[
+  == Example: changing the footer
+
+  To set/override the footer text, use
+
+  ```typ
+  #slide(footer-text: [Some footer text])[...]
+  ```
+
+  The theme will put the content somewhere in its footer layout.
+
+  #v(1em)
+
+  To make this the default you can redefine `slide`:
+
+  ```typ
+  #let slide = slide.with(footer-text: [Some footer text])
+  ```
+
+  #v(1em)
+
+  To take full control of the footer, use `footer` (the `page` argument):
+
+  ```typ
+  #slide(footer: align(horizon+center, context counter(page).display()))
+  ```
+]
+
+#section[ = Themes and customization]
+
 #slide[
-  #show heading: set text(font: "DejaVu Sans Mono", maroon)
-  #let bar = (fill: orange.lighten(70%))
+  #show heading: set text(font: "DejaVu Sans Mono", eastern)
+  #let bar = (fill: yellow.lighten(95%))
   #show minideck.slide-title: it => minideck.layouts.top-bar(
     align(left, pad(8mm, it)), style: bar)
   #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
@@ -124,8 +148,8 @@
   Example used in this slide:
 
   ```typ
-  #show heading: set text(font: "DejaVu Sans Mono", maroon)
-  #let bar = (fill: orange.lighten(70%))
+  #show heading: set text(font: "DejaVu Sans Mono", eastern)
+  #let bar = (fill: yellow.lighten(95%))
   #show minideck.slide-title: it => minideck.layouts.top-bar(
     align(left, pad(8mm, it)), style: bar)
   #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
@@ -138,33 +162,55 @@ import minideck.themes: *
 let (template, slide) = minideck.config(
   color-scheme: (
     shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
-    accents: (olive,)), // used by default theme for links
-  font-scheme: "libertinus-sans")
+    accents: (olive,)), // default theme uses this for links
+  font-scheme: "libertinus-sans") // scheme specified by name
 show: template
 slide[
-  = Themes and schemes
+  = Schemes and themes
+  Schemes: easy to exchange / use with any theme:
 
   ```typ
   minideck.config(
     color-scheme: (
       shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
       accents: (olive,)), // default theme uses this for links
-    font-scheme: "libertinus-sans") // specify scheme by name
+    font-scheme: "libertinus-sans") // scheme specified by name
   ```
 
   #v(1fr)
 
   Three related concepts (see #link("https://github.com/knuesel/typst-minideck/tree/main/themes")[README] for a discussion) // XXX update link
 
-  - *theme:* controls the layout and general appearance
+  - *theme:* controls layout and general appearance
 
   - *color scheme:* palettes of colors the theme can use
 
   - *font scheme(s):* fonts and related settings
   
   Themes and schemes can be passed as values or by name.
+]
 
-  Schemes: easy to exchange / use with any theme.
+slide[
+  = Standard schemes and themes // XXX update list
+
+  #show: columns.with(2)
+
+  Font schemes (need fonts)
+  - `default`
+  - `libertinus-sans`
+  - `fira-sans`
+  - `fira-sans-light`
+
+  #v(1em)
+  Color schemes
+  - `default`
+  - `metropolis`
+
+  #colbreak()
+ 
+  Themes
+  - `simple`
+  - `metropolis`
 ]
 }
 
@@ -198,7 +244,7 @@ slide[
 ]
 }
 
-#section[ = Commands for dynamic slides ]
+#section[ = Dynamic slides ]
 
 #slide[
   = Subslides with `pause`
