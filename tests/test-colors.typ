@@ -1,6 +1,8 @@
 #import "@preview/cetz:0.2.2"
 #import "../lib/colors.typ": *
 
+#set page(margin: 1cm)
+
 #let show-colors(colors) = colors.enumerate().map(((i, c)) =>
   box(square(size: 1cm, fill: c)[#i])).join()
 

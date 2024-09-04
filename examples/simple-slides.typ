@@ -4,12 +4,10 @@
 
 #show: template
 
-#show raw: set text(0.8em)
-
 #title[
   = Slides with `minideck`
   == Usage and features
-  John Doe
+  Tebine
 
   #datetime.today().display()
 ]
@@ -19,6 +17,8 @@
 
   #outline()
 ]
+
+#show raw: set text(0.9em)
 
 #section[ = Basic usage ]
 
@@ -71,8 +71,8 @@
   To change this:
 
   ```typ
-  #outline(depth: 5) // show section and slide titles
-  #outline(depth: 5, target: minideck.slide-title) // only slide titles
+  #outline(depth: 5) // show section and slide titles, or:
+  #outline(depth: 5, target: minideck.slide-title) // no sections
   ```
 
   For example:
@@ -120,7 +120,8 @@
   To take full control of the footer, use `footer` (the `page` argument):
 
   ```typ
-  #slide(footer: align(horizon+center, context counter(page).display()))
+  #slide(footer: align(horizon+center,
+                       context counter(page).display()))
   ```
 ]
 
@@ -146,6 +147,7 @@
 
   #v(1em)
   Example used in this slide:
+  #set text(0.9em)
 
   ```typ
   #show heading: set text(font: "DejaVu Sans Mono", eastern)
@@ -165,6 +167,9 @@ let (template, slide) = minideck.config(
     accents: (olive,)), // default theme uses this for links
   font-scheme: "libertinus-sans") // scheme specified by name
 show: template
+// Undo fonts.default.raw scaling due to nested `show: template`
+show raw: set text(1.1em)
+
 slide[
   = Schemes and themes
   Schemes: easy to exchange / use with any theme:
@@ -223,6 +228,8 @@ let (template, slide) = minideck.config(
 )
 show: template
 show heading: set text(1.2em)
+// Undo fonts.default.raw scaling due to nested `show: template`
+show raw: set text(1.1em)
 
 slide[
   = Slide with dark theme
@@ -381,6 +388,7 @@ slide[
 
   == Example
 
+  #set text(0.9em)
   ```typ
   #slide(steps: 2)[
     #context diagram(
