@@ -133,7 +133,6 @@
   let (paper, fonts, shades) = cfg
   let (bg-color, .., fg-color) = shades
   let (font-scheme, ..) = fonts
-  let weights = font-scheme.text-weights
 
   set page(
     paper: paper,

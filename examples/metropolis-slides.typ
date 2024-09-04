@@ -142,34 +142,6 @@
 #section[ = Elements ]
 
 #slide[
-  = Lists
-
-  #grid(columns: (1fr,)*3, align: top)[
-    List:
-
-    - Milk
-
-    - Eggs
-
-    - Potatos
-  ][
-    Enumeration:
-
-    + First,
-
-    + Second and
-
-    + Last.
-  ][
-    Terms:
-
-    / PowerPoint: Meeh.
-
-    / Beamer: Yeeeha.
-  ]
-]
-
-#slide[
   = Blocks
 
   Show title blocks with `title-block`, `alert-block` and `example-block`.

@@ -1,33 +1,43 @@
 #import "util.typ"
 
-// Let `it` protrude on the given sides by an amount equal to the
-// corresponding page margins.
-// The `sides` argument can be an array of values or a single value among
-// `left`, `right`, `top`, `bottom`.
+// Protrusion for given relative length and margin size.
+// The `em` length given by the user must be taken relative to the current
+// `text.size` rather than the page text size.
+#let _protrusion(rel, size) = util.length-to-abs(rel, size, text.size)
+
+// Let `it` protrude on the given sides by lengths relative to the page margins.
+// Relative lengths or ratios can be given for `left`, `right`, `top`, `bottom`,
+// `x` and `y`. These last two are only used when the corresponding sides are
+// set to `auto`.
+// The ratio component of each length is taken relative to the corresponding
+// margin, so with a left margin of `2cm` and a right margin of `3cm` the
+// argument `x: 100%` is equivalent to `left: 2cm, right: 3cm`.
 // The protrusion amount can be miscalculated in cases where the margin is
 // specified with `em` units and the text size was changed since page creation
 // (see https://github.com/typst/typst/issues/3636). As a workaround, you can
-// pass the correct text size with the `text-size` parameter.
+// pass the correct text size with the `page-text-size` parameter.
 //
 // Examples:
 //
 // Make a red box accross the whole page width:
 //
-//   `#protrude((left, right), box(width: 100%, height: 1cm, fill: red))`
+//   `#protrude(x: 100%, box(width: 100%, height: 1cm, fill: red))`
 // 
-// Place an image in the bottom left corner of the page:
+// Place an image flush with the page bottom bottom and halfway in the right
+// margin:
 //
-//   `#place(bottom+left, protrude((bottom, left), image(...)))`
+//   `#place(bottom+right, protrude(bottom: 100%, right: 50%, image(...)))`
 //
-#let protrude(sides, text-size: auto, it) = context {
-  let sides = if type(sides) == array { sides } else { (sides,) }
-  let margins = util.context-margins(text-size: text-size)
-  let pads = (:)
-  if left   in sides { pads.left   = -margins.left }
-  if right  in sides { pads.right  = -margins.right }
-  if top    in sides { pads.top    = -margins.top }
-  if bottom in sides { pads.bottom = -margins.bottom }
-  pad(..pads, it)
+#let protrude(left: auto, right: auto, top: auto, bottom: auto,
+              x: 0pt, y: 0pt, page-text-size: auto, it) = context {
+  let margins = util.context-margins(text-size: page-text-size)
+  pad(
+    left:   - _protrusion(util.coalesce(left, x),   margins.left),
+    right:  - _protrusion(util.coalesce(right, x),  margins.right),
+    top:    - _protrusion(util.coalesce(top, y),    margins.top),
+    bottom: - _protrusion(util.coalesce(bottom, y), margins.bottom),
+    it,
+  )
 }
 
 #let _anchor-x-shift(anchor, size) = {
@@ -114,14 +124,14 @@
 // The default value is used content if `it` is `auto`.
 #let header(it, default: none) = {
   set align(top)
-  protrude((left, right), util.coalesce(it, default))
+  protrude(x: 100%, util.coalesce(it, default))
 }
 
 // Return a footer layout with the given content.
 // The default value is used as footer text if `it` is `auto`.
 #let footer(it, padding: 1.5em, default: none) = {
   set align(bottom)
-  protrude((left, right), pad(x: padding, bottom: padding, {
+  protrude(x: 100%, pad(x: padding, bottom: padding, {
     place(bottom+end, context counter(page).display())
     util.coalesce(it, default)
   }))

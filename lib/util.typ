@@ -4,10 +4,13 @@
 // Convert length to absolute length for given text size
  #let simple-length-to-abs(len, text-size) = len.abs + text-size * len.em
 
-// Convert simple or relative length to absolute for given text and layout size
+// Convert ratios simple or relative length or ratios to absolute for given text
+// and layout size
 #let length-to-abs(len, layout-size, text-size) = {
   if type(len) == relative {
     simple-length-to-abs(len.length, text-size) + layout-size * len.ratio
+  } else if type(len) == ratio {
+    layout-size * len
   } else {
     simple-length-to-abs(len, text-size)
   }

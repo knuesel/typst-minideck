@@ -1,12 +1,17 @@
 #import "@local/minideck:0.3.0" // XXX
 
-#let (template, slide, section, title, pause, uncover, only) = minideck.config()
+#let (template, slide, section, title, pause, uncover, only) = minideck.config(
+  // author: [Tebine], // content or array of content
+  // date: datetime.today().display(), // content
+  // institution: [BFH], // content or array of content
+)
 
 #show: template
 
 #title[
   = Slides with `minideck`
   == Usage and features
+
   Tebine
 
   #datetime.today().display()
@@ -127,15 +132,16 @@
 
 #section[ = Themes and customization]
 
-#slide[
-  #show heading: set text(font: "DejaVu Sans Mono", eastern)
-  #let bar1 = (fill: yellow.lighten(70%))
-  #let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
-  #show minideck.slide-title: it => minideck.layouts.top-bar(
-    align(left, pad(6mm, it)), style: bar1)
-  #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
-    align(left, pad(6mm, text(0.7em, it))), style: bar2)
+#{
+show heading: set text(font: "DejaVu Sans", eastern)
+let bar1 = (fill: yellow.lighten(70%))
+let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
+show minideck.slide-title: it => minideck.layouts.top-bar(
+  align(left, pad(6mm, it)), style: bar1)
+show minideck.slide-subtitle: it => minideck.layouts.top-bar(
+  align(left, pad(6mm, text(0.7em, it))), style: bar2)
 
+slide[
   = Customization
   == Hand-made, without themes
 
@@ -151,7 +157,7 @@
   #set text(0.9em)
 
   ```typ
-  #show heading: set text(font: "DejaVu Sans Mono", eastern)
+  #show heading: set text(font: "DejaVu Sans", eastern)
   #let bar1 = (fill: yellow.lighten(70%))
   #let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
   #show minideck.slide-title: it => minideck.layouts.top-bar(
@@ -160,6 +166,34 @@
     align(left, pad(6mm, text(0.7em, it))), style: bar2)
   ```
 ]
+
+slide[
+  =  Custom slide layouts
+
+  #import minideck.layouts: protrude
+
+  `protrude` helps with layouts that extend to the margins:
+
+
+  ```typ
+  #let my-box = box.with(inset: 1em, fill: luma(90%))
+  #protrude(x: 100%, my-box(width: 100%)[Page-wide figure])
+  ```
+
+  #let my-box = box.with(inset: 1em, fill: luma(90%))
+  #protrude(x: 100%, my-box(width: 100%)[Page-wide figure])
+
+  ```typ
+  #grid(columns: 2, align: horizon, lorem(12),
+    protrude(right: 100% - 1cm, my-box(width: 100%,
+      [Figure reaching 1cm to page border])))
+  ```
+
+  #grid(columns: 2, align: horizon, lorem(12),
+    protrude(right: 100% - 1cm, my-box(width: 100%,
+      [Figure reaching 1cm to page border])))
+]
+}
 
 #{
 import minideck.themes: *
@@ -194,7 +228,7 @@ slide[
 
   - *font scheme(s):* fonts and related settings
   
-  Themes and schemes can be passed as values or by name.
+  Themes and schemes can be passed as values or by name
 ]
 
 slide[
@@ -258,22 +292,40 @@ slide[
 #slide[
   = Subslides with `pause`
 
-  #grid(columns: (2fr, 3fr))[
+  #grid(columns: (50%, 50%),
+    ```typ
     First part
 
     #show: pause
 
     Second part
-  ][
+    ```,
+  [
+    First part
+
     #show: pause
 
-    Enums work with explicit numbering
+    Second part
+  ],
+  )
 
+  #show: pause
+
+  #v(1em)
+  Paused enums require explicit numbering:
+  #v(1em)
+  #grid(columns: (50%, 50%),
+    ```typ
     1. One
-    2. Two
     #show: pause
-    3. Three
-  ]
+    2. Two  // not `+ Two`
+    ```,
+    [
+      1. One
+      #show: pause
+      2. Two
+    ],
+  )
 ]
 
 #slide[
@@ -296,6 +348,17 @@ slide[
 
 #slide[
   = Dynamic equations
+
+  #set align(center)
+
+  ```typ
+  $
+    f(x) &= x^2 + 2x + 1  \
+         #uncover(2, $&= (x + 1)^2$)
+  $
+  ```
+
+  #v(1em)
 
   $
     f(x) &= x^2 + 2x + 1  \
