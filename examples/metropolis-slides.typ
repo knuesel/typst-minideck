@@ -5,6 +5,7 @@
       title-block, alert-block, example-block) = minideck.config(
   // format: "4:3",
   // text-size: 22pt,
+  // font-scheme: "default",
   // font-scheme: "libertinus-sans",
   // font-scheme: "fira-sans-light",
   // font-scheme: "fira-sans",

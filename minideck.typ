@@ -121,12 +121,11 @@
   }
 
   (
+    // theme sets cfg, template, and slide functions
+    ..theme(get-cfg, plain-slide),
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
-    // theme sets template and (updated) cfg and can override all of the above
-    ..theme(get-cfg, plain-slide),
-    // theme cannot override plain-slide
     plain-slide: plain-slide,
   )
   if cetz != none {

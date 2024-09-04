@@ -1,3 +1,20 @@
+= with text weights template
+
+hyperfine 'typst compile examples/metropolis-slides.typ'
+
+Benchmark 1: typst compile examples/metropolis-slides.typ
+  Time (mean ± σ):     575.6 ms ±   7.1 ms    [User: 441.5 ms, System: 134.3 ms]
+  Range (min … max):   569.4 ms … 593.7 ms    10 runs
+
+hyperfine 'typst compile examples/simple-slides.typ'
+
+Benchmark 1: typst compile examples/simple-slides.typ
+  Time (mean ± σ):     746.2 ms ±   9.9 ms    [User: 548.3 ms, System: 195.9 ms]
+  Range (min … max):   732.8 ms … 767.8 ms    10 runs= 
+
+
+= d946d13c163f42948006e095c62b63db2dd23586
+
 hyperfine 'typst compile examples/metropolis-slides.typ'
 
 Benchmark 1: typst compile examples/metropolis-slides.typ
@@ -10,3 +27,5 @@ hyperfine 'typst compile examples/simple-slides.typ'
 Benchmark 1: typst compile examples/simple-slides.typ
   Time (mean ± σ):     746.6 ms ±  11.5 ms    [User: 540.1 ms, System: 204.9 ms]
   Range (min … max):   730.3 ms … 768.6 ms    10 runs
+
+  

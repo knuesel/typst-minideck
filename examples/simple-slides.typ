@@ -72,8 +72,7 @@
 
   ```typ
   #outline(depth: 5) // show section and slide titles
-  // or:
-  #outline(target: minideck.slide-title) // only slide titles
+  #outline(depth: 5, target: minideck.slide-title) // only slide titles
   ```
 
   For example:

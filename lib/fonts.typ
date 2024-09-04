@@ -1,23 +1,5 @@
 #import "util.typ"
 
-#let _std-weights = (
-  thin: 100,
-  extralight: 200,
-  light: 300,
-  regular: 400,
-  medium: 500,
-  semibold: 600,
-  bold: 700,
-  extrabold: 800,
-  black: 900,
-)
-
-#let _default-text-weights = {
-  let new = (:)
-  for key in _std-weights.keys() { new.insert(key, key) }
-  new
-}
-
 /*
   A font scheme is a dictionary that can include the following fields:
 
@@ -32,16 +14,18 @@
   Missing values in `text-weights` for thin, regular and black will be set to
   the standard values and other missing values will be interpolated.
 
-  Missing keys (except for `text-weights`) will be taken from the default
-  scheme.
+  Missing keys will be taken from the default scheme. This guarantees that
+  `scheme.text` will exist, but not that it will contain particular keys such
+  as `font`: if a font scheme defins `text: (:)` it won't be overriden by the
+  default scheme.
 */ 
 #let schemes = (
   // The `default` scheme defines the valid keys
   default: (
-    text: (font: "Linux Libertine"),
-    text-weights: _default-text-weights,
-    raw: (font: "DejaVu Sans Mono"),
-    math: (font: "New Computer Modern Math"),
+    text: (:), // default font: Linux Libertine
+    text-weights: (:),
+    raw: (:), // default font: DejaVu Sans Mono
+    math: (:), // defont font: New Computer Modern Math
     delta: 300,
   ),
   libertinus-sans: (
@@ -55,12 +39,35 @@
   ),
   fira-sans-light: (
     text: (font: "Fira Sans"),
-    text-weights: (regular: "light", medium: "regular", bold: "regular"),
+    text-weights: (regular: "light", medium: 350, bold: "regular"),
     raw: (font: "Fira Mono", weight: "regular"),
     math: (font: "Fira Math", weight: "light"),
     delta: 100,
   ),
 )
+
+// Weight values of standard weights
+#let _std-weights = (
+  thin: 100,
+  extralight: 200,
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  extrabold: 800,
+  black: 900,
+)
+
+// Weight names of weight values (inverted dict of _std-weights).
+// The values (integers) are converted to string to act as dict keys.
+#let _values-to-names = {
+  let new = (:)
+  for (k, v) in _std-weights {
+    new.insert(str(v), k)
+  }
+  new
+}
 
 #let _weight-value(v) = if type(v) == str { _std-weights.at(v) } else { v }
 
@@ -73,9 +80,10 @@
   prev + (i - i-prev)/(i-next - i-prev) * (next - prev)
 }
 
-// Return full dict of weights in standard order, interpolating missing values.
-// The standard weights are used for the extreme (thin and black) and regular
-// weights if unspecified.
+// Return full dict of weights in standard order, interpolating
+// missing values. The standard weights are used for the extreme (thin and
+// black) and regular weights if unspecified. Numeric weights are converted to
+// weight names where possible.
 #let _weights-full(weights) = {
   // Use default for regular and extreme weights if unspecified
   for w in ("thin", "regular", "black") {
@@ -94,15 +102,22 @@
   let new = (:)
   for (i, (k, v)) in array.zip(keys, values).enumerate() {
     if v == none {
-      new.insert(k, int(_interpolate(values, i)))
-    } else {
-      // Use `weights` rather than `values` to preserve values given as string
-      new.insert(k, weights.at(k))
+      v = int(_interpolate(values, i))
     }
+    // Convert values to names where possible
+    new.insert(k, _values-to-names.at(str(v), default: v))
   }
   new
 }
 
+// Return a scheme in normalized form:
+// - scheme names are resolved to scheme dicts
+// - font names are lowercased (necessary for matching in `text.where(...)`)
+// - missing text weights are filled in (for normal, thin and black) or
+//   interpolated
+// - weight values are converted to names where possible
+// - missing fields are copied from the default scheme
+// - an error is thrown if the scheme contains unknown fields
 #let _normalize(scheme) = {
   // Resolve scheme value if given as name
   if type(scheme) == str {
@@ -114,12 +129,25 @@
       panic("Invalid font scheme key: " + k)
     }
   }
-  // Ensure all weights are set, interpolating missing values
-  scheme.text-weights = _weights-full(scheme.at("text-weights", default: (:)))
   // Fill in default values for missing fields
   scheme = schemes.default + scheme
-
+  // Ensure all weights are set, interpolating missing values and using weight
+  // names where possible
+  scheme.text-weights = _weights-full(scheme.text-weights)
+  // Convert font names to lowercase
+  if "font" in scheme.text { scheme.text.font = lower(scheme.text.font) }
+  if "font" in scheme.math { scheme.math.font = lower(scheme.math.font) }
+  if "font" in scheme.raw  { scheme.raw.font  = lower(scheme.raw.font)  }
   return scheme
+}
+
+// Return true if the weights are all equal to the default, false
+// otherwise.
+#let is-default-weights(weights) = {
+  for (k, v) in weights {
+    if k != v { return false }
+  }
+  return true
 }
 
 #let get-fonts(schemes, n: 1, default: schemes.default) = {

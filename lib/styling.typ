@@ -1,4 +1,4 @@
-#include "colors.typ"
+#import "fonts.typ"
 
 /*
   Heading selectors:
@@ -102,7 +102,6 @@
 
 // Bibliography template
 #let bibliography-template(cfg, it) = {
-  let (font-scheme, ..) = cfg.fonts
   set block(spacing: 2em)
   set par(justify: false) // in case it's true globally
   show regex("\[[0-9]+\]"): set align(top)
@@ -110,12 +109,31 @@
   it
 }
 
+// Template to override all font weights for `font` using `weights`.
+// If `font` is `none` or `weights` are all default, no rule is applied.
+#let weights-template(font, weights, it) = {
+  if font == none or fonts.is-default-weights(weights) {
+    return it
+  }
+  let (f, w) = (font, weights)
+  show text.where(font: f, weight: "thin"):       set text(weight: w.thin)
+  show text.where(font: f, weight: "extralight"): set text(weight: w.extralight)
+  show text.where(font: f, weight: "light"):      set text(weight: w.light)
+  show text.where(font: f, weight: "regular"):    set text(weight: w.regular)
+  show text.where(font: f, weight: "medium"):     set text(weight: w.medium)
+  show text.where(font: f, weight: "semibold"):   set text(weight: w.semibold)
+  show text.where(font: f, weight: "bold"):       set text(weight: w.bold)
+  show text.where(font: f, weight: "extrabold"):  set text(weight: w.extrabold)
+  show text.where(font: f, weight: "black"):      set text(weight: w.black)
+  it
+}
+
 // Basic template: settings that most themes should apply.
 #let basic-template(cfg, doc) = {
   let (paper, fonts, shades) = cfg
-  let (font-scheme, ..) = fonts
-  let (regular, medium, bold) = font-scheme.text-weights
   let (bg-color, .., fg-color) = shades
+  let (font-scheme, ..) = fonts
+  let weights = font-scheme.text-weights
 
   set page(
     paper: paper,
@@ -125,9 +143,15 @@
   )
 
   // General text
-  set text(fg-color, weight: regular, ..font-scheme.text)
+  set text(fg-color, ..font-scheme.text)
   show math.equation: set text(..font-scheme.math)
   set strong(delta: font-scheme.delta)
+
+  // Redefine text weights according to font scheme
+  show: weights-template.with(
+    font-scheme.text.at("font", default: none),
+    font-scheme.text-weights,
+  )
 
   // Raw text
   show raw: set text(..font-scheme.raw)
@@ -146,9 +170,6 @@
   set outline(title: none, depth: 3)
 
   /* Headings */
-
-  // Use the font-scheme's definition of bold for all headings
-  show heading: set text(weight: bold) // XXX replace with show text.where
 
   // Only section titles and slide titles should appear in outline
   // (and slide titles are disabled by default with outline(depth: 3))

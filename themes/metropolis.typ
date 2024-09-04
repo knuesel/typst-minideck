@@ -1,11 +1,5 @@
 #import "../lib/lib.typ": *
 
-#let slide(cfg, plain-slide, ..args, it) = plain-slide(offset: 4, ..args, {
-  v(0.4fr)
-  it
-  v(0.6fr)
-})
-
 #let place-progress-bar(show-progress, colors) = context {
   if show-progress {
     let (i, n) = util.progress()
@@ -15,6 +9,12 @@
     place(horizon, line(length: 100%, stroke: colors.fg))
   }
 }
+
+#let slide(cfg, plain-slide, ..args, it) = plain-slide(offset: 4, ..args, {
+  v(0.4fr)
+  it
+  v(0.6fr)
+})
 
 #let section(cfg, plain-slide, show-progress: true, ..args, it) = {
   // TODO: use 50% - 11em once typst supports giving abs margins
@@ -29,8 +29,7 @@
 #let standout(cfg, plain-slide, ..args, it) = {
   set text(cfg.colors.bg) // done here to also affect header/footer
   plain-slide(offset: 4, footer: none, fill: cfg.colors.fg, ..args, {
-    let (bold,) = cfg.font-scheme.text-weights
-    set text(size: 1.4em, weight: bold)
+    set text(size: 1.4em, weight: "bold")
     set align(horizon+center)
     it
   })
@@ -75,11 +74,6 @@
 )
 
 #let template(cfg, it) = {
-  let font-scheme = cfg.fonts.first()
-  let (regular, medium, bold) = font-scheme.text-weights
-
-  show slide-title: title-bar.with(cfg)
-
   set page(
     // TODO: use 3em once typst supports giving abs margins
     margin: 66pt,
@@ -96,16 +90,14 @@
   show section-title: it => it.body
 
   // Heading text styles
-  // typst defaults: H1 1.4em, H2 1.2em
-  // basic-template default: font-scheme.text-weights.bold
+  // typst defaults: H1 1.4em, H2 1.2em, all headings bold
   show presentation-title: set text(1.15em) // 1.4em * 1.15
-  show presentation-subtitle: set text(1.1em, weight: regular) // 1.2em * 1.1
+  show presentation-subtitle: set text(1.1em, weight: "regular") // 1.2em * 1.1
   show section-title: set text(1.4em)
-  show section-subtitle: set text(1.2em * 1.1, weight: regular)
+  show section-subtitle: set text(1.2em * 1.1, weight: "regular")
   show slide-title: set text(1.2em)
   show slide-subtitle: set text(1.2em)
-  show block-title.or(block-subtitle): set text(weight: medium)
-
+  show block-title.or(block-subtitle): set text(weight: "medium")
 
   // Layout for titles
   show presentation-title: it => layouts.place-relative(
@@ -116,14 +108,16 @@
   )
   show presentation-subtitle: it => place(bottom, dy: -50%, pad(bottom: 1.6em, it))
   show section-title: it => place(bottom, dy: -50%, pad(bottom: 0.9em, it))
+  show slide-title: title-bar.with(cfg)
 
   // Links
-  show link: strong.with(delta: int(font-scheme.delta/2))
+  show link: set text(weight: "medium")
 
   // Outline
   show: outline-templates.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
+  // Make bold section titles only when slide titles are also shown
   show outline-sections-and-slides: it => {
-    show outline.entry.where(level: 3): strong
+    show outline.entry.where(level: 3): set text(weight: "bold")
     it
   }
 
@@ -189,8 +183,7 @@
     accents: (n: 2, default: "metropolis"),
     fonts: (n: 1, default: "fira-sans-light"),
   )
-  // Add some private fields
-  cfg.font-scheme = cfg.fonts.first()
+  // Add non-standard fields
   cfg.colors = color-theme(cfg)
 
   plain-slide = plain-slide.with(footer-func: footer-func)

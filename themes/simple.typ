@@ -36,9 +36,8 @@
     shades: (default: (white, luma(15%)), reverse: variant == "dark"),
     accents: (n: 1, default: (blue,)),
   )
-  cfg.variant = variant // private field, for the record
   
-  (
+  return (
     cfg: cfg,
     title: title.with(plain-slide, offset: 0),
     section: title.with(plain-slide, offset: 2),
