@@ -1,8 +1,9 @@
-#import "@local/minideck:0.3.0" // XXX
-#import minideck.themes: *
+// Subset of metropolis-slides.typ for testing
+
+#import "/package.typ" as minideck
 
 #let (
-  template, slide, section, title, standout, alert, example,
+  template, slide, section, title, standout,
   title-block, alert-block, example-block,
 ) = minideck.config(theme: "metropolis")
 
@@ -34,7 +35,6 @@
 
 
   Enable this theme with
-  // XXX update version
 
   ```typ
   #import "@preview/minideck:0.3.0"
@@ -47,68 +47,6 @@
 
   #v(1em)
   For other Typst implementations see Polylux@polylux and Touying@touying.
-]
-
-#slide[
-  = Typography
-
-  The default font scheme is `fira-sans-light`. To use it, make sure you have _Fira Sans_ and _Fira Math_ installed!
-
-  There is also a font scheme `fira-sans` that uses regular weight for text and medium weight for titles. Select it with
-
-  ```typ
-  minideck.config(
-    font-scheme: "fira-sans",
-    theme: "metropolis",
-  )
-  ```
-
-
-  #v(1em)
-  The theme provides an `alert` function for #alert[special emphasis], and
-  `example` for an #example[alternative color].
-]
-
-#section[ = Structure ]
-
-#slide[
-  = Presentation title
-
-  The `#title` command creates a title slide.
-  
-  Headers are defined with the usual typst syntax:
-
-  ```typ
-  #title[
-    = Presentation title
-    == Subtitle
-
-    Author
-
-    Date
-  ]
-  ```
-]
-
-#slide[
-  = Sections
-
-  Use `#section` to separate groups of slides:
-
-  ```typst
-  #section[ = Section title ]
-  ```
-
-  This will create a slide with the section title and a progress bar, plus optional subtitle(s) or other content.
-
-  #v(1fr)
-  To disable the progress bar, import the `metropolis` function:
-
-  
-  `  #import minideck.themes: *`
-  
-  and configure it with\
-  `  minideck.config(theme: metropolis.with(show-progress: false))`
 ]
 
 #slide[
@@ -128,8 +66,6 @@
   #show par: block.with(breakable: false)
   #columns(2, outline())
 ]
-
-#section[ = Elements ]
 
 #slide[
   = Blocks
@@ -181,12 +117,6 @@
 
   #v(1em)
   To choose one, use `#show math.equation: set text(weight: ...)`
-]
-
-#section[
-  = Conclusion
-
-  == Give it a try!
 ]
 
 #standout[

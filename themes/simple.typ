@@ -1,4 +1,4 @@
-#import "../lib/lib.typ": *
+#import "/lib/lib.typ": *
 
 // Layout for title slides: centered content and no footer/page numbers
 #let title(plain-slide, ..args, it) = {

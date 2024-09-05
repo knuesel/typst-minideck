@@ -1,5 +1,5 @@
 #import "@preview/cetz:0.2.2"
-#import "../lib/colors.typ": *
+#import "/lib/colors.typ": *
 
 #set page(margin: 1cm)
 

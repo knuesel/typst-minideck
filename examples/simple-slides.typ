@@ -1,6 +1,8 @@
 #import "@local/minideck:0.3.0" // XXX
 
-#let (template, slide, section, title, pause, uncover, only) = minideck.config(
+#let (
+  template, slide, section, title, pause, uncover, only,
+) = minideck.config(
   // author: [Tebine], // content or array of content
   // date: datetime.today().display(), // content
   // institution: [BFH], // content or array of content

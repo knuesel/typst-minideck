@@ -1,4 +1,4 @@
-#import "../lib/fonts.typ": *
+#import "/lib/fonts.typ": *
 
 #_normalize("fira-sans-light")
 
