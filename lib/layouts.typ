@@ -94,7 +94,7 @@
 // with the page border.
 // Options can be passed to the block wrapper using the `style` parameter.
 #let slide-bar(dy: 0pt, overlay: false, style: (:), y-align, it) = {
-  let b = block(width: page.width, ..style, it)
+  let b = block(width: util.page-size().width, ..style, it)
   place(y-align+center, dy: dy, float: not overlay, clearance: 0pt, b)
 }
 

@@ -130,12 +130,12 @@
 
 // Basic template: settings that most themes should apply.
 #let basic-template(cfg, doc) = {
-  let (paper, fonts, shades) = cfg
+  let (page-args, fonts, shades) = cfg
   let (bg-color, .., fg-color) = shades
   let (font-scheme, ..) = fonts
 
   set page(
-    paper: paper,
+    ..page-args,
     header-ascent: 0pt,
     footer-descent: 0pt,
     fill: bg-color,

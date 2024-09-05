@@ -43,6 +43,16 @@
   return on
 }
 
+// Return a dict with the width and height of the current page, taking
+// `page.flipped` into account.
+#let page-size() = {
+  if page.flipped {
+    (width: page.height, height: page.width)
+  } else {
+    (width: page.width, height: page.height)
+  }
+}
+
 /*
   Return a dict with fields `left`, `right`, `top`, `bottom`.
   `margins` can take the same values as typst's page.margin, except for `inside`
@@ -72,18 +82,19 @@
 // The `text-size` parameter is used to convert em lenghts. If unspecified,
 // the context's text size is used.
 #let context-margins(text-size: auto) = {
+  let p-size = page-size() 
   let margins = standard-margin-fields(page.margin)
 
   // Replace auto with default length
-  let auto-length = auto-margin(page.width, page.height)
+  let auto-length = auto-margin(p-size.width, p-size.height)
   margins = map-dict(margins, (k, v) => coalesce(v, auto-length))
 
   // Convert all lengths to absolute values  
   text-size = coalesce(text-size, text.size)
-  margins.left   = length-to-abs(margins.left,   page.width,  text-size)
-  margins.right  = length-to-abs(margins.right,  page.width,  text-size)
-  margins.top    = length-to-abs(margins.top,    page.height, text-size)
-  margins.bototm = length-to-abs(margins.bottom, page.height, text-size)
+  margins.left   = length-to-abs(margins.left,   p-size.width,  text-size)
+  margins.right  = length-to-abs(margins.right,  p-size.width,  text-size)
+  margins.top    = length-to-abs(margins.top,    p-size.height, text-size)
+  margins.bototm = length-to-abs(margins.bottom, p-size.height, text-size)
 
   return margins
 }
