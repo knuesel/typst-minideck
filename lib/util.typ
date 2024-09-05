@@ -88,17 +88,18 @@
   return margins
 }
 
-// Current progress in the presentation as an array
-// `(current-slide, total-slides-before-appendix)`, counting all subslides as a
-// single slide and ignoring slides after the <appendix> label.
+// Current progress in the presentation as an array of 1-based slide numbers
+// `(current-slide, end-slide)`, counting all subslides as a
+// single slide and ignoring slides after the one marked with `<end-slide>`.
 // Must be called with appropriate context available.
 #let progress() = {
   let i = counter(page).get().first()
-  let appendix = query(<appendix>)
-  let n = if appendix.len() > 0 {
-    // If an appendix label was found, count slides only till the slide before.
-    counter(page).at(appendix.first().location()).first() - 1
+  let end-slide = query(<end-slide>)
+  let n = if end-slide.len() > 0 {
+    // If an end-slide label was found, count slides only till that one
+    counter(page).at(end-slide.first().location()).first()
   } else {
+    // Count till last slide
     counter(page).final().first()
   }
   return (i, n)

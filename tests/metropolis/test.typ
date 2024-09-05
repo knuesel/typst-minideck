@@ -121,16 +121,15 @@
 
 #standout[
   Questions?
-]
+]<end-slide>
 
 #slide[
   = Backup slides
 
-  Add the `<appendix>` label to a slide (section title or normal slide) to start
-  the appendix.
-  
-  Appendix slides are ignored by the progress indicator.
-]<appendix>
+  Add the `<end-slide>` label to the slide that marks the end of your presentation.
+
+  Slides coming after this point are ignored by the progress indicator.
+]
 
 #slide[
   = References
