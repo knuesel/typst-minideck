@@ -95,7 +95,8 @@
 // Options can be passed to the block wrapper using the `style` parameter.
 #let slide-bar(dy: 0pt, overlay: false, style: (:), y-align, it) = {
   let b = block(width: util.page-size().width, ..style, it)
-  place(y-align+center, dy: dy, float: not overlay, clearance: 0pt, b)
+  let dx = -util.context-margins().left
+  place(y-align+left, dx: dx, dy: dy, float: not overlay, clearance: 0pt, b)
 }
 
 // Place a full-width block at the top of the slide, displacing the margin
