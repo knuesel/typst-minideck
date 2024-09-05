@@ -24,7 +24,7 @@
   default: (
     text: (:), // default font: Linux Libertine
     text-weights: (:),
-    raw: (font: "DejaVu Sans Mono", size: 0.9em),
+    raw: (:), // default font: DejaVu Sans Mono
     math: (:), // defont font: New Computer Modern Math
     delta: 300,
   ),

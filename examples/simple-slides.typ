@@ -10,8 +10,10 @@
 
 #show: template
 
+#show raw: set text(0.8em)
+
 #title[
-  = Slides with `minideck`
+  = Slides with minideck
   == Usage and features
 
   Tebine
@@ -24,8 +26,6 @@
 
   #outline()
 ]
-
-#show raw: set text(0.9em)
 
 #section[ = Basic usage ]
 
@@ -266,24 +266,21 @@ let (template, slide) = minideck.config(
 )
 show: template
 show heading: set text(1.2em)
-// Undo fonts.default.raw scaling due to nested `show: template`
-show raw: set text(1.1em)
 
 slide[
-  = Slide with dark theme
+  = Setting theme options
 
-  A theme can be specified by name, but to set options the theme function
-  must be used:
+  A theme is actually a function with parameters.
+
+  To change parameters, give `minideck.config()` a configured theme function instead of a name:
 
   ```typ
-  #import minideck.themes: * // for easy access to theme functions
+  #import minideck.themes: *
+
   #let (template, slide) = minideck.config(
-    // This requires Libertinus Sans to be installed
     font-scheme: "libertinus-sans",
-    // The simple theme expects shades of increasing brightness
     color-scheme: (shades: (luma(90%), navy)),
-    // Configure theme function (dark variant = reverse order of shades)
-    theme: simple.with(variant: "dark"),
+    theme: simple.with(variant: "dark"), // configured theme function
   )
   ```
 ]
