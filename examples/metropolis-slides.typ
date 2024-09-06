@@ -18,7 +18,7 @@
   == An implementation for minideck
 ]
 
-#slide(outlined: false)[ // for outline example further down with slide titles
+#slide(outlined: false)[ // for example further down (outline with slide titles)
   = Table of contents
 
   #outline()
@@ -40,7 +40,9 @@
   ```typ
   #import "@preview/minideck:0.3.0"
   #let (template, slide, title, section) = minideck.config(
-    theme: "metropolis")
+    theme: "metropolis",
+    author: [...], affiliation: [...], date: [...],
+  )
   #show: template
   ```
 
@@ -61,6 +63,7 @@
   minideck.config(
     font-scheme: "fira-sans",
     theme: "metropolis",
+    ...
   )
   ```
 
@@ -75,20 +78,20 @@
 #slide[
   = Presentation title
 
-  The `#title` command creates a title slide.
-  
-  Headers are defined with the usual typst syntax:
+  To make the title slide:
 
   ```typ
   #title[
     = Presentation title
     == Subtitle
 
-    Author
-
-    Date
+    // Content can be added here e.g. with `#place`
   ]
   ```
+
+  The theme will insert the author, affiliation and date given to `minideck.config`.
+  
+  The logo is ignored but can be placed manually.
 ]
 
 #slide[
@@ -97,31 +100,33 @@
   Use `#section` to separate groups of slides:
 
   ```typst
+  // Can also include subtitle or other content
   #section[ = Section title ]
   ```
 
-  This will create a slide with the section title and a progress bar, plus optional subtitle(s) or other content.
+  By default this shows a progress bar. To disable it, configure the theme
+  function and give the result to `minideck`:
 
-  #v(1fr)
-  To disable the progress bar, import the `metropolis` function:
+  ```typ
+  #import minideck.themes: *
 
-  
-  `  #import minideck.themes: *`
-  
-  and configure it with\
-  `  minideck.config(theme: metropolis.with(show-progress: false))`
+  minideck.config(
+    theme: metropolis.with(show-progress: false),
+     ...
+  )
+  ```
 ]
 
 #slide[
   = Outline
   
-  By default `#outline` will show only sections. To include slide titles:
+  By default `#outline` shows only sections. To include slide titles:
   
   ```typ
   #slide(outlined: false)[ // exclude TOC slide from TOC
     #set outline(depth: 5) // 5 = slide titles
     #show par: block.with(breakable: false) // optional
-    #columns(2, outline())]
+    #columns(2, outline())] // 2 columns looks good here
   ```
 
   #show outline: set text(0.8em)
@@ -135,7 +140,7 @@
 #slide[
   = Blocks
 
-  Show title blocks with `title-block`, `alert-block` and `example-block`.
+  Make title blocks with `title-block`, `alert-block` and `example-block`.
 
   Syntax: `#title-block(options...)[Title][Body]`.
 
@@ -184,6 +189,12 @@
   To choose one, use `#show math.equation: set text(weight: ...)`
 ]
 
+#section[ = Customization ]
+
+#slide(
+  foreground: image("metropolis-customized.png", width: 100%, height: 100%),
+)[= Example] // for TOC
+
 #section[
   = Conclusion
 
@@ -194,13 +205,6 @@
   Questions?
 ]<end-slide>
 
-#slide[
-  = Backup slides
-
-  Add the `<end-slide>` label to the slide that marks the end of your presentation.
-
-  Slides coming after this point are excluded from the outline and ignored by the progress indicator.
-]
 
 #slide[
   = References
