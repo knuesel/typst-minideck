@@ -70,8 +70,8 @@
   return format
 }
 
-#let _get-cfg(format, flipped, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
-  page-args: _format-arg(format) + (flipped: flipped),
+#let _get-cfg(format, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
+  page-args: _format-arg(format),
   fonts: fonts-module.get-fonts(font-scheme, ..fonts),
   shades: colors.get-shades(color-scheme, ..shades),
   accents: colors.get-accents(color-scheme, ..accents),
@@ -112,7 +112,6 @@
 // XXX update docstring above
 #let config(
   format: "4:3",
-  flipped: false,
   font-scheme: auto,
   color-scheme: auto,
   theme: "simple",
@@ -121,7 +120,7 @@
   fletcher: none,
 ) = {
   let plain-slide = _plain-slide.with(handout: handout)
-  let get-cfg = _get-cfg.with(format, flipped, font-scheme, color-scheme)
+  let get-cfg = _get-cfg.with(format, font-scheme, color-scheme)
 
   // Resolve theme if given as name
   if type(theme) == str {
