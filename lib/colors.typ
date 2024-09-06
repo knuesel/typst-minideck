@@ -217,8 +217,20 @@
   return value
 }
 
+// If scheme is a dict, check all keys are valid
+#let _check-scheme(scheme) = {
+  if type(scheme) != dictionary {
+    return
+  }
+  for (k, _) in scheme {
+    if k not in schemes.default {
+      panic("Invalid color scheme key: " + k)
+    }
+  }
+}
+
 // Return the requested number of accent colors from the source
-// `scheme.accents`, or from `default` if `scheme` has no such field.
+// `scheme.accents`, or from `default` if `scheme` is `auto` or has no such field.
 // The source must be an array of at least one color. If more colors are given
 // than requested with `n`, the remaining color(s) are dropped. If fewer colors
 // are given than requested, additional colors are generated in a way that
@@ -229,6 +241,7 @@
 // standar scheme's accents.
 // The returned colors are in RGB space.
 #let get-accents(scheme, n: 1, default: "default") = {
+  _check-scheme(scheme)
   let accents = _scheme-field(scheme, "accents", default)
   return _n-accents(accents, n)
 }
@@ -247,6 +260,7 @@
 // standar scheme's shades.
 // The returned colors are in RGB space.
 #let get-shades(scheme, samples: 2, default: "default", reverse: false) = {
+  _check-scheme(scheme)
   let shades = _scheme-field(scheme, "shades", default)
   if reverse {
     shades = _reverse-shades(shades)
