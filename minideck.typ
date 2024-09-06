@@ -15,6 +15,21 @@
   return page-args
 }
 
+// Template to update `heading.outline` using the given value.
+// If `outlined` is `auto`, it is set `true` if the current slide comes before
+// the `end-slide` label, `false` otherwise.
+#let _apply-outlined(outlined, it) = context {
+  let want-outlined = outlined
+  if want-outlined == auto {
+    // Selector for end-slide label before current slide
+    let end-before = selector(<end-slide>).before(here(), inclusive: false)
+    // Current slide is backup slide if there is such a label before
+    want-outlined = query(end-before).len() == 0
+  }
+  set heading(outlined: want-outlined)
+  it
+}
+
 // XXX rewrite
 // page arguments can be used to override the current page settings for this slide
 // The footer of a slide can be overriden using either `footer` or
@@ -39,7 +54,7 @@
   handout: auto,
   steps: auto,
   offset: none,
-  outlined: true,
+  outlined: auto,
   it,
 ) = {
   if args.pos().len() > 0 {
@@ -52,9 +67,8 @@
   page-args = _process-head-foot(page-args, "header", header-func, header-text)
   page-args = _process-head-foot(page-args, "footer", footer-func, footer-text)
   set page(..page-args) if page-args.len() > 0
-  set heading(outlined: false, numbering: none) if not outlined
   set heading(offset: offset)
-
+  show: _apply-outlined.with(outlined)
   logic.subslides(handout: handout, steps: steps, it)
 }
 

@@ -199,7 +199,7 @@
 
   Add the `<end-slide>` label to the slide that marks the end of your presentation.
 
-  Slides coming after this point are ignored by the progress indicator.
+  Slides coming after this point are excluded from the outline and ignored by the progress indicator.
 ]
 
 #slide[
