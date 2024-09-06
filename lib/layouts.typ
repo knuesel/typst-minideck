@@ -40,6 +40,7 @@
   )
 }
 
+// Calculate x shift corresponding to the given anchor alignment
 #let _anchor-x-shift(anchor, size) = {
   if anchor.x == right {
     -size.width
@@ -50,6 +51,7 @@
   }
 }
 
+// Calculate y shift corresponding to the given anchor alignment
 #let _anchor-y-shift(anchor, size) = {
   if anchor.y == bottom {
     -size.height
@@ -60,15 +62,26 @@
   }
 }
 
+// Place `it` relative to the `index`-th match of the `target` selector.
+// If the target is not found (or the index invalid), `it` is passed to the
+// `default` function for placement.
+// The `anchor` determines which point of `it` is aligned with the target
+// position.
+// The final position can be adjusted with `dx` and `dy`.
+// The relative placement can be overriden for a particular axis using `x` or
+// `y`: for example `x: 1cm` will disregard the `target` horizontal position,
+// instead shifting by `1cm` from the parent's origin.
 #let place-relative(
   target,
   index: 0,
   anchor: top+left,
+  x: auto,
+  y: auto,
   dx: 0pt,
   dy: 0pt,
   default: place,
   it,
-) = {
+) = context {
   // Workaround for typst 0.11, see https://github.com/typst/typst/issues/3614
   metadata(none)
   
@@ -79,8 +92,10 @@
     let this = here().position()
     let other = targets.at(index).location().position()
     let size = measure(it)
-    let x-shift = other.x - this.x + _anchor-x-shift(anchor, size) + dx
-    let y-shift = other.y - this.y + _anchor-y-shift(anchor, size) + dy
+    let x-shift = dx + _anchor-x-shift(anchor, size)
+    let y-shift = dy + _anchor-y-shift(anchor, size)
+    x-shift += if x == auto { other.x - this.x  + dx } else { x }
+    y-shift += if y == auto { other.y - this.y  + dy } else { y}
     place(dx: x-shift, dy: y-shift, it)
   }
 }
