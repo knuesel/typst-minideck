@@ -60,3 +60,7 @@ Other example:\
 
 
 #show-colors(get-shades(auto, samples: 4, default: "metropolis"))
+
+#get-shades("metropolis", samples: 0)
+#get-shades("metropolis", samples: 1)
+#get-shades("metropolis", samples: 2)

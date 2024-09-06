@@ -128,9 +128,35 @@
   return _expand-accents(accents.map(oklch), n).map(rgb)
 }
 
+// Check that sample positions are all of the same type and in increasing order,
+// panicking otherwise.
+// (This is necessary to avoid surprises when the number of given shades matches
+// the number of requested positions: in this case the given shades are returned
+// directly without sampling (giving an easy way for the user to set precise
+// colors, and users can easily make a gradient when that behavior is not
+// desired).
+#let _check-sample-positions(ts) = {
+  let types = ts.map(type)
+  if not (types.all(x => x == ratio) or types.all(x => x == angle)) {
+    panic("Shade sample positions must be all ratios or all angles")
+  }
+  if ts.len() < 2 {
+    return
+  }
+  for (x, y) in array.zip(ts.slice(0, -1), ts.slice(1)) {
+    if y < x {
+      panic("Shade postions must be increasing")
+    }
+  }
+}
+
 // Get shades specified either as a number or as gradient positions.
 // The returned colors are in RGB space.
 #let _sample-shades(shades, ts) = {
+  // For gradient samples, check they are of same type and in increasing order
+  if type(ts) == array {
+    _check-sample-positions(ts)
+  }
   let n-requested = if type(ts) == int { ts } else { ts.len() }
   // If shades array matches requested number, return array shades
   // return the given shades.
@@ -211,8 +237,8 @@
 // if `scheme` is `auto` or has no such field. The source can be either
 // an array of two or more colors, or a gradient. The `ts` argument can be
 // either the desired number of shades (two or more) or an
-// array of gradient positions. If the source is an array of colors, it
-// is first converted to a gradient with evenly spaced stops if a
+// array of increasing gradient positions. If the source is an array of colors,
+// it is first converted to a gradient with evenly spaced stops if a
 // different number of shades is requested.
 // The source is reversed before use if `reverse` is true.
 // Default can be a scheme or a shades value (array or gradient).

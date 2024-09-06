@@ -1,5 +1,9 @@
 // Return `n` evenly-spaced values between `a` and `b`
-#let linspace(a, b, n) = range(n).map(i => a + (b - a)/(n - 1) * i)
+#let linspace(a, b, n) = {
+  if n == 0 { return () }
+  if n == 1 { return ((a + b) / 2,) }
+  range(n).map(i => a + (b - a)/(n - 1) * i)
+}
 
 // Convert length to absolute length for given text size
  #let simple-length-to-abs(len, text-size) = len.abs + text-size * len.em
