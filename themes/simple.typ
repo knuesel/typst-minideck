@@ -1,11 +1,34 @@
 #import "/lib/lib.typ": *
 #import styling: *
 
-// Layout for title slides: centered content and no footer/page numbers
-#let title(plain-slide, ..args, it) = {
-  plain-slide(footer: none, ..args, {
+#let title(cfg, plain-slide, ..args, it) = {
+  let md = cfg.metadata
+  plain-slide(offset: 0, footer: none, ..args, {
+    place(top, layouts.protrude(top: 100%, x: 100%, md.logos.join(h(1fr))))
     set align(horizon+center)
-    it
+    it // titles and possibly other content
+    set text(0.9em)
+    {
+      set block(above: 2.5em)
+      parbreak()
+      md.authors.join(h(2em))
+    }
+    {
+      set text(0.8em)
+      set block(spacing: 0.8em)
+      parbreak()
+      md.affiliations.join(parbreak())
+    }
+    set block(above: 2.5em)
+    parbreak()
+    md.date
+  })
+}
+
+#let section(cfg, plain-slide, ..args, it) = {
+  plain-slide(offset: 2, footer: none, ..args, {
+    set align(horizon+center)
+    it // titles and possibly other content
   })
 }
 
@@ -44,8 +67,8 @@
   
   return (
     cfg: cfg,
-    title: title.with(plain-slide, offset: 0),
-    section: title.with(plain-slide, offset: 2),
+    title: title.with(cfg, plain-slide),
+    section: section.with(cfg, plain-slide),
     slide: plain-slide.with(offset: 4),
     template: template.with(cfg),
   )

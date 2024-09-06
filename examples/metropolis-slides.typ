@@ -4,17 +4,18 @@
 #let (
   template, slide, section, title, standout, alert, example,
   title-block, alert-block, example-block,
-) = minideck.config(theme: "metropolis")
+) = minideck.config(
+  theme: "metropolis",
+  author: [Jeremie Knuesel],
+  date: datetime.today().display("[month repr:long] [day], [year]"),
+  affiliation: [Center for minideck themes],
+)
 
 #show: template
 
 #title[
   = Metropolis
   == An implementation for minideck
-
-  Jeremie Knuesel
-
-  #datetime.today().display("[month repr:long] [day], [year]")
 ]
 
 #slide(outlined: false)[ // for outline example further down with slide titles

@@ -22,7 +22,7 @@
   plain-slide(offset: 2, footer: none, margin: 50% - 11*22pt, ..args, {
     set align(top)
     place-progress-bar(show-progress, cfg.colors.progress-bar)
-    block(spacing: 1.2em, height: 50%)
+    block(height: 50%)
     it
   })
 }
@@ -39,14 +39,26 @@
 #let title(cfg, plain-slide, ..args, it) = {
   plain-slide(offset: 0, footer: none, ..args, {
     set align(top)
-    show par: set block(below: 1em) // TODO: change once #4390 is released
-    set text(0.9em)
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
-    block(spacing: 2.7em, height: 50%)
+    block(height: 50%, below: 2.4em)
     it
+
+    let md = cfg.metadata
+    set text(0.9em)
+    {
+      set block(below: 1em)
+      md.authors.join([, ])
+      parbreak()
+      md.date
+    }
+    block(above: 1.4em, {
+      set text(0.8em)
+      set block(spacing: 0.8em)
+      md.affiliations.join(parbreak())
+    })
   })
 }
-
+    
 #let title-block(cfg, transparent: true, ..args, it-title, it-body) = {
   let title = (inset: 0.4em)
   let body = (inset: 0.4em)
@@ -92,10 +104,10 @@
 
   // Heading text styles
   // typst defaults: H1 1.4em, H2 1.2em, all headings bold
-  show presentation-title: set text(1.15em) // 1.4em * 1.15
-  show presentation-subtitle: set text(1.1em, weight: "regular") // 1.2em * 1.1
+  // show presentation-title: set text() // default is good
+  show presentation-subtitle: set text(weight: "regular")
   show section-title: set text(1.4em)
-  show section-subtitle: set text(1.2em * 1.1, weight: "regular")
+  show section-subtitle: set text(1.2em, weight: "regular")
   show slide-title: set text(1.2em)
   show slide-subtitle: set text(1.2em)
   show block-title.or(block-subtitle): set text(weight: "medium")

@@ -2,21 +2,29 @@
 
 #import "/package.typ" as minideck
 
+#let date = datetime(year: 2024, month: 9, day: 5)
+
 #let (
   template, slide, section, title, standout,
   title-block, alert-block, example-block,
-) = minideck.config(theme: "metropolis")
+) = minideck.config(
+  theme: "metropolis",
+  author: (
+    [Jane Smith#super[1]],
+    [John Doe#super[2]],
+  ),
+  affiliation: (
+    [#super[1] Euphoric State University],
+    [#super[2] University of Rummidge],
+  ),
+  date: date.display("[month repr:long] [day], [year]"),
+)
 
 #show: template
 
 #title[
   = Metropolis
   == Internal test slides for minideck
-
-  Author
-
-  #let date = datetime(year: 2024, month: 9, day: 5)
-  #date.display("[month repr:long] [day], [year]")
 ]
 
 #slide(outlined: false)[ // for outline example further down with slide titles

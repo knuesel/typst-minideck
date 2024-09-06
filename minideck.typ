@@ -58,11 +58,13 @@
   logic.subslides(handout: handout, steps: steps, it)
 }
 
+// Return paper name for given format string
 #let _paper(format) = (
   "4:3": "presentation-4-3",
   "16:9": "presentation-16-9",
 ).at(format, default: format)
 
+// Return page arguments for given format
 #let _format-arg(format) = {
   if type(format) == str {
     return (paper: _paper(format))
@@ -70,8 +72,29 @@
   return format
 }
 
-#let _get-cfg(format, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
+// Convert none to empty array, wrap scalar in one-element array, leave arrays
+// as is.
+#let _as-array(value) = {
+  if value == none { return () }
+  if type(value) == array { return value }
+  return (value,)
+}
+
+// Return the presentation metadata
+#let _metadata(author, affiliation, logo, date) = (
+  authors: _as-array(author),
+  affiliations: _as-array(affiliation),
+  logos: _as-array(logo),
+  date: date,
+)
+
+// Function used by themes to get the configuration from the user.
+// Minideck configures the positional arguments before passing this function to
+// the theme. The theme uses the keyword arguments to request particular shades,
+// etc.
+#let _get-cfg(format, meta-data, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
   page-args: _format-arg(format),
+  metadata: meta-data,
   fonts: fonts-module.get-fonts(font-scheme, ..fonts),
   shades: colors.get-shades(color-scheme, ..shades),
   accents: colors.get-accents(color-scheme, ..accents),
@@ -110,6 +133,10 @@
 // caller is responsible for invoking `context` in a suitable scope, typically
 // as in `#context cetz.canvas({...})`.
 // XXX update docstring above
+// date: name of event, formatted date...
+// Author, affiliation, logo and date are defined here so that minideck can
+// normalize them before handing the values to the theme (while the theme and
+// title slide functions are controlled directly by the theme).
 #let config(
   format: "4:3",
   font-scheme: auto,
@@ -118,9 +145,14 @@
   handout: auto,
   cetz: none,
   fletcher: none,
+  author: none,
+  affiliation: none,
+  logo: none,
+  date: none,
 ) = {
   let plain-slide = _plain-slide.with(handout: handout)
-  let get-cfg = _get-cfg.with(format, font-scheme, color-scheme)
+  let meta-data = _metadata(author, affiliation, logo, date)
+  let get-cfg = _get-cfg.with(format, meta-data, font-scheme, color-scheme)
 
   // Resolve theme if given as name
   if type(theme) == str {

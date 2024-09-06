@@ -1,11 +1,19 @@
 #import "@local/minideck:0.3.0" // XXX
 
-#let (
-  template, slide, section, title, pause, uncover, only,
-) = minideck.config(
-  // author: [Tebine], // content or array of content
-  // date: datetime.today().display(), // content
-  // institution: [BFH], // content or array of content
+#let (template, slide, section, title, pause, uncover, only) = minideck.config(
+  author: (
+    [Jane Smith#super[1]],
+    [John Doe#super[2]],
+  ),
+  affiliation: (
+    [#super[1] Euphoric State University],
+    [#super[2] University of Rummidge],
+  ),
+  logo: (
+    box(fill: luma(90%), inset: 15mm)[Logo 1],
+    box(fill: luma(90%), inset: 15mm)[Logo 2],
+  ),
+  date: [Minideck Symposium, 4#super[th] September 2024],
 )
 
 #show: template
@@ -15,10 +23,6 @@
 #title[
   = Slides with minideck
   == Usage and features
-
-  Tebine
-
-  #datetime.today().display()
 ]
 
 #slide(outlined: false)[
