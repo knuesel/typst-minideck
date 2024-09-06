@@ -11,11 +11,12 @@
 
 #title[
   = Metropolis
-  == An implementation for minideck
+  == Internal test slides for minideck
 
-  Jeremie Knuesel
+  Author
 
-  #datetime.today().display("[month repr:long] [day], [year]")
+  #let date = datetime(year: 2024, month: 9, day: 5)
+  #date.display("[month repr:long] [day], [year]")
 ]
 
 #slide(outlined: false)[ // for outline example further down with slide titles
