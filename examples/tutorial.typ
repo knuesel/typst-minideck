@@ -315,8 +315,7 @@ slide[
   - `block-title`
   - `block-subtitle`
 
-  These correspond to `level` 1 to 8\
-    (though they actually match on `offset` and `depth`)
+  These correspond to `level` 1 to 8.
 ]
 
 slide[

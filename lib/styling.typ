@@ -1,24 +1,14 @@
 #import "fonts.typ"
 
-/*
-  Heading selectors:
-   - offset 0 depth 1 level 1: presentation titles
-   - offset 0 depth 2 level 2: presentation subtitle
-   - offset 2 depth 1 level 3: section titles
-   - offset 2 depth 2 level 4: section subtitle
-   - offset 4 depth 1 level 5: slide title
-   - offset 4 depth 2 level 6: slide subtitle
-   - offset 6 depth 1 level 7: block title
-   - offset 6 depth 2 level 8: block subtitle
-*/
-#let presentation-title =    heading.where(offset: 0, depth: 1)
-#let presentation-subtitle = heading.where(offset: 0, depth: 2)
-#let section-title =         heading.where(offset: 2, depth: 1)
-#let section-subtitle =      heading.where(offset: 2, depth: 2)
-#let slide-title =           heading.where(offset: 4, depth: 1)
-#let slide-subtitle =        heading.where(offset: 4, depth: 2)
-#let block-title =           heading.where(offset: 6, depth: 1)
-#let block-subtitle =        heading.where(offset: 6, depth: 2)
+//  Heading selectors
+#let presentation-title =    heading.where(level: 1)
+#let presentation-subtitle = heading.where(level: 2)
+#let section-title =         heading.where(level: 3)
+#let section-subtitle =      heading.where(level: 4)
+#let slide-title =           heading.where(level: 5)
+#let slide-subtitle =        heading.where(level: 6)
+#let block-title =           heading.where(level: 7)
+#let block-subtitle =        heading.where(level: 8)
 
 /*
 
