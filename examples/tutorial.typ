@@ -3,18 +3,9 @@
 #let current-subslide =  context (state("__minideck-subslide-step", 0).get()+1)
 
 #let (template, slide, section, title, pause, uncover, only) = minideck.config(
-  author: (
-    [Jane Smith#super[1]],
-    [John Doe#super[2]],
-  ),
-  affiliation: (
-    [#super[1] Euphoric State University],
-    [#super[2] University of Rummidge],
-  ),
-  logo: (
-    box(fill: luma(90%), inset: 15mm)[Logo 1],
-    box(fill: luma(90%), inset: 15mm)[Logo 2],
-  ),
+  author: [Jane Smith],
+  affiliation: [University of Rummidge],
+  logo: box(fill: luma(90%), inset: 15mm)[Logo],
   date: [Minideck Symposium, 4#super[th] September 2024],
 )
 
@@ -175,16 +166,13 @@
 #slide[
   And some used mostly for the title slide:
 
-  / `author:`: presentation author(s)
+  / `author:`: presentation author
 
-  / `affiliation:`: author affiliation(s)
+  / `affiliation:`: author affiliation
 
-  / `logo:`: logo(s)
+  / `logo:`: logo
 
   / `date:`: date, can be any content (e.g. event name)
-
-  #v(1em)
-  The `author`, `affiliation` and `logo` can be single values or arrays.
 ]
 
 #section[ = Themes and customization]

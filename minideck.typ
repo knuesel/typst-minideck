@@ -86,19 +86,11 @@
   return format
 }
 
-// Convert none to empty array, wrap scalar in one-element array, leave arrays
-// as is.
-#let _as-array(value) = {
-  if value == none { return () }
-  if type(value) == array { return value }
-  return (value,)
-}
-
 // Return the presentation metadata
 #let _metadata(author, affiliation, logo, date) = (
-  authors: _as-array(author),
-  affiliations: _as-array(affiliation),
-  logos: _as-array(logo),
+  author: author,
+  affiliation: affiliation,
+  logo: logo,
   date: date,
 )
 

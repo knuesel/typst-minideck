@@ -52,14 +52,14 @@
     set text(0.9em)
     {
       set block(below: 1em)
-      md.authors.join([, ])
+      md.author
       parbreak()
       md.date
     }
     block(above: 1.4em, {
       set text(0.8em)
       set block(spacing: 0.8em)
-      md.affiliations.join(parbreak())
+      md.affiliation
     })
   })
 }

@@ -4,20 +4,20 @@
 #let title(cfg, plain-slide, ..args, it) = {
   let md = cfg.metadata
   plain-slide(offset: 0, footer: none, ..args, {
-    place(top, layouts.protrude(top: 100%, x: 100%, md.logos.join(h(1fr))))
+    place(top, layouts.protrude(top: 100%, left: 100%, md.logo))
     set align(horizon+center)
     it // titles and possibly other content
     set text(0.9em)
     {
       set block(above: 2.5em)
       parbreak()
-      md.authors.join(h(2em))
+      md.author
     }
     {
       set text(0.8em)
       set block(spacing: 0.8em)
       parbreak()
-      md.affiliations.join(parbreak())
+      md.affiliation
     }
     set block(above: 2.5em)
     parbreak()
@@ -37,8 +37,10 @@
   set text(24pt)
   // Apply basic template
   show: basic-template.with(cfg)
-  // Make slide titles a bit larger
-  show slide-title.or(section-title): set text(1.2em)
+  // Make titles a bit larger
+  show presentation-title
+    .or(slide-title)
+    .or(section-title): set text(1.2em)
   // Color for links
   show link: set text(cfg.accents.at(0))
 

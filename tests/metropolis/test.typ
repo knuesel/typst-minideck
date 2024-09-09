@@ -9,14 +9,8 @@
   title-block, alert-block, example-block,
 ) = minideck.config(
   theme: "metropolis",
-  author: (
-    [Jane Smith#super[1]],
-    [John Doe#super[2]],
-  ),
-  affiliation: (
-    [#super[1] Euphoric State University],
-    [#super[2] University of Rummidge],
-  ),
+  author: [Jane Smith],
+  affiliation: [University of Rummidge],
   date: date.display("[month repr:long] [day], [year]"),
 )
 
