@@ -50,17 +50,17 @@ Other example:\
 #show-colors((c, c.rotate(40deg)))
 
 `sample-shades`:\
-#show-colors(_sample-shades((white, red, black), 2))\
-#show-colors(_sample-shades((white, red, black), 3))\
-#show-colors(_sample-shades((white, red, black), 4))\
-#show-colors(_sample-shades(gradient.linear(white, navy), 4))\
+#show-colors(_sample-shades((white, red, black), (0%, 100%)))\
+#show-colors(_sample-shades((white, red, black), (0%, 50%, 100%)))\
+#show-colors(_sample-shades((white, red, black), util.linspace(0%, 100%, 4)))\
+#show-colors(_sample-shades(gradient.linear(white, navy), util.linspace(0%, 100%, 4)))\
 #show-colors(_sample-shades(gradient.linear(white, navy), (10%, 90%, 100%)))\
 // Gradient samples in matching number -> disregard gradient positions
 #show-colors(_sample-shades((white, red, black), (10%, 90%, 100%)))\
 
 
-#show-colors(get-shades(auto, samples: 4, default: "metropolis"))
+#show-colors(get-shades(auto, samples: util.linspace(0%, 100%, 4), default: "metropolis"))
 
-#get-shades("metropolis", samples: 0)
-#get-shades("metropolis", samples: 1)
-#get-shades("metropolis", samples: 2)
+#get-shades("metropolis", samples: ())
+#get-shades("metropolis", samples: (50%,))
+#get-shades("metropolis", samples: (0%, 100%))

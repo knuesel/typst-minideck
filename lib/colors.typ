@@ -10,7 +10,7 @@
   The shades can be given as an array of at least two colors, or as a gradient,
   or as a string. Accent colors must be given as an array of at least one color, or as a string. Strings refer to the names of standard color schemes.
 
-  The theme can request any number of shades by specifying a desired number or specific gradient positions. If shades were specified as an array, it is used directly when the theme requests the same number of shades (gradient positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
+  The theme can request any number of shades by specifying desired gradient positions. If shades were specified as an array, it is used directly when the theme requests the same number of shades (their positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
 
   The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors with the aim of maximizing the hue contrasts.
 */
@@ -136,6 +136,9 @@
 // colors, and users can easily make a gradient when that behavior is not
 // desired).
 #let _check-sample-positions(ts) = {
+  if type(ts) != array {
+    panic("Shade sample positions must be given as an array")
+  }
   let types = ts.map(type)
   if not (types.all(x => x == ratio) or types.all(x => x == angle)) {
     panic("Shade sample positions must be all ratios or all angles")
@@ -153,23 +156,15 @@
 // Get shades specified either as a number or as gradient positions.
 // The returned colors are in RGB space.
 #let _sample-shades(shades, ts) = {
-  // For gradient samples, check they are of same type and in increasing order
-  if type(ts) == array {
-    _check-sample-positions(ts)
-  }
-  let n-requested = if type(ts) == int { ts } else { ts.len() }
+  _check-sample-positions(ts)
   // If shades array matches requested number, return array shades
-  // return the given shades.
-  if type(shades) == array and shades.len() == n-requested {
+  if type(shades) == array and shades.len() == ts.len() {
     return shades.map(rgb)
   }
   // For all other cases use gradient to sample requested number of colors
   if type(shades) != gradient { 
     // Oklab is best for maintaining hue
     shades = gradient.linear(..shades, space: oklab)
-  }
-  if type(ts) == int {
-    ts = util.linspace(0%, 100%, ts)
   }
   return shades.samples(..ts).map(rgb)
 }
@@ -247,19 +242,20 @@
 }
 
 // Return some shades sampled from the source `scheme.shades`, or from `default`
-// if `scheme` is `auto` or has no such field. The source can be either
-// an array of two or more colors, or a gradient. The `ts` argument can be
-// either the desired number of shades (two or more) or an
-// array of increasing gradient positions. If the source is an array of colors,
-// it is first converted to a gradient with evenly spaced stops if a
-// different number of shades is requested.
+// if `scheme` is `auto` or has no such field. The source can be a gradient, or
+// an array of two or more colors, which is automatically converted to a
+// gradient with evenly spaced stops if required. The `ts` argument must be an
+// array of increasing gradient positions at which to sample the source.
+// As a special case, if the number of requested positions matches the number
+// of source colors given as array, these colors are returned without any
+// sampling. This gives an easy way for the user to specify precise colors.
 // The source is reversed before use if `reverse` is true.
 // Default can be a scheme or a shades value (array or gradient).
 // Schemes can be given as a dict or as a name referring to a standard scheme.
 // When giving a dict, `scheme.shades` can also be a string to refer to a
 // standar scheme's shades.
 // The returned colors are in RGB space.
-#let get-shades(scheme, samples: 2, default: "default", reverse: false) = {
+#let get-shades(scheme, samples: (0%, 100%), default: "default", reverse: false) = {
   _check-scheme(scheme)
   let shades = _scheme-field(scheme, "shades", default)
   if reverse {
