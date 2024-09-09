@@ -135,6 +135,16 @@
   #columns(2, outline())
 ]
 
+#slide[
+  = Regular slides
+
+  Use `#slide[...]` for regular slides.
+  By default, content is (almost) centered vertically by adding fractional spacing above and below.
+  Use `#slide(center: false)[...]` to disable this behavior.
+
+  Use `#standout[...]` to show a slide with simplified layout and inverted colors. Such slides default to `outlined: false`.
+]
+
 #section[ = Elements ]
 
 #slide[

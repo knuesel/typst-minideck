@@ -11,10 +11,15 @@
   }
 }
 
-#let slide(cfg, plain-slide, ..args, it) = plain-slide(offset: 4, ..args, {
-  v(0.4fr)
-  it
-  v(0.6fr)
+#let slide(cfg, plain-slide, center: true, ..args, it) = plain-slide(offset: 4, ..args, {
+  if center {
+    // Use tiny values so any user fractional spacing wins
+    v(0.0004fr)
+    it
+    v(0.0006fr)
+  } else {
+    it
+  }
 })
 
 #let section(cfg, plain-slide, show-progress: true, ..args, it) = {
