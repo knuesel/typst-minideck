@@ -19,25 +19,26 @@
   as `font`: if a font scheme defins `text: (:)` it won't be overriden by the
   default scheme.
 */ 
+// The `default` scheme defines the valid keys
+#let default-scheme = (
+  text: (:), // default font: Linux Libertine
+  text-weights: (:),
+  raw: (:), // default font: DejaVu Sans Mono
+  math: (:), // defont font: New Computer Modern Math
+  delta: 300,
+)
 #let schemes = (
-  // The `default` scheme defines the valid keys
-  default: (
-    text: (:), // default font: Linux Libertine
-    text-weights: (:),
-    raw: (:), // default font: DejaVu Sans Mono
-    math: (:), // defont font: New Computer Modern Math
-    delta: 300,
-  ),
-  libertinus-sans: (
+  default: default-scheme,
+  libertinus-sans: default-scheme + (
     text: (font: "Libertinus Sans"),
   ),
-  fira-sans: (
+  fira-sans: default-scheme + (
     text: (font: "Fira Sans"),
     raw: (font: "Fira Mono", weight: "medium"),
     math: (font: "Fira Math"),
     text-weights: (bold: "medium"),
   ),
-  fira-sans-light: (
+  fira-sans-light: default-scheme + (
     text: (font: "Fira Sans"),
     text-weights: (regular: "light", medium: 350, bold: "regular"),
     raw: (font: "Fira Mono", weight: "regular"),
@@ -118,6 +119,7 @@
 // - weight values are converted to names where possible
 // - missing fields are copied from the default scheme
 // - an error is thrown if the scheme contains unknown fields
+// XXX how to do `font-scheme: (text: "fira-sans", math: "default")`
 #let _normalize(scheme) = {
   // Resolve scheme value if given as name
   if type(scheme) == str {
@@ -150,13 +152,49 @@
   return true
 }
 
-#let get-fonts(schemes, n: 1, default: schemes.default) = {
-  // Replace auto with default
-  schemes = util.coalesce(schemes, default)
-  // If single scheme, wrap in array
-  let schemes-array = if type(schemes) == array { schemes } else { (schemes,) }
+// Make scheme dict from given base scheme, overriding fields with the given
+// values if not `auto`.
+// The base scheme can be given by value (dict),
+// as a scheme name or as a theme (name or function) from which to take the
+// default scheme.
+#let _font-scheme(
+  get-theme-scheme,
+  base: schemes.default,
+  text: auto,
+  text-weights: auto,
+  raw: auto,
+  math: auto,
+  delta: auto,
+) = {
+  if type(base) == str and base in schemes {
+    // Resolve scheme name
+    base = schemes.at(base)
+  } else if type(base) in (str, function) {
+    // Resolve theme name or theme function
+    // base must be a theme
+    base = get-theme-scheme(base)
+    if base == none {
+      panic("No scheme or theme named " + repr(base))
+    }
+  }
+
+  // Now base should be a dict with same fields as the default scheme
+  if type(base) != dictionary or base.keys().sorted() != schemes.default.keys().sorted() {
+    panic("Invalid scheme " + repr(base))
+  }
+
+  return (
+    text: util.coalesce(text, base.text),
+    text-weights: util.coalesce(text-weights, base.text-weights),
+    raw: util.coalesce(raw, base.raw),
+    math: util.coalesce(math, base.math),
+    delta: util.coalesce(delta, base.delta),
+  )
+}
+
+#let get-fonts(schemes, n) = {
   // Normalize each scheme
-  let normal = schemes-array.map(_normalize)
+  let normal = schemes.map(_normalize)
   // Fill in with first scheme if more are requested than given
   for _ in range(normal.len(), n) {
     normal.push(normal.first())

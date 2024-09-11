@@ -12,18 +12,40 @@
 
   The theme can request any number of shades by specifying desired gradient positions. If shades were specified as an array, it is used directly when the theme requests the same number of shades (their positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
 
-  The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors with the aim of maximizing the hue contrasts.
-*/
+  The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors. Currently, new colors are selected to maximize hue differences. This doesn't produce particularly good looking palettes but the colors should at least be distinguishable. In a future version a smarter algorithm might be used.
+
+  The `color-scheme` function in the `minideck` module can be used to retrieve a scheme by name or from a theme, and to apply simple tranformations such as reversing the shades.
+  */
 #let schemes = (
   default: (
     shades: (white, black),
     accents: (red, green, blue, purple),
   ),
-  metropolis: (
+  metropolis: ( // XXX remove scheme
     shades: (white, rgb("#23373b")), // dark teal
     accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
   )
  )
+
+// Get Oklch component `i` from given color
+#let oklch-component(i, c) = oklch(c).components().at(i)
+#let lightness = oklch-component.with(0)
+#let chroma    = oklch-component.with(1)
+#let hue       = oklch-component.with(2)
+
+// Take color and return the same color with Oklch component `i` replaced with
+// given value
+#let with-oklch-component(i, c, value) = {
+  let comps = oklch(c).components()
+  comps.at(i) = value
+  return oklch(..comps)
+}
+#let with-lightness(c, value) = {
+  value = calc.clamp(float(value), 0, 1) * 100%
+  with-oklch-component(0, c, value)
+}
+#let with-chroma    = with-oklch-component.with(1)
+#let with-hue       = with-oklch-component.with(2)
 
 // Return array of hue differences between accent colors sorted by hue, together
 // with the `accents` indices of the two diffed colors. The returned value is
@@ -31,7 +53,7 @@
 // Colors must be given in Oklch space.
 #let _sorted-hue-diffs(accents) = {
   // List of hues
-  let hues = accents.map(c => c.components().at(2))
+  let hues = accents.map(hue)
   // List of (index, hue) sorted by hue
   let sorted-pairs = hues.enumerate().sorted(key: x => x.last())
   // Append first value again to also consider diff from last to first
@@ -71,13 +93,6 @@
   return calc.min(n-max, n-missing)
 }
 
-// Take Oklch color and return the same color wit hue replaced with given value
-#let with-hue(c, hue) = {
-  let comps = c.components()
-  comps.at(2) = hue
-  return oklch(..comps)
-}
-
 // Pick n colors between Oklch colors `c1` and `c2` with evenly spaced hue,
 // always taking the path of increasing hue angles.
 #let _pick-n-between(n, c1, c2) = {
@@ -85,8 +100,8 @@
   let pos-with-ends = util.linspace(0%, 100%, n + 2)
   let new-colors = g.samples(..pos-with-ends.slice(1, -1))
 
-  let hue1 = c1.components().at(2)
-  let hue2 = c2.components().at(2)
+  let hue1 = hue(c1)
+  let hue2 = hue(c2)
   let hue-gap = if hue2 > hue1 { hue2 - hue1 } else { hue2 + 360deg - hue1 }
   let hue-step = hue-gap / (n + 1)
 
@@ -154,19 +169,18 @@
 }
 
 // Get shades specified either as a number or as gradient positions.
-// The returned colors are in RGB space.
 #let _sample-shades(shades, ts) = {
   _check-sample-positions(ts)
   // If shades array matches requested number, return array shades
   if type(shades) == array and shades.len() == ts.len() {
-    return shades.map(rgb)
+    return shades
   }
   // For all other cases use gradient to sample requested number of colors
   if type(shades) != gradient { 
     // Oklab is best for maintaining hue
     shades = gradient.linear(..shades, space: oklab)
   }
-  return shades.samples(..ts).map(rgb)
+  return shades.samples(..ts)
 }
 
 // Reverse the order of shade colors (if given as array) or mirror the gradient.
@@ -178,88 +192,46 @@
   }
 }
 
-// Get given field (`shades` or `accents`) from scheme, or use `default`
-// if scheme is `auto` or contains no such field.
-// Default can be either a scheme or a field (shades or accent as appropriate).
-// The scheme or scheme values can be given by name to refer to a standard scheme
-// in the `schemes` dict.
-#let _scheme-field(scheme, field, default) = {
-  // Resolve default given as scheme name
-  if type(default) == str {
-    default = schemes.at(default)
-  }
-  // Extract default value from default scheme
-  if type(default) == dictionary {
-    default = default.at(field)
-  }
-  // Return default value for `auto` scheme
-  if scheme == auto {
-    return default
-  }
-  // Resolve scheme given as name
-  if type(scheme) == str {
-    scheme = schemes.at(scheme)
-  }
-  if type(scheme) != dictionary {
-    panic("Color scheme must be a string, dictionary or auto")
-  }
-  // Get value from scheme
-  let value = scheme.at(field, default: default)
-  // Resolve value given as name
-  if type(value) == str {
-    value = schemes.at(value).at(field)
-  }
-  return value
-}
-
-// If scheme is a dict, check all keys are valid
-#let _check-scheme(scheme) = {
-  if type(scheme) != dictionary {
-    return
-  }
-  for (k, _) in scheme {
-    if k not in schemes.default {
-      panic("Invalid color scheme key: " + k)
+// Make scheme dict (fields `shades` and `accents`) from given base scheme,
+// overriding shades and accents with the given values if not `auto`.
+// The base scheme can be given by value (dict with `shades` and `accents`),
+// as a scheme name or as a theme (name or function) from which to take the
+// default scheme.
+// If `reverse` is `true`, the order of shades is reversed.
+#let _color-scheme(
+  get-theme-scheme,
+  base: schemes.default,
+  shades: auto,
+  accents: auto,
+  reverse: false,
+) = {
+  if type(base) == str and base in schemes {
+    // Resolve scheme name
+    base = schemes.at(base)
+  } else if type(base) in (str, function) {
+    // Resolve theme name or theme function
+    // base must be a theme
+    base = get-theme-scheme(base)
+    if base == none {
+      panic("No scheme or theme named " + repr(base))
     }
   }
-}
 
-// Return the requested number of accent colors from the source
-// `scheme.accents`, or from `default` if `scheme` is `auto` or has no such field.
-// The source must be an array of at least one color. If more colors are given
-// than requested with `n`, the remaining color(s) are dropped. If fewer colors
-// are given than requested, additional colors are generated in a way that
-// maximizes the hue contrast.
-// Default can be a scheme or an accents value (an array of colors).
-// Schemes can be given as a dict or as a name referring to a standard scheme.
-// When giving a dict, `scheme.accents` can also be a string to refer to a
-// standar scheme's accents.
-// The returned colors are in RGB space.
-#let get-accents(scheme, n: 1, default: "default") = {
-  _check-scheme(scheme)
-  let accents = _scheme-field(scheme, "accents", default)
-  return _n-accents(accents, n)
-}
+  // Now base should be a dict with the standard fields
+  if type(base) != dictionary or base.keys().sorted() != schemes.default.keys().sorted() {
+    panic("Invalid scheme " + repr(base))
+  }
 
-// Return some shades sampled from the source `scheme.shades`, or from `default`
-// if `scheme` is `auto` or has no such field. The source can be a gradient, or
-// an array of two or more colors, which is automatically converted to a
-// gradient with evenly spaced stops if required. The `ts` argument must be an
-// array of increasing gradient positions at which to sample the source.
-// As a special case, if the number of requested positions matches the number
-// of source colors given as array, these colors are returned without any
-// sampling. This gives an easy way for the user to specify precise colors.
-// The source is reversed before use if `reverse` is true.
-// Default can be a scheme or a shades value (array or gradient).
-// Schemes can be given as a dict or as a name referring to a standard scheme.
-// When giving a dict, `scheme.shades` can also be a string to refer to a
-// standar scheme's shades.
-// The returned colors are in RGB space.
-#let get-shades(scheme, samples: (0%, 100%), default: "default", reverse: false) = {
-  _check-scheme(scheme)
-  let shades = _scheme-field(scheme, "shades", default)
+  shades = util.coalesce(shades, base.shades)
+  accents = util.coalesce(accents, base.accents)
+
   if reverse {
     shades = _reverse-shades(shades)
   }
-  return _sample-shades(shades, samples)
+  return (shades: shades, accents: accents)
 }
+
+#let get-colors(scheme, shade-samples, n-accents) = (
+  shades: _sample-shades(scheme.shades, shade-samples).map(rgb),
+  accents: _n-accents(scheme.accents, n-accents).map(rgb),
+)

@@ -42,7 +42,7 @@
     .or(slide-title)
     .or(section-title): set text(1.2em)
   // Color for links
-  show link: set text(cfg.accents.at(0))
+  show link: set text(cfg.colors.accents.at(0))
 
   // Outline
   show: outline-templates.with(cfg, indent: 1em)
@@ -53,18 +53,18 @@
   it
 }
 
-#let simple(get-cfg, plain-slide, variant: "light") = {
-  if variant not in ("light", "dark") {
-    panic("invalid variant: must be \"light\" or \"dark\"")
-  }
-
+#let simple(get-config, plain-slide) = {
   plain-slide = plain-slide.with(
     footer-func: (..args) => text(0.8em, layouts.footer(..args)),
   )
 
-  let cfg = get-cfg(
-    shades: (default: (white, luma(15%)), reverse: variant == "dark"),
-    accents: (n: 1, default: (blue,)),
+  let cfg = get-config(
+    shade-samples: (0%, 100%),
+    n-accents: 1,
+    default-color-scheme: (
+      shades: (white, luma(15%)),
+      accents: (blue,),
+    )
   )
   
   return (

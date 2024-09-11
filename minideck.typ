@@ -1,7 +1,7 @@
 #import "themes/themes.typ"
 #import "lib/layouts.typ"
 #import "lib/colors.typ"
-#import "lib/fonts.typ" as fonts-module
+#import "lib/fonts.typ"
 #import "lib/logic.typ"
 
 // `field` is "header" or "footer"
@@ -94,17 +94,84 @@
   date: date,
 )
 
+// Gets a field from the dictionary returned by a theme function.
+// The theme can be given as a standard theme name or as a function.
+// Returns `none` if the theme was not found.
+#let _get-theme-field(get-config, field, theme) = {
+  if type(theme) == str {
+    if theme not in themes {
+      return none
+    }
+    // Resolve theme name to function
+    theme = themes.at(theme)
+  }
+  return theme(get-config, _plain-slide).at(field)
+}
+
 // Function used by themes to get the configuration from the user.
-// Minideck configures the positional arguments before passing this function to
+// Minideck configures the first four arguments before passing this function to
 // the theme. The theme uses the keyword arguments to request particular shades,
 // etc.
-#let _get-cfg(format, meta-data, font-scheme, color-scheme, shades: (), accents: (), fonts: ()) = (
-  page-args: _format-arg(format),
-  metadata: meta-data,
-  fonts: fonts-module.get-fonts(font-scheme, ..fonts),
-  shades: colors.get-shades(color-scheme, ..shades),
-  accents: colors.get-accents(color-scheme, ..accents),
-)
+// XXX
+#let _get-config(
+  format: "4:3",
+  meta-data: _metadata(none, none, none, none),
+  font-scheme-args: (:),
+  color-scheme-args: (:),
+  n-fonts: 1,
+  default-font-scheme: "default",
+  shade-samples: (0%, 100%),
+  n-accents: 2,
+  default-color-scheme: "default",
+) = {
+  let make-font-scheme(user-spec) = fonts._font-scheme(
+    // To get theme defaults we can pass _get-config with default arguments
+    _get-theme-field.with(_get-config, "default-font-scheme"),
+    base: default-font-scheme,
+    ..user-spec,
+  )
+  // Make sure we have an array of font scheme specs
+  if type(font-scheme-args) != array {
+    font-scheme-args = (font-scheme-args,)
+  }
+  font-scheme-args = font-scheme-args.map(spec =>
+    if type(spec) == dictionary { 
+      spec
+    } else {
+      (base: spec)
+    }
+  )
+    
+  // Make a font scheme for each user specification
+  let font-schemes = font-scheme-args.map(make-font-scheme)
+
+  let color-scheme = colors._color-scheme(
+    _get-theme-field.with(_get-config, "default-color-scheme"),
+    base: default-color-scheme,
+    ..color-scheme-args,
+  )
+  return (
+    page-args: _format-arg(format),
+    metadata: meta-data,
+    fonts: fonts.get-fonts(font-schemes, n-fonts),
+    colors: colors.get-colors(color-scheme, shade-samples, n-accents),
+    default-font-scheme: default-font-scheme,
+    default-color-scheme: default-color-scheme,
+  )
+}
+
+// We have some spaghetti code here due to mutual recursion between three
+// functions: colors.color-scheme needs get-theme-color-scheme to resolve
+// schemes passed by theme. And get-theme-color-scheme needs get-config to call
+// the theme function to get the defaults. And get-config needs color-scheme to
+// resolve the user scheme specification before giving it to the theme.
+// Hopefully this will be improved once typst gets user types (which we could
+// use to expose the theme defaults).
+// To get the theme defaults we can pass _get-config with default arguments
+#let font-scheme = fonts._font-scheme.with(
+  _get-theme-field.with(_get-config, "default-font-scheme"))
+#let color-scheme = colors._color-scheme.with(
+  _get-theme-field.with(_get-config, "default-color-scheme"))
 
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
@@ -145,8 +212,8 @@
 // title slide functions are controlled directly by the theme).
 #let config(
   format: "4:3",
-  font-scheme: auto,
-  color-scheme: auto,
+  font-scheme: (:),
+  color-scheme: (:),
   theme: "simple",
   handout: auto,
   cetz: none,
@@ -157,8 +224,12 @@
   date: none,
 ) = {
   let plain-slide = _plain-slide.with(handout: handout)
-  let meta-data = _metadata(author, affiliation, logo, date)
-  let get-cfg = _get-cfg.with(format, meta-data, font-scheme, color-scheme)
+  let get-config = _get-config.with(
+    format: format,
+    meta-data: _metadata(author, affiliation, logo, date),
+    font-scheme-args: font-scheme,
+    color-scheme-args: color-scheme,
+  )
 
   // Resolve theme if given as name
   if type(theme) == str {
@@ -167,7 +238,7 @@
 
   (
     // theme sets cfg, template, and slide functions
-    ..theme(get-cfg, plain-slide),
+    ..theme(get-config, plain-slide),
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),

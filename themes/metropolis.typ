@@ -165,9 +165,10 @@
   it
 }
 
+// Compute named colors based on shades and accents
 #let color-theme(cfg) = {
-  let (bg, bg1, bg2, fg) = cfg.shades
-  let (alert, example) = cfg.accents
+  let (bg, bg1, bg2, fg) = cfg.colors.shades
+  let (alert, example) = cfg.colors.accents
   return (
     bg: bg,
     fg: fg,
@@ -182,27 +183,20 @@
   )
 }
 
-#let metropolis(
-  get-cfg,
-  plain-slide,
-  show-progress: true,
-  variant: "light"
-) = {
-  if variant not in ("light", "dark") {
-    panic("invalid variant: must be \"light\" or \"dark\"")
-  }
-
-  let cfg = get-cfg(
-    shades: (
-      samples: (2%, 10%, 20%, 100%),
-      default: "metropolis",
-      reverse: variant == "dark",
+#let metropolis(get-config, plain-slide, show-progress: true) = {
+  let cfg = get-config(
+    n-fonts: 1,
+    default-font-scheme: "fira-sans-light",
+    shade-samples: (2%, 10%, 20%, 100%),
+    n-accents: 2,
+    default-color-scheme: (
+      shades: (white, rgb("#23373b")), // dark teal
+      accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
     ),
-    accents: (n: 2, default: "metropolis"),
-    fonts: (n: 1, default: "fira-sans-light"),
   )
-  // Add non-standard fields
-  cfg.colors = color-theme(cfg)
+
+  // Add named colors
+  cfg.colors = cfg.colors + color-theme(cfg)
 
   plain-slide = plain-slide.with(footer-func: footer-func)
 

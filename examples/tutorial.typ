@@ -240,8 +240,8 @@ slide[
 import minideck.themes: *
 let (template, slide) = minideck.config(
   font-scheme: "libertinus-sans",
-  color-scheme: (shades: (luma(90%), navy)),
-  theme: simple.with(variant: "dark"),
+  color-scheme: (shades: (luma(90%), navy), reverse: true),
+  theme: simple,
 )
 show: template // OK because this template is idempotent
 show heading: set text(1.2em)
@@ -260,9 +260,11 @@ slide[
   #let (template, slide) = minideck.config(
     font-scheme: "libertinus-sans",
     color-scheme: (shades: (luma(90%), navy)),
-    theme: simple.with(variant: "dark"), // configured function
+    theme: metropolis.with(show-progress: false), // configured function
   )
   ```
+  XXX the slide shown doesn't use metropolis as the code says
+  but simple theme doens't take any option anymore
 ]
 }
 
