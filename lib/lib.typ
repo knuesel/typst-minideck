@@ -6,5 +6,6 @@
 #import "fonts.typ"
 #import "colors.typ"
 #import "layouts.typ"
+#import "layouts.typ": use-margin
 #import "styling.typ"
 #import "styling.typ": presentation-title, presentation-subtitle, section-title, section-subtitle, slide-title, slide-subtitle, block-title, block-subtitle

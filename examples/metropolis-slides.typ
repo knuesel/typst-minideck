@@ -2,8 +2,8 @@
 #import minideck.themes: *
 
 #let (
-  template, slide, section, title, standout, alert, example,
-  title-block, alert-block, example-block,
+  template, slide, section, title-slide, standout, alert, example,
+  title-block, alert-block, example-block
 ) = minideck.config(
   theme: "metropolis",
   author: [Jeremie Knuesel],
@@ -13,7 +13,7 @@
 
 #show: template
 
-#title[
+#title-slide[
   = Metropolis
   == An implementation for minideck
 ]
@@ -32,7 +32,6 @@
   The *Metropolis* theme was created by Matthias Vogelgesang.@metropolis
 
   This is a Typst@typst reimplementation for the Minideck@minideck package.
-
 
   Enable this theme with
   // XXX update version
@@ -203,7 +202,29 @@
 
 #slide(
   foreground: image("metropolis-customized.png", width: 100%, height: 100%),
-)[= Example] // for TOC
+)[= Appearance] // for TOC
+
+#slide(
+  foreground: image("metropolis-reverse.png", width: 100%, height: 100%),
+)[= Dark variant] // for TOC
+
+#slide[
+  = Custom layouts
+
+  How to make layouts such as "full slide picture" that play well with the title bar?
+
+  Minideck has standard functions that should work with any theme:
+
+  // XXX full-size image using height 1fr once typst 0.12 is released
+  // #place(minideck.use-margin(100%, ))
+  
+  - `use-margin`: let content extend over the margins
+
+  - `margins` and `bars`: low level, give raw dimensions to play with
+  
+  The background image in this slide was added with the following:
+  // XXX
+]
 
 #section[
   = Conclusion

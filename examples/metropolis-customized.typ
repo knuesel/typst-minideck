@@ -2,8 +2,8 @@
 #import minideck.themes: *
 
 #let (template, slide, title-block) = minideck.config(
-  color-scheme: (shades: (white, navy)),
-  theme: metropolis.with(variant: "dark"),
+  color-scheme: (shades: (navy, white)),
+  theme: "metropolis",
 )
 
 #show minideck.slide-title: set text(0.9em)
@@ -11,20 +11,19 @@
 
 #show: template
 
-
 #slide(margin: 1cm, footer: none)[
   = Example
 
-  Dark theme variant, custom color shades, smaller text and less spacing in the title bar, smaller margins.
+  Custom colors, smaller text & less spacing in title bar, smaller margins:
 
-  #v(1fr)
+  #v(1em)
   #show raw.where(block: true): set text(0.9em)
   #show raw.where(block: true): set block(inset: 0.5em)
-  #title-block(transparent: false)[Configuration][
+  #title-block(transparent: false, width: 100%)[Configuration][
     ```
-    #let (template, slide, title-block) = minideck.config(
-      color-scheme: (shades: (white, navy)),
-      theme: metropolis.with(variant: "dark"),
+    #let (template, slide) = minideck.config(
+      color-scheme: (shades: (navy, white)),
+      theme: "metropolis",
     )
     #show minideck.slide-title: set text(0.9em)
     #show minideck.slide-title: pad.with(-3mm)
@@ -36,6 +35,6 @@
     ```
   ]
   #v(1fr)
-
   To change margins globally, use `set page(margin: 1cm)`
+  #v(1fr)
 ]

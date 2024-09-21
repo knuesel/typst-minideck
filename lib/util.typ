@@ -83,9 +83,9 @@
 
 // Return the margins from the current context as a dict of absolute lengths
 // with fields `left`, `right`, `top`, `bottom`.
-// The `text-size` parameter is used to convert em lenghts. If unspecified,
-// the context's text size is used.
-#let context-margins(text-size: auto) = {
+// The `text-size` parameter is used to convert em lengths. If unspecified,
+// the context's text size is used, but that might give wrong results.
+#let margins(text-size: auto) = {
   let p-size = page-size() 
   let margins = standard-margin-fields(page.margin)
 
@@ -98,9 +98,25 @@
   margins.left   = length-to-abs(margins.left,   p-size.width,  text-size)
   margins.right  = length-to-abs(margins.right,  p-size.width,  text-size)
   margins.top    = length-to-abs(margins.top,    p-size.height, text-size)
-  margins.bototm = length-to-abs(margins.bottom, p-size.height, text-size)
+  margins.bottom = length-to-abs(margins.bottom, p-size.height, text-size)
 
   return margins
+}
+
+#let bars() = {
+  let p = here().page()
+  let (t, b, l, r) = (
+    <__minideck-bar-top>,
+    <__minideck-bar-bottom>,
+    <__minideck-bar-left>,
+    <__minideck-bar-right>,
+  ).map(lbl => query(lbl).filter(x => x.location().page() == p))
+  return (
+    top:    t.map(x => x.value.height),
+    bottom: b.map(x => x.value.height),
+    left:   l.map(x => x.value.width),
+    right:  r.map(x => x.value.width),
+  )
 }
 
 // Current progress in the presentation as an array of 1-based slide numbers

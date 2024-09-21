@@ -5,7 +5,7 @@
 #let date = datetime(year: 2024, month: 9, day: 5)
 
 #let (
-  template, slide, section, title, standout,
+  template, slide, section, title-slide, standout,
   title-block, alert-block, example-block,
 ) = minideck.config(
   theme: "metropolis",
@@ -16,7 +16,7 @@
 
 #show: template
 
-#title[
+#title-slide[
   = Metropolis
   == Internal test slides for minideck
 ]

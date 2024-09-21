@@ -1,30 +1,32 @@
 #import "util.typ"
 
 /*
-  A color scheme has two components:
+  A color scheme is a dictionary that can include the following fields:
 
   - shades: colors of similar hues and increasing or decreasing lightness. This is used for distinguishing elements based on lightness. Typically the first shade is used as background color and the last shade as foreground (text) color.
 
   - accents: colors of contrasting hues. Used for distinguishing elements based on hue.
- 
+
+  Missing keys or keys set to `auto` will be taken from the default scheme.
+
   The shades can be given as an array of at least two colors, or as a gradient,
   or as a string. Accent colors must be given as an array of at least one color, or as a string. Strings refer to the names of standard color schemes.
 
-  The theme can request any number of shades by specifying desired gradient positions. If shades were specified as an array, it is used directly when the theme requests the same number of shades (their positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
+  The theme can request any number of shades by specifying desired gradient positions. If shades were given as an array, it is used directly when the theme requests the same number of shades (their positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
 
   The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors. Currently, new colors are selected to maximize hue differences. This doesn't produce particularly good looking palettes but the colors should at least be distinguishable. In a future version a smarter algorithm might be used.
 
-  The `color-scheme` function in the `minideck` module can be used to retrieve a scheme by name or from a theme, and to apply simple tranformations such as reversing the shades.
+  The `color-scheme` function can be used to retrieve a scheme by name and to apply simple tranformations such as reversing the shades.
   */
 #let schemes = (
   default: (
     shades: (white, black),
     accents: (red, green, blue, purple),
   ),
-  metropolis: ( // XXX remove scheme
-    shades: (white, rgb("#23373b")), // dark teal
-    accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
-  )
+  phosphor: ( // Example of dark scheme, with single accent
+    shades: (rgb("#fefefe"), rgb("#1b1b1b")),
+    accents: (rgb("#00e0aa"),),
+  ),
  )
 
 // Get Oklch component `i` from given color
@@ -192,38 +194,46 @@
   }
 }
 
-// Make scheme dict (fields `shades` and `accents`) from given base scheme,
-// overriding shades and accents with the given values if not `auto`.
-// The base scheme can be given by value (dict with `shades` and `accents`),
-// as a scheme name or as a theme (name or function) from which to take the
-// default scheme.
+// Make scheme (dict with fields `shades` and `accents`) from given base scheme,
+// overriding shades and accents with the given values when they are not `auto`.
+// The base scheme can be given by value (dict with `shades` and `accents`) or
+// by name, or as `auto` to refer to the default scheme.
+// When given by value, a partial scheme can be given: missing fields or fields
+// with value `auto` will be taken from the default scheme.
 // If `reverse` is `true`, the order of shades is reversed.
-#let _color-scheme(
-  get-theme-scheme,
-  base: schemes.default,
+#let color-scheme(
+  base: auto,
   shades: auto,
   accents: auto,
   reverse: false,
 ) = {
-  if type(base) == str and base in schemes {
+  // This function takes fields as parameters instead of a dict, to present
+  // a nicer API to the user when used directly.
+  if base == auto {
+    base = schemes.default
+  }
+  if type(base) == str {
     // Resolve scheme name
+    if base not in schemes { panic("No color scheme named " + repr(base)) }
     base = schemes.at(base)
-  } else if type(base) in (str, function) {
-    // Resolve theme name or theme function
-    // base must be a theme
-    base = get-theme-scheme(base)
-    if base == none {
-      panic("No scheme or theme named " + repr(base))
+  }
+  if type(base) != dictionary {
+    panic("Base color scheme must be a name or dictionary")
+  }
+
+  // Check that all fields in base are valid
+  for (k, _) in base {
+    if k not in schemes.default {
+      panic("Invalid color scheme key: " + k)
     }
   }
 
-  // Now base should be a dict with the standard fields
-  if type(base) != dictionary or base.keys().sorted() != schemes.default.keys().sorted() {
-    panic("Invalid scheme " + repr(base))
-  }
+  // Make sure all standard fields exist in base, taking missings from default
+  base = schemes.default + base
 
-  shades = util.coalesce(shades, base.shades)
-  accents = util.coalesce(accents, base.accents)
+  // TODO: automatize merging of all fields
+  shades = util.coalesce(shades, base.shades, schemes.default.shades)
+  accents = util.coalesce(accents, base.accents, schemes.default.shades)
 
   if reverse {
     shades = _reverse-shades(shades)
@@ -231,6 +241,7 @@
   return (shades: shades, accents: accents)
 }
 
+// Get some colors from a color scheme
 #let get-colors(scheme, shade-samples, n-accents) = (
   shades: _sample-shades(scheme.shades, shade-samples).map(rgb),
   accents: _n-accents(scheme.accents, n-accents).map(rgb),

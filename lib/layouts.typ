@@ -1,43 +1,90 @@
 #import "util.typ"
 
-// Protrusion for given relative length and margin size.
+// Return dict of values for all four sides by applying rules of precedence.
+#let _sides-dict(
+  all: auto,
+  left: auto,
+  right: auto,
+  top: auto,
+  bottom: auto,
+  x: auto,
+  y: auto,
+  rest: auto,
+  default,
+) = (
+   left:   util.coalesce(all, left,   x, rest, default),
+   right:  util.coalesce(all, right,  x, rest, default),
+   top:    util.coalesce(all, top,    y, rest, default),
+   bottom: util.coalesce(all, bottom, y, rest, default),
+)
+
+// Protrusion for given relative length and reference margin/bar size.
 // The `em` length given by the user must be taken relative to the current
 // `text.size` rather than the page text size.
-#let _protrusion(rel, size) = util.length-to-abs(rel, size, text.size)
+#let _protrusion(rel, reference) = {
+  return util.length-to-abs(rel, reference, text.size)
+}
 
-// Let `it` protrude on the given sides by lengths relative to the page margins.
-// Relative lengths or ratios can be given for `left`, `right`, `top`, `bottom`,
-// `x` and `y`. These last two are only used when the corresponding sides are
-// set to `auto`.
+#let _protrusions(rels, refs, default) = {
+  if type(rels) != dictionary {
+    rels = (all: rels)
+  }
+  let dict = _sides-dict(..rels, default)
+  return (
+    left:   _protrusion(dict.left,   refs.left),
+    right:  _protrusion(dict.right,  refs.right),
+    top:    _protrusion(dict.top,    refs.top),
+    bottom: _protrusion(dict.bottom, refs.bottom),
+  )
+}
+
+  
+// Let `it` protrude in the margin on the specified sides by lengths relative to
+// the page margins. Relative lengths or ratios can be given for `left`,
+// `right`, `top` and `bottom` (highest precedence), `x` and `y` (lower
+// precendence), and `rest` (lowest precedence). Setting a value to `auto` is
+// equivalent to leaving it unspecified.
+//
 // The ratio component of each length is taken relative to the corresponding
 // margin, so with a left margin of `2cm` and a right margin of `3cm` the
 // argument `x: 100%` is equivalent to `left: 2cm, right: 3cm`.
 // The protrusion amount can be miscalculated in cases where the margin is
 // specified with `em` units and the text size was changed since page creation
-// (see https://github.com/typst/typst/issues/3636). As a workaround, you can
-// pass the correct text size with the `page-text-size` parameter.
+// (see https://github.com/typst/typst/issues/3636 ).
 //
 // Examples:
 //
 // Make a red box accross the whole page width:
 //
-//   `#protrude(x: 100%, box(width: 100%, height: 1cm, fill: red))`
+//   `#use-magin(x: 100%, box(width: 100%, height: 1cm, fill: red))`
 // 
-// Place an image flush with the page bottom bottom and halfway in the right
+// Place an image flush with the page bottom and halfway in the right
 // margin:
 //
-//   `#place(bottom+right, protrude(bottom: 100%, right: 50%, image(...)))`
+//   `#place(bottom+right, use-margin(bottom: 100%, right: 50%, image(...)))`
 //
-#let protrude(left: auto, right: auto, top: auto, bottom: auto,
-              x: 0pt, y: 0pt, page-text-size: auto, it) = context {
-  let margins = util.context-margins(text-size: page-text-size)
-  pad(
-    left:   - _protrusion(util.coalesce(left, x),   margins.left),
-    right:  - _protrusion(util.coalesce(right, x),  margins.right),
-    top:    - _protrusion(util.coalesce(top, y),    margins.top),
-    bottom: - _protrusion(util.coalesce(bottom, y), margins.bottom),
-    it,
-  )
+#let use-margin(..args, it) = context {
+  for (k, _) in args.named() {
+    if k not in ("left", "right", "top", "bottom", "x", "y", "rest") {
+      panic("invalid named argument: " + k)
+    }
+  }
+  if args.pos().len() > 1 {
+    panic("this function accepts at most 1 positional argument")
+  }
+  let default = if args.pos().len() == 1 {
+    args.pos().first()
+  } else {
+    0pt
+  }
+
+  let margins = util.margins()
+
+  // Get normalized sides
+  let margin-prot = _protrusions(args.named(), margins, default)
+  let padding = util.map-dict(margin-prot, (_, v) => -v)
+
+  return pad(..padding, it)
 }
 
 // Calculate x shift corresponding to the given anchor alignment
@@ -100,27 +147,30 @@
   }
 }
 
-// Place a bar across the whole slide width.
-// When overlay is false, the bar uses floating placement to the top or bottom,
-// displacing other content down or up respectively. When overlay is true the
-// bar doesn't affect the layout of other objects.
+// Place a bar across the whole slide width at the top or bottom of the slide,
+// displacing other content down or up respectively.
 // The `y-align` parameter must be `top` or `bottom`.
-// Use for example `y-align: top` with `dy: -margin.top` to make a bar aligned
-// with the page border.
 // Options can be passed to the block wrapper using the `style` parameter.
-#let slide-bar(dy: 0pt, overlay: false, style: (:), y-align, it) = {
+// If label is not `none`, metadata with the given label will be added after
+// the block. The metadata will include a `height` field with the bar height.
+#let _slide-bar(dy: 0pt, style: (:), label: none, y-align, it) = {
   let b = block(width: util.page-size().width, ..style, it)
-  let dx = -util.context-margins().left
-  place(y-align+left, dx: dx, dy: dy, float: not overlay, clearance: 0pt, b)
+  if label != none {
+    b += [#metadata((height: measure(b).height))#label]
+  }
+  let dx = -util.margins().left
+  place(y-align+left, dx: dx, dy: dy, float: true, clearance: 0pt, b)
 }
 
 // Place a full-width block at the top of the slide, displacing the margin
 // below itself. The `style` argument can be used to configure th block.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
-#let top-bar(dy: 0pt, style: (:), it) = context slide-bar(
-  dy: -util.context-margins().top + dy,
+// Top bars should not be used together with a page header.
+#let top-bar(dy: 0pt, style: (:), it) = context _slide-bar(
+  dy: -util.margins().top + dy,
   style: style,
+  label: <__minideck-bar-top>,
   top,
   it,
 )
@@ -129,25 +179,27 @@
 // above itself. The `style` argument can be used to configure th block.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
-#let bottom-bar(dy: 0pt, style: (:), it) = context slide-bar(
-  dy: util.context-margins().bottom + dy,
+// Top bars should not be used together with a page footer.
+#let bottom-bar(dy: 0pt, style: (:), it) = context _slide-bar(
+  dy: util.margins().bottom + dy,
   style: style,
+  label: <__minideck-bar-bottom>,
   bottom,
   it,
 )
 
-// Return a header layout with the given content.
-// The default value is used content if `it` is `auto`.
+// Return a simple header layout with the given content.
+// The default value is used as content if `it` is `auto`.
 #let header(it, default: none) = {
   set align(top)
-  protrude(x: 100%, util.coalesce(it, default))
+  use-margin(x: 100%, util.coalesce(it, default))
 }
 
-// Return a footer layout with the given content.
+// Return a simple footer layout with the given content.
 // The default value is used as footer text if `it` is `auto`.
 #let footer(it, padding: 1.5em, default: none) = {
   set align(bottom)
-  protrude(x: 100%, pad(x: padding, bottom: padding, {
+  use-margin(x: 100%, pad(x: padding, bottom: padding, {
     place(bottom+end, context counter(page).display())
     util.coalesce(it, default)
   }))

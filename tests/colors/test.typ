@@ -59,8 +59,10 @@ Other example:\
 #show-colors(_sample-shades((white, red, black), (10%, 90%, 100%)))\
 
 
-#show-colors(get-shades(auto, samples: util.linspace(0%, 100%, 4), default: "metropolis"))
+#let scheme =  color-scheme(base: "phosphor")
+#let shades = get-colors(scheme, util.linspace(0%, 100%, 4), 0).shades
+#show-colors(shades)
 
-#get-shades("metropolis", samples: ())
-#get-shades("metropolis", samples: (50%,))
-#get-shades("metropolis", samples: (0%, 100%))
+#get-colors(scheme, (), 0).shades
+#get-colors(scheme, (50%,), 0).shades
+#get-colors(scheme, (0%, 100%), 0).shades

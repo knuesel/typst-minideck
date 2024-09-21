@@ -1,5 +1,5 @@
 #import "/lib/fonts.typ": *
 
-#_normalize("fira-sans-light")
+#_normalize(_abnormal-schemes.fira-sans-light)
 
-#get-fonts(auto, n: 3, default: ("fira-sans-light", "default"))
+#font-scheme(base: auto, text: "Arial")

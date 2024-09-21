@@ -15,7 +15,7 @@
   return page-args
 }
 
-// Template to update `heading.outline` using the given value.
+// Template to update `heading.outlined` using the given value.
 // If `outlined` is `auto`, it is set `true` if the current slide comes before
 // the `end-slide` label, `false` otherwise.
 #let _apply-outlined(outlined, it) = context {
@@ -30,7 +30,7 @@
   it
 }
 
-// XXX rewrite
+// XXX rewrite docstring
 // page arguments can be used to override the current page settings for this slide
 // The footer of a slide can be overriden using either `footer` or
 // `footer-text`:
@@ -79,7 +79,7 @@
 ).at(format, default: format)
 
 // Return page arguments for given format
-#let _format-arg(format) = {
+#let _format-args(format) = {
   if type(format) == str {
     return (paper: _paper(format))
   }
@@ -94,84 +94,98 @@
   date: date,
 )
 
-// Gets a field from the dictionary returned by a theme function.
-// The theme can be given as a standard theme name or as a function.
-// Returns `none` if the theme was not found.
-#let _get-theme-field(get-config, field, theme) = {
-  if type(theme) == str {
-    if theme not in themes {
-      return none
-    }
-    // Resolve theme name to function
-    theme = themes.at(theme)
+// Helper function to convert `user-scheme` to arguments for
+// `fonts.font-scheme`.
+// TODO: merge this with the similar code for color schemes
+#let _one-font-scheme(theme-default, user-scheme) = {
+  if type(user-scheme) == str {
+    // Full scheme given by name, no use for defaults
+    return fonts.font-scheme(base: user-scheme)
   }
-  return theme(get-config, _plain-slide).at(field)
+  if user-scheme == auto {
+    user-scheme = (:)
+  }
+  return fonts.font-scheme(base: theme-default, ..user-scheme)
 }
 
-// Function used by themes to get the configuration from the user.
-// Minideck configures the first four arguments before passing this function to
-// the theme. The theme uses the keyword arguments to request particular shades,
-// etc.
-// XXX
-#let _get-config(
-  format: "4:3",
-  meta-data: _metadata(none, none, none, none),
-  font-scheme-args: (:),
-  color-scheme-args: (:),
-  n-fonts: 1,
-  default-font-scheme: "default",
-  shade-samples: (0%, 100%),
-  n-accents: 2,
-  default-color-scheme: "default",
+// Make requested number of font schemes based on the user specification and
+// theme default. Both the user and the theme can specifiy an array of schemes,
+// or a single scheme which will be treated as an array of one or, for the user,
+// the value `auto` to use the theme specification without modification.
+// Each array value can be a scheme name or a scheme dict (complete or with only
+// a subset of the valid keys), or `auto` to use a default value.
+// For each array position, the user settings override the theme settings.
+// If the user specified fewer schemes than the theme, the additional schemes
+// from the theme are ignored (the user can append `auto` values to their array
+// to prevent this). If more schemes are
+// required that specified, the first scheme (which should be the most generic)
+// is reused as many times as necessary.
+#let _n-font-schemes(theme-default, user-schemes, n) = {
+  // Make sure we have arrays of schemes
+  if type(theme-default) != array {
+    theme-default = (theme-default,)
+  }
+  if user-schemes == auto {
+    // Special meaning of auto: use full theme array rather than an array
+    // (auto,) that would use only the first value of the theme array
+    user-schemes = theme-default
+  }
+  if type(user-schemes) != array {
+    user-schemes = (user-schemes,)
+  }
+
+  // Ignore theme schemes beyond the user array length
+  theme-default = theme-default.slice(0, user-schemes.len())
+
+  // Repeat first scheme if theme has not enough
+  for _ in range(theme-default.len(), n) {
+    theme-default.push(theme-default.first())
+  }
+  // Same for user
+  for _ in range(user-schemes.len(), n) {
+    user-schemes.push(user-schemes.first())
+  }
+
+  return array.zip(theme-default, user-schemes).slice(0, n).map(
+    ((theme, user)) => _one-font-scheme(theme, user)
+  )
+}
+
+// Helper function to convert `user-scheme` to arguments for
+// `colors.color-scheme`.
+#let _color-scheme(theme-default, user-scheme) = {
+  if type(user-scheme) == str {
+    // Full scheme given by name, no use for defaults
+    return colors.color-scheme(base: user-scheme)
+  }
+  if user-scheme == auto {
+    user-scheme = (:)
+  }
+  return colors.color-scheme(base: theme-default, ..user-scheme)
+}
+
+#let _theme-cfg(
+  theme,
+  plain-slide,
+  format,
+  metadata,
+  user-font-scheme,
+  user-color-scheme,
 ) = {
-  let make-font-scheme(user-spec) = fonts._font-scheme(
-    // To get theme defaults we can pass _get-config with default arguments
-    _get-theme-field.with(_get-config, "default-font-scheme"),
-    base: default-font-scheme,
-    ..user-spec,
-  )
-  // Make sure we have an array of font scheme specs
-  if type(font-scheme-args) != array {
-    font-scheme-args = (font-scheme-args,)
-  }
-  font-scheme-args = font-scheme-args.map(spec =>
-    if type(spec) == dictionary { 
-      spec
-    } else {
-      (base: spec)
-    }
-  )
-    
-  // Make a font scheme for each user specification
-  let font-schemes = font-scheme-args.map(make-font-scheme)
+  let props = theme()
+  let req = props.requirements
+  let fonts = _n-font-schemes(props.font-scheme, user-font-scheme, req.n-fonts)
+  let color-scheme = _color-scheme(props.color-scheme, user-color-scheme)
+  let colors = colors.get-colors(color-scheme, req.shade-samples, req.n-accents)
 
-  let color-scheme = colors._color-scheme(
-    _get-theme-field.with(_get-config, "default-color-scheme"),
-    base: default-color-scheme,
-    ..color-scheme-args,
-  )
   return (
-    page-args: _format-arg(format),
-    metadata: meta-data,
-    fonts: fonts.get-fonts(font-schemes, n-fonts),
-    colors: colors.get-colors(color-scheme, shade-samples, n-accents),
-    default-font-scheme: default-font-scheme,
-    default-color-scheme: default-color-scheme,
+    plain-slide: plain-slide,
+    page-args: _format-args(format),
+    metadata: metadata,
+    fonts: fonts,
+    colors: colors,
   )
 }
-
-// We have some spaghetti code here due to mutual recursion between three
-// functions: colors.color-scheme needs get-theme-color-scheme to resolve
-// schemes passed by theme. And get-theme-color-scheme needs get-config to call
-// the theme function to get the defaults. And get-config needs color-scheme to
-// resolve the user scheme specification before giving it to the theme.
-// Hopefully this will be improved once typst gets user types (which we could
-// use to expose the theme defaults).
-// To get the theme defaults we can pass _get-config with default arguments
-#let font-scheme = fonts._font-scheme.with(
-  _get-theme-field.with(_get-config, "default-font-scheme"))
-#let color-scheme = colors._color-scheme.with(
-  _get-theme-field.with(_get-config, "default-color-scheme"))
 
 // Return a dictionary of functions that implement the given configuration
 // settings. For example use `(slide, uncover) = config(handout: true)` to
@@ -212,8 +226,8 @@
 // title slide functions are controlled directly by the theme).
 #let config(
   format: "4:3",
-  font-scheme: (:),
-  color-scheme: (:),
+  font-scheme: auto,
+  color-scheme: auto,
   theme: "simple",
   handout: auto,
   cetz: none,
@@ -224,25 +238,29 @@
   date: none,
 ) = {
   let plain-slide = _plain-slide.with(handout: handout)
-  let get-config = _get-config.with(
-    format: format,
-    meta-data: _metadata(author, affiliation, logo, date),
-    font-scheme-args: font-scheme,
-    color-scheme-args: color-scheme,
-  )
 
-  // Resolve theme if given as name
+  // Resolve theme function if given as name
   if type(theme) == str {
-    theme = dictionary(themes).at(theme)
+    let theme-dict = dictionary(themes)
+    if theme not in theme-dict { panic("No theme named " + repr(theme)) }
+    theme = theme-dict.at(theme)
   }
 
+  let theme-cfg = _theme-cfg(
+    theme,
+    plain-slide,
+    format,
+    _metadata(author, affiliation, logo, date),
+    font-scheme,
+    color-scheme,
+  )
+
   (
-    // theme sets cfg, template, and slide functions
-    ..theme(get-config, plain-slide),
+    cfg: theme-cfg,
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
-    plain-slide: plain-slide,
+    ..theme(cfg: theme-cfg),
   )
   if cetz != none {
     let cetz-update(n) = cetz.draw.content((), logic.update-subslide-count(n))

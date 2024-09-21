@@ -1,7 +1,7 @@
 #import "/lib/lib.typ": *
 #import styling: *
 
-#let title(cfg, plain-slide, ..args, it) = {
+#let title-slide(cfg, plain-slide, ..args, it) = {
   let md = cfg.metadata
   plain-slide(offset: 0, footer: none, ..args, {
     place(top, layouts.protrude(top: 100%, left: 100%, md.logo))
@@ -53,23 +53,30 @@
   it
 }
 
-#let simple(get-config, plain-slide) = {
-  plain-slide = plain-slide.with(
-    footer-func: (..args) => text(0.8em, layouts.footer(..args)),
-  )
-
-  let cfg = get-config(
-    shade-samples: (0%, 100%),
+#let properties = (
+  font-scheme: fonts.schemes.default,
+  color-scheme: (
+    shades: (white, luma(15%)),
+    accents: (blue,),
+  ),
+  requirements: (
+    n-fonts: 1,
     n-accents: 1,
-    default-color-scheme: (
-      shades: (white, luma(15%)),
-      accents: (blue,),
-    )
+    shade-samples: (0%, 100%),
+  ),
+)
+
+#let simple(cfg: none) = {
+  // If no config was provided, return theme parameters
+  if cfg == none { return properties }
+
+  let plain-slide = cfg.plain-slide.with(
+    footer-func: (..args) => text(0.8em, layouts.footer(..args)),
   )
   
   return (
     cfg: cfg,
-    title: title.with(cfg, plain-slide),
+    title-slide: title-slide.with(cfg, plain-slide),
     section: section.with(cfg, plain-slide),
     slide: plain-slide.with(offset: 4),
     template: template.with(cfg),

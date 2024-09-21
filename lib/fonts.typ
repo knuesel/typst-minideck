@@ -14,31 +14,32 @@
   Missing values in `text-weights` for thin, regular and black will be set to
   the standard values and other missing values will be interpolated.
 
-  Missing keys will be taken from the default scheme. This guarantees that
-  `scheme.text` will exist, but not that it will contain particular keys such
-  as `font`: if a font scheme defins `text: (:)` it won't be overriden by the
-  default scheme.
+  Missing keys or keys set to `auto` will be taken from the default scheme
+  (this guarantees that `scheme.text` will exist, but not that it will contain
+  particular keys such as `font`).
 */ 
-// The `default` scheme defines the valid keys
-#let default-scheme = (
-  text: (:), // default font: Linux Libertine
-  text-weights: (:),
-  raw: (:), // default font: DejaVu Sans Mono
-  math: (:), // defont font: New Computer Modern Math
-  delta: 300,
-)
-#let schemes = (
-  default: default-scheme,
-  libertinus-sans: default-scheme + (
+// Non-normalized schemes: can have missing values (to be copied from default
+// scheme), missing text weights (to be copied from typst defaults) and
+// non-standard font names (to be lowercased).
+#let _abnormal-schemes = (
+  // The default scheme defines the valid keys
+  default: (
+    text: (:), // default font: Linux Libertine
+    text-weights: (:),
+    raw: (:), // default font: DejaVu Sans Mono
+    math: (:), // defont font: New Computer Modern Math
+    delta: 300,
+  ),
+  libertinus-sans: (
     text: (font: "Libertinus Sans"),
   ),
-  fira-sans: default-scheme + (
+  fira-sans: (
     text: (font: "Fira Sans"),
     raw: (font: "Fira Mono", weight: "medium"),
     math: (font: "Fira Math"),
     text-weights: (bold: "medium"),
   ),
-  fira-sans-light: default-scheme + (
+  fira-sans-light: (
     text: (font: "Fira Sans"),
     text-weights: (regular: "light", medium: 350, bold: "regular"),
     raw: (font: "Fira Mono", weight: "regular"),
@@ -46,6 +47,7 @@
     delta: 100,
   ),
 )
+
 
 // Weight values of standard weights
 #let _std-weights = (
@@ -111,28 +113,31 @@
   new
 }
 
+// Return true if the weights are all equal to the default, false
+// otherwise.
+#let is-default-weights(weights) = {
+  for (k, v) in weights {
+    if k != v { return false }
+  }
+  return true
+}
+
 // Return a scheme in normalized form:
-// - scheme names are resolved to scheme dicts
 // - font names are lowercased (necessary for matching in `text.where(...)`)
 // - missing text weights are filled in (for normal, thin and black) or
 //   interpolated
 // - weight values are converted to names where possible
 // - missing fields are copied from the default scheme
 // - an error is thrown if the scheme contains unknown fields
-// XXX how to do `font-scheme: (text: "fira-sans", math: "default")`
 #let _normalize(scheme) = {
-  // Resolve scheme value if given as name
-  if type(scheme) == str {
-    scheme = schemes.at(scheme)
-  }
   // Check that all fields are valid
   for (k, _) in scheme {
-    if k not in schemes.default {
+    if k not in _abnormal-schemes.default {
       panic("Invalid font scheme key: " + k)
     }
   }
   // Fill in default values for missing fields
-  scheme = schemes.default + scheme
+  scheme = _abnormal-schemes.default + scheme
   // Ensure all weights are set, interpolating missing values and using weight
   // names where possible
   scheme.text-weights = _weights-full(scheme.text-weights)
@@ -143,61 +148,51 @@
   return scheme
 }
 
-// Return true if the weights are all equal to the default, false
-// otherwise.
-#let is-default-weights(weights) = {
-  for (k, v) in weights {
-    if k != v { return false }
-  }
-  return true
-}
+// Normalize standard schemes
+#let schemes = util.map-dict(_abnormal-schemes, (k, v) => _normalize(v))
 
-// Make scheme dict from given base scheme, overriding fields with the given
-// values if not `auto`.
-// The base scheme can be given by value (dict),
-// as a scheme name or as a theme (name or function) from which to take the
-// default scheme.
-#let _font-scheme(
-  get-theme-scheme,
-  base: schemes.default,
+// Make scheme (dict with fields `text`, `text-weights`, `raw`, `math` and
+// `delta`) from given base scheme, overriding fields with the given
+// values when they are not `auto`.
+// The base scheme can be given by value (dict) or by name, or as `auto` to
+// refer to the default scheme.
+// When given by value, a partial scheme can be given: missing fields or fields
+// with value `auto` will be taken from the default scheme.
+// If `reverse` is `true`, the order of shades is reversed.
+#let font-scheme(
+  base: auto,
   text: auto,
   text-weights: auto,
   raw: auto,
   math: auto,
   delta: auto,
 ) = {
-  if type(base) == str and base in schemes {
+  // This function takes fields as parameters instead of a dict, to present
+  // a nicer API to the user when used directly.
+  if base == auto {
+    base = schemes.default
+  }
+  if type(base) == str {
     // Resolve scheme name
+    if base not in schemes { panic("No font scheme named " + repr(base)) }
     base = schemes.at(base)
-  } else if type(base) in (str, function) {
-    // Resolve theme name or theme function
-    // base must be a theme
-    base = get-theme-scheme(base)
-    if base == none {
-      panic("No scheme or theme named " + repr(base))
-    }
+  }
+  if type(base) != dictionary {
+    panic("Base font scheme must be a name or dictionary")
   }
 
-  // Now base should be a dict with same fields as the default scheme
-  if type(base) != dictionary or base.keys().sorted() != schemes.default.keys().sorted() {
-    panic("Invalid scheme " + repr(base))
-  }
+  // Make sure base has all fields and they're all valid
+  base = _normalize(base)
 
-  return (
-    text: util.coalesce(text, base.text),
-    text-weights: util.coalesce(text-weights, base.text-weights),
-    raw: util.coalesce(raw, base.raw),
-    math: util.coalesce(math, base.math),
-    delta: util.coalesce(delta, base.delta),
+  // TODO: automatize merging of all fields
+  let scheme = (
+    text: util.coalesce(text, base.text, schemes.default.text),
+    text-weights: util.coalesce(text-weights, base.text-weights, schemes.default.text-weights),
+    raw: util.coalesce(raw, base.raw, schemes.default.raw),
+    math: util.coalesce(math, base.math, schemes.default.math),
+    delta: util.coalesce(delta, base.delta, schemes.default.delta),
   )
-}
 
-#let get-fonts(schemes, n) = {
-  // Normalize each scheme
-  let normal = schemes.map(_normalize)
-  // Fill in with first scheme if more are requested than given
-  for _ in range(normal.len(), n) {
-    normal.push(normal.first())
-  }
-  return normal.slice(0, count: n)
+  // Normalize result (for font names and text weights)
+  return _normalize(scheme)
 }

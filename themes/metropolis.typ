@@ -41,7 +41,7 @@
   })
 }
 
-#let title(cfg, plain-slide, ..args, it) = {
+#let title-slide(cfg, plain-slide, ..args, it) = {
   plain-slide(offset: 0, footer: none, ..args, {
     set align(top)
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
@@ -183,29 +183,34 @@
   )
 }
 
-#let metropolis(get-config, plain-slide, show-progress: true) = {
-  let cfg = get-config(
+#let properties = (
+  font-scheme: "fira-sans-light",
+  color-scheme: (
+    shades: (white, rgb("#23373b")), // dark teal
+    accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
+  ),
+  requirements: (
     n-fonts: 1,
-    default-font-scheme: "fira-sans-light",
-    shade-samples: (2%, 10%, 20%, 100%),
     n-accents: 2,
-    default-color-scheme: (
-      shades: (white, rgb("#23373b")), // dark teal
-      accents: (rgb("#eb811b"), rgb("#14b03d")), // red, green
-    ),
-  )
+    shade-samples: (2%, 10%, 20%, 100%),
+  ),
+)
+
+#let metropolis(cfg: none, show-progress: true) = {
+  // If no config was provided, return theme parameters
+  if cfg == none { return properties }
 
   // Add named colors
-  cfg.colors = cfg.colors + color-theme(cfg)
+  cfg.colors += color-theme(cfg)
 
-  plain-slide = plain-slide.with(footer-func: footer-func)
+  let plain-slide = cfg.plain-slide.with(footer-func: footer-func)
 
   return (
     cfg: cfg,
     template: template.with(cfg),
     slide: slide.with(cfg, plain-slide),
     section: section.with(cfg, plain-slide, show-progress: show-progress),
-    title: title.with(cfg, plain-slide),
+    title-slide: title-slide.with(cfg, plain-slide),
     standout: standout.with(cfg, plain-slide),
     title-block: title-block.with(cfg),
     alert-block: alert-block.with(cfg),

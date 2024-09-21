@@ -1,8 +1,8 @@
-#import "@local/minideck:0.3.0" // XXX
+#import "@local/minideck:0.3.0" // XXX change local to preview
 
 #let current-subslide =  context (state("__minideck-subslide-step", 0).get()+1)
 
-#let (template, slide, section, title, pause, uncover, only) = minideck.config(
+#let (template, slide, section, title-slide, pause, uncover, only) = minideck.config(
   author: [Jane Smith],
   affiliation: [University of Rummidge],
   logo: box(fill: luma(90%), inset: 15mm)[Logo],
@@ -14,7 +14,7 @@
 #show raw.where(block: false): set text(0.9em)
 #show raw.where(block: true): set text(0.8em)
 
-#title[
+#title-slide[
   #v(2em)
   = Slides with minideck
   == Usage and features
@@ -154,11 +154,11 @@
     `"default"`, `"libertinus-sans"` or `"fira-sans-light"`, or a dict
 
   / `color-scheme`: switches colors using a name like `"default"` or
-    `"metropolis"`, or dict like `(shades: (bg, fg), accents: (red, blue))`
+    `"phosphor"`, or dict like `(shades: (bg, fg), accents: (red, blue))`
 
   / `theme`: can be a theme name or theme function
 
-  / `handout`: if`true` will disable dynamic behavior of `pause`, etc.
+  / `handout`: if `true` will disable dynamic behavior of `pause`, etc.
 
   / `cetz`, `fletcher`: see below
 ]
@@ -213,26 +213,26 @@ slide[
 ]
 
 slide[
-  = Standard schemes and themes // XXX update list
+  = Standard themes and schemes // XXX update list
 
-  #show: columns.with(2)
+  #columns(2)[
+    Themes
+    - `simple`
+    - `metropolis`
+    - `fira-sans-light`
 
-  Font schemes (need fonts)
-  - `default`
-  - `libertinus-sans`
-  - `fira-sans`
-  - `fira-sans-light`
+    #colbreak()
+    Font schemes (need fonts)
+    - `default`
+    - `libertinus-sans`
+    - `fira-sans`
+  ]
 
   #v(1em)
   Color schemes
   - `default`
-  - `metropolis`
-
-  #colbreak()
- 
-  Themes
-  - `simple`
-  - `metropolis`
+  - `phosphor`
+  - from a theme: for example `metropolis().color-scheme`
 ]
 }
 
