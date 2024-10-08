@@ -4,7 +4,7 @@
 #let title-slide(cfg, plain-slide, ..args, it) = {
   let md = cfg.metadata
   plain-slide(offset: 0, footer: none, ..args, {
-    place(top, layouts.protrude(top: 100%, left: 100%, md.logo))
+    place(top, layouts.use-margin(top: 100%, left: 100%, md.logo))
     set align(horizon+center)
     it // titles and possibly other content
     set text(0.9em)

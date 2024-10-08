@@ -28,20 +28,20 @@
 
 #section[ = Basic usage ]
 
-#slide[
+#slide[ypst-test update --exact use-margin
   = Getting started
 
   Use `minideck.config()` to get the slide functions:
 
   ```typ
   #import "@preview/minideck:0.3.0"
-  (template, title, section, slide) = minideck.config(
+  (template, title-slide, section, slide) = minideck.config(
     author: [John Doe],
     date: [September 4, 2024],
   )
   #show: template
 
-  #title[
+  #title-slide[
     = Presentation title
     == Some subtitle
   ]
@@ -84,7 +84,7 @@
   ]
   ```
  
-  (In minideck, level 3 is a section title and 5 a slide title.)
+  (In minideck, level 3 is a section title and 5 a slide title)
 ]
 
 #slide[
@@ -110,7 +110,7 @@
 #slide[
   = Slide commands
   
-  Main parameters to commands `slide`, `section` and `title`:
+  Main parameters to commands `slide`, `section` and `title-slide`:
   
   - `outlined`: whether to include the slide in the outline
   - `header-text` and `footer-text`: for simple content in header/footer
@@ -120,7 +120,7 @@
 #slide(footer-text: [Some footer text])[
   == Example: changing the footer
 
-  To set/override the footer text, use
+  To set or override the footer text, use
 
   ```typ
   #slide(footer-text: [Some footer text])[...]
@@ -189,7 +189,7 @@ show: template // OK because this template is idempotent
 
 slide[
   = Schemes and themes
-  Schemes: easy to exchange / use with any theme:
+  Schemes: easy to exchange or use with any theme:
 
   ```typ
   minideck.config(
@@ -219,7 +219,6 @@ slide[
     Themes
     - `simple`
     - `metropolis`
-    - `fira-sans-light`
 
     #colbreak()
     Font schemes (need fonts)
@@ -241,13 +240,12 @@ import minideck.themes: *
 let (template, slide) = minideck.config(
   font-scheme: "libertinus-sans",
   color-scheme: (shades: (luma(90%), navy), reverse: true),
-  theme: simple,
+  theme: metropolis.with(show-progress: false), // configured function
 )
-show: template // OK because this template is idempotent
-show heading: set text(1.2em)
+show: template
 show raw: set text(1.1em)
 
-slide[
+slide(margin: 1.4cm)[
   = Setting theme options
 
   A theme is actually a function with parameters.
@@ -262,9 +260,7 @@ slide[
     color-scheme: (shades: (luma(90%), navy)),
     theme: metropolis.with(show-progress: false), // configured function
   )
-  ```
-  XXX the slide shown doesn't use metropolis as the code says
-  but simple theme doens't take any option anymore
+ ```
 ]
 }
 
@@ -277,7 +273,7 @@ show minideck.slide-title: it => minideck.layouts.top-bar(
 show minideck.slide-subtitle: it => minideck.layouts.top-bar(
   align(left, pad(6mm, text(0.7em, it))), style: bar2)
 
-slide[
+slide(margin: 2cm)[
   = Customization
   == Hand-made, without themes
 
@@ -285,8 +281,10 @@ slide[
 
   - selectors such as `slide-title`
 
-  - layouts like `place-relative`, `protrude`, `top-bar` and
+  - layouts like `use-margin`, `place-relative`, `top-bar` and
     `bottom-bar`
+
+  - utilities like `margins` and `bars`
 
   #v(1em)
   Example used in this slide:
@@ -323,28 +321,28 @@ slide[
 slide[
   =  Custom slide layouts
 
-  #import minideck.layouts: protrude
+  #import minideck.layouts: use-margin
 
-  `protrude` helps with layouts that extend to the margins:
+  `use-margin` helps with layouts that extend in the margins:
 
 
   ```typ
   #let my-box = box.with(inset: 1em, fill: luma(90%))
-  #protrude(x: 100%, my-box(width: 100%)[Page-wide figure])
+  #use-margin(x: 100%, my-box(width: 100%)[Page-wide figure])
   ```
 
   #let my-box = box.with(inset: 1em, fill: luma(90%))
-  #protrude(x: 100%, my-box(width: 100%)[Page-wide figure])
+  #use-margin(x: 100%, my-box(width: 100%)[Page-wide figure])
 
   ```typ
   #grid(columns: 2, align: horizon, lorem(12),
-    protrude(right: 100% - 2mm, my-box(width: 100%,
-      [Figure reaching 2mm to page border])))
+    use-margin(right: 100% - 5mm, my-box(width: 100%,
+      [Figure reaching to 5mm of page border])))
   ```
 
   #grid(columns: 2, align: horizon, lorem(12),
-    protrude(right: 100% - 2mm, my-box(width: 100%,
-      [Figure reaching 2mm to page border])))
+    use-margin(right: 100% - 5mm, my-box(width: 100%,
+      [Figure reaching to 5mm of page border])))
 ]
 }
 #section[ = Dynamic slides ]
@@ -363,6 +361,8 @@ slide[
     Second part
     ```,
   [
+    *Result:*
+    
     First part
 
     #show: pause
@@ -383,6 +383,8 @@ slide[
     2. Two  // not `+ Two`
     ```,
     [
+      *Result:*
+      
       1. One
       #show: pause
       2. Two
@@ -487,7 +489,7 @@ slide[
 #let _subslide-count = state("__minideck-subslide-count", (0, 0))
 
 #slide[
-  = With CeTZ figures
+  = Dynamic CeTZ figures
 
   CeTZ figures require
   
@@ -539,7 +541,7 @@ slide[
 #let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 
 #slide[
-  = With fletcher diagrams
+  = Dynamic fletcher diagrams
 
   fletcher diagrams require
   

@@ -80,7 +80,7 @@
   To make the title slide:
 
   ```typ
-  #title[
+  #title-slide[
     = Presentation title
     == Subtitle
 
@@ -201,12 +201,12 @@
 #section[ = Customization ]
 
 #slide(
-  foreground: image("metropolis-customized.png", width: 100%, height: 100%),
-)[= Appearance] // for TOC
-
-#slide(
   foreground: image("metropolis-reverse.png", width: 100%, height: 100%),
 )[= Dark variant] // for TOC
+
+#slide(
+  foreground: image("metropolis-customized.png", width: 100%, height: 100%),
+)[= Appearance] // for TOC
 
 #slide[
   = Custom layouts

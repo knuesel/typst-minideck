@@ -1,0 +1,9 @@
+all: tutorial metropolis
+tutorial: (pdf "tutorial")
+metropolis: (png "metropolis-reverse") (png "metropolis-customized") (pdf "metropolis-slides")
+
+pdf name:
+    typst c {{name}}.typ
+
+png name:
+    typst c -f png {{name}}.typ
