@@ -47,6 +47,23 @@
   return on
 }
 
+// Return dict of values for all four sides by applying rules of precedence.
+#let sides-dict(
+  left: auto,
+  right: auto,
+  top: auto,
+  bottom: auto,
+  x: auto,
+  y: auto,
+  rest: auto,
+  default,
+) = (
+   left:   coalesce(left,   x, rest, default),
+   right:  coalesce(right,  x, rest, default),
+   top:    coalesce(top,    y, rest, default),
+   bottom: coalesce(bottom, y, rest, default),
+)
+
 // Return a dict with the width and height of the current page, taking
 // `page.flipped` into account.
 #let page-size() = {

@@ -358,6 +358,32 @@ slide[
     use-margin(right: 100% - 5mm, my-box(width: 100%,
       [Figure reaching to 5mm of page border])))
 ]
+
+slide[
+  = Titled blocks
+
+  If your theme doesn't offer titled blocks, you can use `layouts.titled-block` directly:
+
+  ```typ
+  #show minideck.block-title: set text(20pt)
+  #minideck.layouts.titled-block(
+    title: (fill: yellow.lighten(80%)),
+    body: (fill: luma(90%)),
+    width: 70%,
+  )[#lorem(3)][#lorem(10)]
+  ```
+  
+  #show minideck.block-title: set text(20pt)
+  #minideck.layouts.titled-block(
+    title: (fill: yellow.lighten(80%)),
+    body: (fill: luma(90%)),
+    width: 70%,
+  )[#lorem(3)][
+    #lorem(10)
+  ]
+
+  Or use a package like #link("https://typst.app/universe/package/showybox/")[showybox]...
+]
 }
 
 #section[ = Dynamic slides ]

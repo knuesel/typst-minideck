@@ -39,3 +39,5 @@ or when theme configuration is required:
 )
 #show: template
 ```
+
+Utilities: place-relative, top-bar, bottom-bar, use-margin, util.length-to-bas, margins, bars

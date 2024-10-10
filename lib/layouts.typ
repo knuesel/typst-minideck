@@ -1,22 +1,5 @@
 #import "util.typ"
-
-// Return dict of values for all four sides by applying rules of precedence.
-#let _sides-dict(
-  all: auto,
-  left: auto,
-  right: auto,
-  top: auto,
-  bottom: auto,
-  x: auto,
-  y: auto,
-  rest: auto,
-  default,
-) = (
-   left:   util.coalesce(all, left,   x, rest, default),
-   right:  util.coalesce(all, right,  x, rest, default),
-   top:    util.coalesce(all, top,    y, rest, default),
-   bottom: util.coalesce(all, bottom, y, rest, default),
-)
+#import "styling.typ"
 
 // Protrusion for given relative length and reference margin/bar size.
 // The `em` length given by the user must be taken relative to the current
@@ -27,9 +10,9 @@
 
 #let _protrusions(rels, refs, default) = {
   if type(rels) != dictionary {
-    rels = (all: rels)
+    rels = (rest: rels)
   }
-  let dict = _sides-dict(..rels, default)
+  let dict = util.sides-dict(..rels, default)
   return (
     left:   _protrusion(dict.left,   refs.left),
     right:  _protrusion(dict.right,  refs.right),
@@ -161,6 +144,8 @@
   place(dx: x-shift, dy: y-shift, it)
 }
 
+#let _height-metadata(it, label) = [#metadata((height: measure(it).height))#label]
+
 // Place a bar across the whole slide width at the top or bottom of the slide,
 // displacing other content down or up respectively.
 // The `y-align` parameter must be `top` or `bottom`.
@@ -170,7 +155,7 @@
 #let _slide-bar(dy: 0pt, label: none, y-align, ..args) = {
   let b = block(width: util.page-size().width, ..args)
   if label != none {
-    b += [#metadata((height: measure(b).height))#label]
+    b += _height-metadata(b, label)
   }
   let dx = -util.margins().left
   place(y-align+left, dx: dx, dy: dy, float: true, clearance: 0pt, b)
@@ -218,7 +203,7 @@
   }))
 }
 
-#let title-block(width: auto, title: (:), body: (:), ..args, title-it, body-it) = {
+#let titled-block(width: auto, title: (:), body: (:), ..args, title-it, body-it) = {
   set heading(offset: 6)
   let b1 = block.with(
     below: 0pt,
@@ -232,12 +217,13 @@
     ..body,
     body-it,
   )
-  block(..args, {
-    if width == auto {
+  if width == auto {
+    block(breakable: false, ..args, {
       // Calculate width as the largest between the two blocks but at most 100%.
       // This computation can be expensive. Note that even without fill,
       // having the same width for the title as the content can matter e.g.
       // when centering the title. 
+      // TODO: replace layout with measure(width: ...) in typst 0.12
       layout(size => {
         let w1 = measure(b1()).width
         let w2 = measure(b2()).width
@@ -245,9 +231,11 @@
         b1(width: w)
         b2(width: w)
       })
-    } else {
-      b1(width: width)
-      b2(width: width)
-    }
-  })
+    })
+  } else {
+    block(breakable: false, ..args, width: width, {
+      b1(width: 100%)
+      b2(width: 100%)
+    })
+  }
 }

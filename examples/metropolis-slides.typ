@@ -3,7 +3,7 @@
 
 #let (
   template, slide, section, title-slide, standout, alert, example,
-  title-block, alert-block, example-block
+  titled-block, alert-block, example-block
 ) = minideck.config(
   theme: "metropolis",
   author: [Jeremie Knuesel],
@@ -147,27 +147,35 @@
 #slide[
   = Blocks
 
-  Make title blocks with `title-block`, `alert-block` and `example-block`.
+  Make titled blocks with `titled-block`, `alert-block`, `example-block`
 
-  Syntax: `#title-block(options...)[Title][Body]`.
+  Syntax: `#titled-block(options...)[Title][Body]`
 
-  Options: `transparent: false` for background, `width:` for fixed width.
+  Options: `transparent: false` for background, `width:` for fixed width
 
   #set text(0.9em)
 
   #columns(2)[
-    #title-block()[Default][
+    #titled-block[Default (transparent)][
       Block with `auto` width and enough text to require several lines.
     ]
-    #alert-block()[Alert][Block with `auto` width.]
-    #example-block(width: 16em)[Example][Block with fixed width.]
+    #alert-block[Alert (transparent)][
+      Block with `auto` width.
+    ]
+    #example-block(width: 16em)[Example (transparent)][
+      Block with fixed width.
+    ]
     #colbreak()
 
-    #title-block(transparent: false)[Default][
+    #titled-block(transparent: false)[Default][
       Block with `auto` width and enough text to require several lines.
     ]
-    #alert-block(transparent: false)[Alert][Block with `auto` width.]
-    #example-block(transparent: false, width: 14em)[Example][Block with fixed width.]
+    #alert-block(transparent: false)[Alert][
+      Block with `auto` width.
+    ]
+    #example-block(transparent: false, width: 14em)[Example][
+      Block with fixed width.
+    ]
   ]
 ]
 
@@ -198,6 +206,8 @@
 
 #section[ = Customization ]
 
+// Use external slides to show other themes (because the theme templates cannot
+// be used on top of each other)
 #slide(
   foreground: image("metropolis-reverse.svg", width: 100%, height: 100%),
 )[= Dark variant] // for TOC
@@ -212,20 +222,64 @@
 
 #slide[
   = Custom layouts
-
+  
   How to make layouts such as "full slide picture" that play well with the title bar?
 
   Minideck has standard functions that should work with any theme:
 
-  // XXX full-size image using height 1fr once typst 0.12 is released
-  // #place(minideck.use-margin(100%, ))
-  
   - `use-margin`: let content extend over the margins
 
   - `margins` and `bars`: low level, give raw dimensions to play with
-  
-  The background image in this slide was added with the following:
-  // XXX
+
+  Combine `block(height: 1fr)` and `use-margin` to use the whole width under the title bar:
+
+  ```typ
+  #slide[
+    = Title
+    #block(height: 1fr)[
+      #minideck.use-margin(100%, image("filename.svg"))
+    ]
+  ]
+  ```
+]
+
+#slide(margin: 2cm)[
+  =  Another example
+
+  #block(height: 1fr)[
+    #grid(
+      columns: (1fr, 1fr),
+      [
+        Full height & width on one side:
+        ```typ
+        #block(height: 1fr)[
+          #grid(
+            columns: (1fr, 1fr),
+            [Left side],
+            minideck.use-margin(
+              y: 100%,
+              right: 100%,
+              box(
+                width: 100%,
+                height: 100%,
+                fill: orange,
+              ),
+            )
+          )
+        ]
+        ```
+      ],
+      minideck.use-margin(
+        y: 100%,
+        right: 100%,
+        box(
+          width: 100%,
+          height: 100%,
+          fill: orange,
+        ),
+      ),
+    )
+  ]
 ]
 
 #section[

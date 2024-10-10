@@ -74,22 +74,28 @@
   })
 }
     
-#let title-block(cfg, transparent: true, ..args, it-title, it-body) = {
-  let title = (inset: 0.4em)
-  let body = (inset: 0.4em)
+#let titled-block(cfg, transparent: true, ..args, it-title, it-body) = {
+  let title-args = (inset: 0.4em)
+  let body-args =  (inset: 0.4em)
   if not transparent {
-    title.fill = cfg.colors.block-title-bg
-    body.fill = cfg.colors.block-body-bg
+    title-args.fill = cfg.colors.block-title-bg
+    body-args.fill = cfg.colors.block-body-bg
   }
- layouts.title-block(title: title, body: body, ..args, it-title, it-body)
+  layouts.titled-block(
+    title: title-args,
+    body: body-args,
+    ..args,
+    it-title,
+    it-body,
+  )
 }
 
-#let alert-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
+#let alert-block(cfg, ..args, it-title, it-body) = titled-block(cfg, ..args,
   text(cfg.colors.alert, it-title),
   it-body,
 )
 
-#let example-block(cfg, ..args, it-title, it-body) = title-block(cfg, ..args,
+#let example-block(cfg, ..args, it-title, it-body) = titled-block(cfg, ..args,
   text(cfg.colors.example, it-title),
   it-body,
 )
@@ -217,7 +223,7 @@
     section: section.with(cfg, cfg.plain-slide, show-progress: show-progress),
     title-slide: title-slide.with(cfg, cfg.plain-slide),
     standout: standout.with(cfg, cfg.plain-slide),
-    title-block: title-block.with(cfg),
+    titled-block: titled-block.with(cfg),
     alert-block: alert-block.with(cfg),
     example-block: example-block.with(cfg),
     alert: text.with(cfg.colors.alert),
