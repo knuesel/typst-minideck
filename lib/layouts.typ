@@ -216,7 +216,7 @@
   }))
 }
 
-#let title-block(width: auto, title: (:), body: (:), title-it, body-it) = {
+#let title-block(width: auto, title: (:), body: (:), ..args, title-it, body-it) = {
   set heading(offset: 6)
   let b1 = block.with(
     below: 0pt,
@@ -230,7 +230,7 @@
     ..body,
     body-it,
   )
-  block({
+  block(..args, {
     if width == auto {
       // Calculate width as the largest between the two blocks but at most 100%.
       // This computation can be expensive. Note that even without fill,

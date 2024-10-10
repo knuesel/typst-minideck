@@ -12,6 +12,7 @@ and return as output a dictionary of theme functions including at least
 
   - `template`: a template for the whole document
   - `slide`: the input `slide` function or a wrapper for it
+  - `section` 
   - `title-slide`: the input `slide` function or a wrapper for it
 
 The configuration function can accept additional parameters and return additional values in the output dictionary.
