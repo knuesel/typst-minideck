@@ -201,11 +201,15 @@
 #section[ = Customization ]
 
 #slide(
-  foreground: image("metropolis-reverse.png", width: 100%, height: 100%),
+  foreground: image("metropolis-reverse.svg", width: 100%, height: 100%),
 )[= Dark variant] // for TOC
 
 #slide(
-  foreground: image("metropolis-customized.png", width: 100%, height: 100%),
+  // Small shift upward and fill here too to avoid SVG artifact
+  foreground: {
+    move(dy: -0.5pt, image("metropolis-customized.svg", width: 100%, height: 100%))
+  },
+  fill: navy,
 )[= Appearance] // for TOC
 
 #slide[
