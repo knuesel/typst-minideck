@@ -49,13 +49,16 @@
 }
 
 #let title-slide(cfg, plain-slide, ..args, it) = {
+  let md = cfg.metadata
   plain-slide(offset: 0, ..args, {
+    if md.logo != none {
+      place(top, md.logo)
+    }
     set align(top)
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
     block(height: 50%, below: 2.4em)
     it
 
-    let md = cfg.metadata
     set text(0.9em)
     {
       set block(below: 1em)

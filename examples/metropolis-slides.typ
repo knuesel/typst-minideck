@@ -88,9 +88,7 @@
   ]
   ```
 
-  The theme will insert the author, affiliation and date given to `minideck.config`.
-  
-  The logo is ignored but can be placed manually.
+  The theme will insert the author, affiliation, logo and date given to `minideck.config`.
 ]
 
 #slide[
