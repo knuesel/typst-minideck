@@ -110,19 +110,23 @@
 }
 
 // XXX finish
-#let _target-position(target) = {
+#let _target-position(target, index) = {
+  if type(target) == dictionary {
+    // Target given as absolute position so nothing to do
+    return target
+  }
   let targets = query(target)
   if (index >= targets.len() or index < -targets.len()) {
-    default(it)
-  } else {
-    let this = here().position()
-    let other = targets.at(index).location().position()
+    return none
   }
+  return targets.at(index).location().position()
 }
 
 // Place `it` relative to the `index`-th match of the `target` selector.
 // If the target is not found (or the index invalid), `it` is passed to the
 // `default` function for placement.
+// The target position can also be specified directly by passing a dictionary
+// with `x` and `y` keys instead of a selector.
 // The `anchor` determines which point of `it` is aligned with the target
 // position.
 // The final position can be adjusted with `dx` and `dy`.
@@ -133,7 +137,6 @@
   target,
   index: 0,
   anchor: top+left,
-  
   x: auto,
   y: auto,
   dx: 0pt,
@@ -144,19 +147,18 @@
   // Workaround for typst 0.11, see https://github.com/typst/typst/issues/3614
   metadata(none)
   
-  let targets = query(target)
-  if (index >= targets.len() or index < -targets.len()) {
-    default(it)
-  } else {
-    let this = here().position()
-    let other = targets.at(index).location().position()
-    let size = measure(it)
-    let x-shift = dx + _anchor-x-shift(anchor, size)
-    let y-shift = dy + _anchor-y-shift(anchor, size)
-    x-shift += if x == auto { other.x - this.x  + dx } else { x }
-    y-shift += if y == auto { other.y - this.y  + dy } else { y}
-    place(dx: x-shift, dy: y-shift, it)
+  let other = _target-position(target, index)
+  if other == none {
+    return default(it)
   }
+
+  let this = here().position()
+  let size = measure(it)
+  let x-shift = dx + _anchor-x-shift(anchor, size)
+  let y-shift = dy + _anchor-y-shift(anchor, size)
+  x-shift += if x == auto { other.x - this.x  + dx } else { x }
+  y-shift += if y == auto { other.y - this.y  + dy } else { y}
+  place(dx: x-shift, dy: y-shift, it)
 }
 
 // Place a bar across the whole slide width at the top or bottom of the slide,
