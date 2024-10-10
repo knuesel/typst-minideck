@@ -28,7 +28,7 @@
 
 #section[ = Basic usage ]
 
-#slide[ypst-test update --exact use-margin
+#slide[
   = Getting started
 
   Use `minideck.config()` to get the slide functions:
@@ -113,12 +113,37 @@
   Main parameters to commands `slide`, `section` and `title-slide`:
   
   - `outlined`: whether to include the slide in the outline
-  - `header-text` and `footer-text`: for simple content in header/footer
-  - any `page` argument like `footer` or `margin` (to change margins just for one slide)
+
+  - `header-text` and `footer-text` for simple content in header/footer
+
+  - any `page` argument like `footer`, `margin` or `fill`
+]
+
+#slide(
+  fill: luma(92%),
+  background: circle(stroke: white+8mm, radius: 6cm),
+  margin: (top: 1.5cm),
+)[
+  = Example: background and margins
+
+  This slide was created with the following code:
+
+  ```typ
+  #slide(
+    fill: luma(92%),
+    background: circle(stroke: white+8mm, radius: 6cm),
+    margin: (top: 1.5cm),
+  )[
+    = Example: ...
+  ]
+  ```
+
+  #v(1em)
+  (These slide options are simply forwarded to `page`.)
 ]
 
 #slide(footer-text: [Some footer text])[
-  == Example: changing the footer
+  = Example: footer
 
   To set or override the footer text, use
 
@@ -145,38 +170,7 @@
   ```
 ]
 
-#slide[
-  = Options for `minideck.config`
-
-  / `format`: can be `"4:3"` (default), `"16:9"`, a paper name, or a\ `(width:, height:)` dictionary
-
-  / `font-scheme`: switches a bunch of font settings with a name like
-    `"default"`, `"libertinus-sans"` or `"fira-sans-light"`, or a dict
-
-  / `color-scheme`: switches colors using a name like `"default"` or
-    `"phosphor"`, or dict like `(shades: (bg, fg), accents: (red, blue))`
-
-  / `theme`: can be a theme name or theme function
-
-  / `handout`: if `true` will disable dynamic behavior of `pause`, etc.
-
-  / `cetz`, `fletcher`: see below
-]
-
-#slide[
-  And some used mostly for the title slide:
-
-  / `author:`: presentation author
-
-  / `affiliation:`: author affiliation
-
-  / `logo:`: logo
-
-  / `date:`: date, can be any content (e.g. event name)
-]
-
 #section[ = Themes and customization]
-
 
 #{
 import minideck.themes: *
@@ -185,7 +179,8 @@ let (template, slide) = minideck.config(
     shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
     accents: (olive,)), // default theme uses this for links
   font-scheme: "libertinus-sans") // scheme specified by name
-show: template // OK because this template is idempotent
+show: template // OK because this template is almost idempotent
+show heading: set text(1em/1.2)
 
 slide[
   = Schemes and themes
@@ -243,6 +238,7 @@ let (template, slide) = minideck.config(
   theme: metropolis.with(show-progress: false), // configured function
 )
 show: template
+show heading: set text(1em/1.1)
 show raw: set text(1.1em)
 
 slide(margin: 1.4cm)[
@@ -260,9 +256,29 @@ slide(margin: 1.4cm)[
     color-scheme: (shades: (luma(90%), navy)),
     theme: metropolis.with(show-progress: false), // configured function
   )
- ```
+  ```
 ]
 }
+
+#slide[
+  = Getting theme defaults
+
+  You can call the theme function to get its default schemes:
+
+  ```typ
+  #import minideck.themes: *
+  font scheme: #metropolis().font-scheme \
+  color scheme: #metropolis().color-scheme
+  ```
+
+  #v(1em)
+  #set text(0.8em)
+  *Result:*
+
+  #import minideck.themes: *
+  font scheme: #metropolis().font-scheme \
+  color scheme: #metropolis().color-scheme
+]
 
 #{
 show heading: set text(font: "DejaVu Sans", eastern)
@@ -321,7 +337,7 @@ slide[
 slide[
   =  Custom slide layouts
 
-  #import minideck.layouts: use-margin
+  #import minideck: use-margin
 
   `use-margin` helps with layouts that extend in the margins:
 
@@ -335,17 +351,37 @@ slide[
   #use-margin(x: 100%, my-box(width: 100%)[Page-wide figure])
 
   ```typ
-  #grid(columns: 2, align: horizon, lorem(12),
+  #grid(columns: 2, lorem(12),
     use-margin(right: 100% - 5mm, my-box(width: 100%,
       [Figure reaching to 5mm of page border])))
   ```
 
-  #grid(columns: 2, align: horizon, lorem(12),
+  #grid(columns: 2, lorem(12),
     use-margin(right: 100% - 5mm, my-box(width: 100%,
       [Figure reaching to 5mm of page border])))
 ]
 }
+
 #section[ = Dynamic slides ]
+
+#slide[
+  = Overview
+  
+  #v(1em)
+  - Use `pause` / `uncover` / `only` to make subslides
+
+  - Use `minideck.config(handout: true)` to disable subslides\
+    (this puts all subslides' content in one slide)
+
+    Or choose handout mode from the command line:
+    
+    ```
+    typst compile file.typ --input handout=true
+    ```
+
+  - Dynamic CeTZ/fletcher diagrams are possible with extra effort\
+    (see examples below)
+]
 
 #slide[
   = Subslides with `pause`
@@ -458,7 +494,7 @@ slide[
 #import "@preview/pinit:0.1.4": *
 
 #slide[
-  = Works well with `pinit`
+  = Dynamic slides with `pinit`
 
   Pythagorean theorem:
 
@@ -482,7 +518,7 @@ slide[
   
 ]
 
-#import "@preview/cetz:0.2.2" as cetz: *
+#import "@preview/cetz:0.2.2"
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
@@ -496,25 +532,30 @@ slide[
   - cetz-specific `uncover` and `only` from `minideck.config`
   - a `context` outside the `canvas` call
 
-  Example:
+  Example setup:
+
   ```typ
-  #context canvas({
-    import draw: *
-    cetz-only(3, rect((0,-2), (14,4), stroke: 3pt))
-    cetz-uncover(from: 2, rect((0,-2), (16,2), stroke: blue+3pt))
-    content((8,0), box(stroke: red+3pt, inset: 1em)[
-      A typst box #only(2)[on subslide 1]
-    ])
-  })
+  #import "@preview/cetz:0.2.2"
+
+  (cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
+
+  #slide[
+    #context cetz.canvas({
+      ...
+    })
+  ]
   ```
 ]
 
 #slide[
+  == CeTZ example
+
   #set text(0.9em)
+  
   Code:
   ```typ
-  #context canvas({
-    import draw: *
+  #context cetz.canvas({
+    import cetz.draw: *
     cetz-only(3, rect((0,-2), (14,4), stroke: 3pt))
     cetz-uncover(from: 2, rect((0,-2), (16,2), stroke: blue+3pt))
     content((8,0), box(stroke: red+3pt, inset: 1em)[
@@ -525,8 +566,8 @@ slide[
 
   Result: subslide #current-subslide
 
-  #context canvas({
-    import draw: *
+  #context cetz.canvas(length: 8mm, {
+    import cetz.draw: *
     cetz-only(3, rect((0,-2), (14,4), stroke: 3pt))
     cetz-uncover(from: 2, rect((0,-2), (16,2), stroke: blue+3pt))
     content((8,0), box(stroke: red+3pt, inset: 1em)[
@@ -549,8 +590,26 @@ slide[
   - a `context` outside the `diagram` call (but in the slide)
   - an explicit number of steps passed to the `slide` function
 
-  Example:
+  Example setup:
 
+  #set text(0.9em)
+
+  ```typ
+  #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
+
+  (fletcher-uncover, fletcher-only) = minideck.config(fletcher: fletcher)
+
+  #slide(steps: 2)[
+    #context diagram({
+      ...
+    })
+  ]
+  ```
+]
+
+#slide(steps: 2)[
+  == Fletcher example
+  
   #set text(0.9em)
   ```typ
   #slide(steps: 2)[
@@ -562,10 +621,7 @@ slide[
       fletcher-uncover(from:2,edge("d,r,u,l","-|>",[x],label-pos:0.1)))
   ]
   ```
-]
 
-
-#slide(steps: 2)[
   == Result: subslide #current-subslide
 
   #set align(center)
@@ -582,4 +638,63 @@ slide[
   Below diagram
 ]
 
+#section[ = Reference ]
 
+#slide[
+  = Options for `minideck.config`
+  #set text(0.9em)
+  #set terms(spacing: 1fr)
+
+  / `format`: can be `"4:3"` (default), `"16:9"`, a paper name, or a\ `(width:, height:)` dictionary
+
+  / `font-scheme`: switches a bunch of font settings with a name like
+    `"default"`, `"libertinus-sans"` or `"fira-sans-light"`, or a dict
+
+  / `color-scheme`: switches colors using a name like `"default"` or
+    `"phosphor"`, or dict like `(shades: (bg, fg), accents: (red, blue))`
+
+  / `theme`: can be a theme name or theme function
+
+  / `handout`: disables dynamic behavior of `pause`, etc. when set to `true`
+
+  / `cetz`, `fletcher`: enable support for dynamic diagrams (give your version of the CeTZ/fletcher module as option value)
+]
+
+#slide[
+  Plus some options used mostly for the title slide:
+  #set text(0.9em)
+  #v(1em)
+
+  / `author:`: presentation author
+
+  / `affiliation:`: author affiliation
+
+  / `logo:`: institution logo
+
+  / `date:`: date, can be any content (event name, etc.)
+]
+
+#slide[
+  = Options for `slide`, `section` and `title-slide`
+  #set text(0.9em)
+
+  / `header-func:`: callback for header layout (`none` = leave header as is)
+
+  / `footer-func:`: callback for footer layout (`none` = leave footer as is)
+  
+  / `header-text:`: content to pass to `header-func` (`auto` = use default)
+    
+  / `footer-text:`: content to pass to `footer-func` (`auto` = use default)
+    
+  / `handout:`: enable/disable dynamic content for this slide
+  
+  / `steps`: number of subslides (default is `auto`)
+  
+  / `offset:`: offset for headings in this slide (e.g. 4 for normal slides)
+  
+  / `outlined:`: include/exclude slide headings in outline
+
+  - plus any option accepted by `page`
+
+  - plus non-standard options defined by the theme
+]

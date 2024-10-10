@@ -66,11 +66,11 @@
 #let use-margin(..args, it) = context {
   for (k, _) in args.named() {
     if k not in ("left", "right", "top", "bottom", "x", "y", "rest") {
-      panic("invalid named argument: " + k)
+      panic("invalid use-margin argument: " + k)
     }
   }
   if args.pos().len() > 1 {
-    panic("this function accepts at most 1 positional argument")
+    panic("use-margin accepts at most 1 positional argument")
   }
   let default = if args.pos().len() == 1 {
     args.pos().first()
@@ -109,6 +109,17 @@
   }
 }
 
+// XXX finish
+#let _target-position(target) = {
+  let targets = query(target)
+  if (index >= targets.len() or index < -targets.len()) {
+    default(it)
+  } else {
+    let this = here().position()
+    let other = targets.at(index).location().position()
+  }
+}
+
 // Place `it` relative to the `index`-th match of the `target` selector.
 // If the target is not found (or the index invalid), `it` is passed to the
 // `default` function for placement.
@@ -122,6 +133,7 @@
   target,
   index: 0,
   anchor: top+left,
+  
   x: auto,
   y: auto,
   dx: 0pt,
@@ -190,14 +202,14 @@
 
 // Return a simple header layout with the given content.
 // The default value is used as content if `it` is `auto`.
-#let header(it, default: none) = {
+#let basic-header(it, default: none) = {
   set align(top)
   use-margin(x: 100%, util.coalesce(it, default))
 }
 
 // Return a simple footer layout with the given content.
 // The default value is used as footer text if `it` is `auto`.
-#let footer(it, padding: 1.5em, default: none) = {
+#let basic-footer(it, padding: 1.5em, default: none) = {
   set align(bottom)
   use-margin(x: 100%, pad(x: padding, bottom: padding, {
     place(bottom+end, context counter(page).display())

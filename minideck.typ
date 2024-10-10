@@ -6,12 +6,15 @@
 
 // `field` is "header" or "footer"
 #let _process-head-foot(page-args, field, func, txt) = {
-  if page-args.at(field, default: none) == auto {
-    page-args.remove(field)
+  if field in page-args {
+    // If footer is set explicitly, this takes precedence so nothing to do
+    return page-args
   }
-  if field not in page-args and txt != none {
-    page-args.insert(field, func(txt))
+  if func == none {
+    // No callback defined means we should not change anything
+    return page-args
   }
+  page-args.insert(field, func(txt))
   return page-args
 }
 
@@ -35,20 +38,23 @@
 // The footer of a slide can be overriden using either `footer` or
 // `footer-text`:
 //
-// - `footer` takes content or `none`, to be used directly as the page footer.
-//   The value `auto` can be passed to disable this behavior and consider
-//   `footer-text` instead (this is the same as leaving `footer` unspecified).
+// - `footer` can be used to set directly the page footer. If not specified,
+//   `footer-text` will be considered instead.
 //   
-// - `footer-text` takes simple content (typically a string) that, if not
-//   `none`, will be passed to a theme function for transformation and layout,
-//   and the result will be  used as page footer. The value `auto` can be used
-//   to let the theme function use the default value for this type of slide.
+// - `footer-text` takes simple content (typically a string) that will be
+//   passed to a theme function for transformation and layout,
+//   and the result will be used as page footer. The value `auto` can be used
+//   to let the theme function use the default text for this type of slide.
 //
-// Use `footer: auto` and `footer-text: none` to leave the page footer as it is.
+// - `footer-func` is the theme function called with `footer-text` as parameter
+//   to make the footer for this type of slide.
+//
+// To leave the footer as it is (from a global `page` configuration), set
+// `footer-func` to `none`.
 #let _plain-slide(
   ..args,
-  header-func: layouts.header,
-  footer-func: layouts.footer,
+  header-func: none,
+  footer-func: none,
   header-text: auto,
   footer-text: auto,
   handout: auto,

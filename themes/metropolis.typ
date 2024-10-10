@@ -11,20 +11,27 @@
   }
 }
 
-#let slide(cfg, plain-slide, center: true, ..args, it) = plain-slide(offset: 4, ..args, {
-  if center {
-    // Use tiny values so any user fractional spacing wins
-    v(0.0004fr)
-    it
-    v(0.0006fr)
-  } else {
-    it
-  }
-})
+#let footer-func(..args) = text(0.7em, layouts.basic-footer(padding: 1.5em, ..args))
+
+#let slide(cfg, plain-slide, center: true, ..args, it) = plain-slide(
+  offset: 4,
+  footer-func: footer-func,
+  ..args,
+  {
+    if center {
+      // Use tiny values so any user fractional spacing wins
+      v(0.0004fr)
+      it
+      v(0.0006fr)
+    } else {
+      it
+    }
+  },
+)
 
 #let section(cfg, plain-slide, show-progress: true, ..args, it) = {
   // TODO: use 50% - 11em once typst supports giving abs margins
-  plain-slide(offset: 2, footer: none, margin: 50% - 11*22pt, ..args, {
+  plain-slide(offset: 2, margin: 50% - 11*22pt, ..args, {
     set align(top)
     place-progress-bar(show-progress, cfg.colors.progress-bar)
     block(height: 50%)
@@ -34,7 +41,7 @@
 
 #let standout(cfg, plain-slide, ..args, it) = {
   set text(cfg.colors.bg) // done here to also affect header/footer
-  plain-slide(offset: 4, footer: none, fill: cfg.colors.fg, ..args, {
+  plain-slide(offset: 4, fill: cfg.colors.fg, ..args, {
     set text(size: 1.4em, weight: "bold")
     set align(horizon+center)
     it
@@ -42,7 +49,7 @@
 }
 
 #let title-slide(cfg, plain-slide, ..args, it) = {
-  plain-slide(offset: 0, footer: none, ..args, {
+  plain-slide(offset: 0, ..args, {
     set align(top)
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
     block(height: 50%, below: 2.4em)
@@ -84,8 +91,6 @@
   it-body,
 )
 
-#let footer-func(..args) = text(0.7em, layouts.footer(padding: 1.5em, ..args))
-
 #let title-bar(cfg, it) = layouts.top-bar(
   style: (fill: cfg.colors.fg),
   align(horizon+start, pad(0.85em, text(cfg.colors.bg, it))),
@@ -96,7 +101,6 @@
     // TODO: use 3em once typst supports giving abs margins
     margin: 66pt,
     fill: cfg.colors.bg,
-    footer: footer-func(none),
   )
 
   // Set default font size before template, so that cfg fonts can override it
@@ -203,15 +207,13 @@
   // Add named colors
   cfg.colors += color-theme(cfg)
 
-  let plain-slide = cfg.plain-slide.with(footer-func: footer-func)
-
   return (
     cfg: cfg,
     template: template.with(cfg),
-    slide: slide.with(cfg, plain-slide),
-    section: section.with(cfg, plain-slide, show-progress: show-progress),
-    title-slide: title-slide.with(cfg, plain-slide),
-    standout: standout.with(cfg, plain-slide),
+    slide: slide.with(cfg, cfg.plain-slide),
+    section: section.with(cfg, cfg.plain-slide, show-progress: show-progress),
+    title-slide: title-slide.with(cfg, cfg.plain-slide),
+    standout: standout.with(cfg, cfg.plain-slide),
     title-block: title-block.with(cfg),
     alert-block: alert-block.with(cfg),
     example-block: example-block.with(cfg),

@@ -103,14 +103,16 @@
   return margins
 }
 
-#let bars() = {
-  let p = here().page()
+#let bars(page: auto) = {
+  if page == auto {
+    page = here().page()
+  }
   let (t, b, l, r) = (
     <__minideck-bar-top>,
     <__minideck-bar-bottom>,
     <__minideck-bar-left>,
     <__minideck-bar-right>,
-  ).map(lbl => query(lbl).filter(x => x.location().page() == p))
+  ).map(lbl => query(lbl).filter(x => x.location().page() == page))
   return (
     top:    t.map(x => x.value.height),
     bottom: b.map(x => x.value.height),

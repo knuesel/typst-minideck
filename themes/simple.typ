@@ -3,7 +3,7 @@
 
 #let title-slide(cfg, plain-slide, ..args, it) = {
   let md = cfg.metadata
-  plain-slide(offset: 0, footer: none, ..args, {
+  plain-slide(offset: 0, ..args, {
     place(top, layouts.use-margin(top: 100%, left: 100%, md.logo))
     set align(horizon+center)
     it // titles and possibly other content
@@ -26,7 +26,7 @@
 }
 
 #let section(cfg, plain-slide, ..args, it) = {
-  plain-slide(offset: 2, footer: none, ..args, {
+  plain-slide(offset: 2, ..args, {
     set align(horizon+center)
     it // titles and possibly other content
   })
@@ -39,8 +39,8 @@
   show: basic-template.with(cfg)
   // Make titles a bit larger
   show presentation-title
-    .or(slide-title)
-    .or(section-title): set text(1.2em)
+    .or(slide-title): set text(1.2em)
+  show section-title: set text(1.3em)
   // Color for links
   show link: set text(cfg.colors.accents.at(0))
 
@@ -52,6 +52,8 @@
 
   it
 }
+
+#let footer-func(..args) = text(0.8em, layouts.basic-footer(..args))
 
 #let properties = (
   font-scheme: fonts.schemes.default,
@@ -70,15 +72,11 @@
   // If no config was provided, return theme parameters
   if cfg == none { return properties }
 
-  let plain-slide = cfg.plain-slide.with(
-    footer-func: (..args) => text(0.8em, layouts.footer(..args)),
-  )
-  
   return (
     cfg: cfg,
-    title-slide: title-slide.with(cfg, plain-slide),
-    section: section.with(cfg, plain-slide),
-    slide: plain-slide.with(offset: 4),
+    title-slide: title-slide.with(cfg, cfg.plain-slide),
+    section: section.with(cfg, cfg.plain-slide),
+    slide: cfg.plain-slide.with(offset: 4, footer-func: footer-func),
     template: template.with(cfg),
   )
 }
