@@ -162,11 +162,11 @@
 // Place a bar across the whole slide width at the top or bottom of the slide,
 // displacing other content down or up respectively.
 // The `y-align` parameter must be `top` or `bottom`.
-// Options can be passed to the block wrapper using the `style` parameter.
 // If label is not `none`, metadata with the given label will be added after
 // the block. The metadata will include a `height` field with the bar height.
-#let _slide-bar(dy: 0pt, style: (:), label: none, y-align, it) = {
-  let b = block(width: util.page-size().width, ..style, it)
+// Additional parameters are passed to the block wrapper.
+#let _slide-bar(dy: 0pt, label: none, y-align, ..args) = {
+  let b = block(width: util.page-size().width, ..args)
   if label != none {
     b += [#metadata((height: measure(b).height))#label]
   }
@@ -175,29 +175,28 @@
 }
 
 // Place a full-width block at the top of the slide, displacing the margin
-// below itself. The `style` argument can be used to configure th block.
+// below itself.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
 // Top bars should not be used together with a page header.
-#let top-bar(dy: 0pt, style: (:), it) = context _slide-bar(
+// Additional parameters are passed to the block wrapper.
+#let top-bar(dy: 0pt, ..args) = context _slide-bar(
   dy: -util.margins().top + dy,
-  style: style,
   label: <__minideck-bar-top>,
   top,
-  it,
+  ..args,
 )
 
 // Place a full-width block at the bottom of the slide, displacing the margin
-// above itself. The `style` argument can be used to configure th block.
+// above itself.
 // Note: This won't work in a heading show rule when margins are given in ems,
 // as the heading size is typically different from the initial page text size
 // Top bars should not be used together with a page footer.
-#let bottom-bar(dy: 0pt, style: (:), it) = context _slide-bar(
+#let bottom-bar(dy: 0pt, ..args) = context _slide-bar(
   dy: util.margins().bottom + dy,
-  style: style,
   label: <__minideck-bar-bottom>,
   bottom,
-  it,
+  ..args,
 )
 
 // Return a simple header layout with the given content.

@@ -92,7 +92,7 @@
 )
 
 #let title-bar(cfg, it) = layouts.top-bar(
-  style: (fill: cfg.colors.fg),
+  fill: cfg.colors.fg,
   align(horizon+start, pad(0.85em, text(cfg.colors.bg, it))),
 )
 

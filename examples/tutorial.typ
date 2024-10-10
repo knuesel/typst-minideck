@@ -282,12 +282,11 @@ slide(margin: 1.4cm)[
 
 #{
 show heading: set text(font: "DejaVu Sans", eastern)
-let bar1 = (fill: yellow.lighten(70%))
-let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
+let grad = gradient.linear(yellow.lighten(85%), white)
 show minideck.slide-title: it => minideck.layouts.top-bar(
-  align(left, pad(6mm, it)), style: bar1)
+  fill: yellow.lighten(70%), align(left, pad(6mm, it)))
 show minideck.slide-subtitle: it => minideck.layouts.top-bar(
-  align(left, pad(6mm, text(0.7em, it))), style: bar2)
+  fill: grad, align(left, pad(6mm, text(0.7em, it))))
 
 slide(margin: 2cm)[
   = Customization
@@ -308,12 +307,11 @@ slide(margin: 2cm)[
 
   ```typ
   #show heading: set text(font: "DejaVu Sans", eastern)
-  #let bar1 = (fill: yellow.lighten(70%))
-  #let bar2 = (fill: gradient.linear(yellow.lighten(85%), white))
+  #let grad = gradient.linear(yellow.lighten(85%), white)
   #show minideck.slide-title: it => minideck.layouts.top-bar(
-    align(left, pad(6mm, it)), style: bar1)
+    fill: yellow.lighten(70%), align(left, pad(6mm, it)))
   #show minideck.slide-subtitle: it => minideck.layouts.top-bar(
-    align(left, pad(6mm, text(0.7em, it))), style: bar2)
+    fill: grad, align(left, pad(6mm, text(0.7em, it))))
   ```
 ]
 
