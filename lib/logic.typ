@@ -27,29 +27,27 @@
   }
 }
 
-// Format `it` as content of a (sub)slide
-#let _subslide-content(it) = {
-  pagebreak(weak: true)
-  it
-}
-
 // Show one subslide of the slide.
 // The subslide counter starts at 0 for every subslide, so that its
 // value can be used in the subslide to compare with `_subslide-step`.
 #let _subslide(n, it) = {
-  _subslide-count.update((1,0))
+  // Do state updates in-between weak pagebreaks so they don't affect the footer
+  // of the previous subslide, and are in force for the header of the next one.
+  pagebreak(weak: true)
   _subslide-step.update(n)
-  _subslide-content({
-    if n > 0 {
-      // Revert page increment unless it's the first subslide for this slide
-      counter(page).update(x => calc.max(0, x - 1))
+  // We don't reset the first value here as it's unnecessary and causes
+  // convergence issues in Typst 0.12
+  _subslide-count.update(((x, y)) => (x, 0))
+  // Revert page increment unless it's the first subslide for this slide
+  if n > 0 { counter(page).update(x => calc.max(0, x - 1)) }
+  pagebreak(weak: true)
 
-      set heading(outlined: false)
-      it
-    } else {
-      it
-    }
-  })
+  if n > 0 {
+    set heading(outlined: false)
+    it
+  } else {
+    it
+  }
 }
 
 // Hide content if current subslide step is smaller than pause index.
@@ -58,6 +56,7 @@
   if _subslide-step.get() < pause-index{ hider(it) } else { it } 
 }
 
+// XXX replace `opaque` with a callback set by `.with`
 // Increase pause counter and hide content if current `_subslide-step` is
 // smaller. Use this function as `#show: pause` or `#show: pause.with(...)`.
 // `updater` is a callback that returns a state update for `_subslide-count` to
@@ -85,13 +84,9 @@
 
 // Hide `it` on all given subslide indices and/or starting at `from`.
 // Subslide indices start at 1.
-#let _process-impl(updater, hider, indices, from, it) = {
+#let _hide-or-show(updater, hider, indices, from, it) = {
   // Convert zero-based subslide step to 1-based user-facing subslide index
   let j = _subslide-step.get() + 1
-  let from-array = if from == none { () } else { (from,) }
-  if updater != none {
-    updater(calc.max(..indices, ..from-array))
-  }
   let visible = (from != none and j >= from) or j in indices
   if visible { it } else { hider(it) }
 }
@@ -113,33 +108,46 @@
   if _is-handout(handout) {
     return it
   }
+  let from-array = if from == none { () } else { (from,) }
+
+  if updater != none {
+    updater(calc.max(..indices, ..from-array))
+  }
+
   if opaque {
-    context _process-impl(updater, hider, indices, from, it)
+    context _hide-or-show(updater, hider, indices, from, it)
   } else {
     // return non-opaque content: caller must ensure context is available
-    _process-impl(updater, hider, indices, from, it)
+    _hide-or-show(updater, hider, indices, from, it)
   }
 }
 
+// XXX rewrite this with `.with`
 // Uncover `it` on all given subslide indices and/or from given index.
 // Subslide indices start at 1.
 // See `_process` for the other parameters.
-#let uncover(from: none,
-             handout: auto,
-             opaque: true,
-             updater: update-subslide-count,
-             hider: hide,
-             ..indices, it) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
+#let uncover(
+  from: none,
+  handout: auto,
+  opaque: true,
+  updater: update-subslide-count,
+  hider: hide,
+  ..indices,
+  it,
+) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
 
 // Include `it` on all given subslide indices and/or from given index.
 // Subslide indices start at 1.
 // See `_process` for the other parameters.
-#let only(from: none,
-          handout: auto,
-          opaque: true,
-          updater: update-subslide-count,
-          hider: it => none,
-          ..indices, it) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
+#let only(
+  from: none,
+  handout: auto,
+  opaque: true,
+  updater: update-subslide-count,
+  hider: it => none,
+  ..indices,
+  it,
+) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
 
 // Generate subslides with number of steps given explicitly
 #let _subslides-explicit(steps, it) = {
@@ -154,8 +162,11 @@
   // Each slide is shown at least once
   _subslide(0, it)
   // After showing slide once, _subslide-count holds the number of subslides
-  context for i in range(1, _subslide-count.get().first()) {
-    _subslide(i, it)
+  context {
+    let n = _subslide-count.get().first()
+    for i in range(1, n) {
+      _subslide(i, it)
+    }
   }
 }
 
@@ -168,8 +179,9 @@
 // `--input handout=true` is passed on the command line, `false` otherwise.
 #let subslides(handout: auto, steps: auto, it) = {
   if _is-handout(handout) {
-    return _subslide-content(it)
+    return pagebreak(weak: true) + _subslide-content(it)
   }
+  _subslide-count.update((1, 0))
   if steps == auto {
     _subslides-auto(it)
   } else {

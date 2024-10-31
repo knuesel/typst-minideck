@@ -1,6 +1,6 @@
 #import "@local/minideck:0.3.0" // XXX change local to preview
 
-#let current-subslide =  context (state("__minideck-subslide-step", 0).get()+1)
+#let current-subslide = context (state("__minideck-subslide-step", 0).get()+1)
 
 #let (template, slide, section, title-slide, pause, uncover, only) = minideck.config(
   author: [Jane Smith],
@@ -515,34 +515,34 @@ slide[
   // XXX add numbering once fixed
 ]
 
-#import "@preview/pinit:0.1.4": *
+#import "@preview/pinit:0.2.2": *
 
 #slide[
-  = Dynamic slides with `pinit`
+  // = Dynamic slides with `pinit`
 
-  Pythagorean theorem:
+  // Pythagorean theorem:
 
-  $ #pin(1)a^2#pin(2) + #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
+  // $ #pin(1)a^2#pin(2) + #pin(3)b^2#pin(4) = #pin(5)c^2#pin(6) $
 
-  #show: pause
+  // // #show: pause
 
-  $a^2$ and $b^2$ : squares of triangle legs
+  // $a^2$ and $b^2$ : squares of triangle legs
 
-  #only(2, {
-    pinit-highlight(1,2)
-    pinit-highlight(3,4)
-  })
+  // // #only(2, {
+  //   pinit-highlight(1,2)
+  //   pinit-highlight(3,4)
+  // // })
 
-  #show: pause
+  // // #show: pause
 
-  $c^2$ : square of hypotenuse
+  // $c^2$ : square of hypotenuse
 
-  #pinit-highlight(5,6, fill: green.transparentize(80%))
-  #pinit-point-from(6)[larger than $a^2$ and $b^2$]
+  // #pinit-highlight(5,6, fill: green.transparentize(80%))
+  // #pinit-point-from(6)[larger than $a^2$ and $b^2$]
   
 ]
 
-#import "@preview/cetz:0.2.2"
+#import "@preview/cetz:0.3.1"
 
 #let (slide, only, cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
@@ -559,7 +559,7 @@ slide[
   Example setup:
 
   ```typ
-  #import "@preview/cetz:0.2.2"
+  #import "@preview/cetz:0.3.1"
 
   (cetz-uncover, cetz-only) = minideck.config(cetz: cetz)
 
@@ -601,7 +601,7 @@ slide[
 ]
 
 
-#import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.5.2" as fletcher: diagram, node, edge
 
 #let (slide, fletcher-uncover) = minideck.config(fletcher: fletcher)
 
@@ -619,7 +619,7 @@ slide[
   #set text(0.9em)
 
   ```typ
-  #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
+  #import "@preview/fletcher:0.5.2" as fletcher: diagram, node, edge
 
   (fletcher-uncover, fletcher-only) = minideck.config(fletcher: fletcher)
 
@@ -667,7 +667,7 @@ slide[
 #slide[
   = Options for `minideck.config`
   #set text(0.9em)
-  #set terms(spacing: 1fr)
+  #show terms: set block(spacing: 1fr)
 
   / `format`: can be `"4:3"` (default), `"16:9"`, a paper name, or a\ `(width:, height:)` dictionary
 

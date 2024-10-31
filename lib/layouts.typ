@@ -92,7 +92,6 @@
   }
 }
 
-// XXX finish
 #let _target-position(target, index) = {
   if type(target) == dictionary {
     // Target given as absolute position so nothing to do
@@ -105,6 +104,7 @@
   return targets.at(index).location().position()
 }
 
+// XXX use width in measure
 // Place `it` relative to the `index`-th match of the `target` selector.
 // If the target is not found (or the index invalid), `it` is passed to the
 // `default` function for placement.
@@ -127,14 +127,10 @@
   default: place,
   it,
 ) = context {
-  // Workaround for typst 0.11, see https://github.com/typst/typst/issues/3614
-  metadata(none)
-  
   let other = _target-position(target, index)
   if other == none {
     return default(it)
   }
-
   let this = here().position()
   let size = measure(it)
   let x-shift = dx + _anchor-x-shift(anchor, size)
@@ -223,11 +219,10 @@
       // This computation can be expensive. Note that even without fill,
       // having the same width for the title as the content can matter e.g.
       // when centering the title. 
-      // TODO: replace layout with measure(width: ...) in typst 0.12
       layout(size => {
-        let w1 = measure(b1()).width
-        let w2 = measure(b2()).width
-        let w = calc.min(size.width, calc.max(w1, w2))
+        let w1 = measure(width: size.width, b1()).width
+        let w2 = measure(width: size.width, b2()).width
+        let w = calc.max(w1, w2)
         b1(width: w)
         b2(width: w)
       })

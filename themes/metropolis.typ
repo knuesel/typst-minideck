@@ -132,12 +132,16 @@
 
   // Layout for titles
   show presentation-title: it => layouts.place-relative(
-    presentation-subtitle,
+    <__minideck-h2>,
     anchor: bottom,
     default: _ => place(bottom, dy: -50%, pad(bottom: 1.38em, it)),
     pad(bottom: 1.08em, it),
   )
-  show presentation-subtitle: it => place(bottom, dy: -50%, pad(bottom: 1.6em, it))
+  show presentation-subtitle: it => place(
+    bottom,
+    dy: -50%,
+    pad(bottom: 1.6em)[#it.body <__minideck-h2>],
+  )
   show section-title: it => place(bottom, dy: -50%, pad(bottom: 0.9em, it))
   show slide-title: title-bar.with(cfg)
 

@@ -142,6 +142,10 @@
   Use `#standout[...]` to show a slide with simplified layout and inverted colors. Such slides default to `outlined: false`.
 ]
 
+#standout[
+  This is a standout slide
+]
+
 #section[ = Elements ]
 
 #slide[
@@ -250,12 +254,12 @@
     #grid(
       columns: (1fr, 1fr),
       [
-        Full height & width on one side:
+        Full size on right side:
         ```typ
         #block(height: 1fr)[
           #grid(
             columns: (1fr, 1fr),
-            [Left side],
+            [Left side...],
             minideck.use-margin(
               y: 100%,
               right: 100%,
