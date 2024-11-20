@@ -114,7 +114,7 @@
   ```
 ]
 
-#slide[
+#slide(footer-text: [blob])[
   = Outline
   
   By default `#outline` shows only sections. To include slide titles:

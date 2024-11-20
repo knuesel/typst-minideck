@@ -7,18 +7,26 @@
 #slide[
   = Subslides with `pause`
 
-  Paused enums require explicit numbering:
-  #v(1em)
+  As a workaround, consider using `only` instead of `pause` or `uncover`:
   #grid(columns: (50%, 50%),
     ```typ
-    1. One
-    #show: pause
-    2. Two  // not `+ Two`
+    + One
+    #only(2,3)[
+      + Two
+    ]
+    #only(3)[
+      + Three
+    ]
     ```,
     [
-      1. One
-      #show: pause
-      2. Two
+      *Result:*
+      + One
+      #only(2,3)[
+        + Two
+      ]
+      #only(3)[
+        + Three
+      ]
     ],
   )
 ]

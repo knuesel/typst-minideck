@@ -31,8 +31,10 @@
 // Selector for an outline with only section titles
 // (only works if slide titles are excluded through outline `depth` and
 // `target` rather than with `outlined: false` on slide headings.
-#let outline-only-sections = outline.where(depth: 3).or(
-  outline.where(target: section-title))
+#let outline-only-sections = selector.or(
+  outline.where(depth: 3),
+  outline.where(target: section-title),
+)
 
 // Selector for an outline with only slide titles (no section title)
 // (only works if section titles are exluded through `outline.target` rather
@@ -41,14 +43,18 @@
 
 // Selector for an outline with both section and slide titles
 // (only works if titles are not excluded with `outlined: false` on headings.
-#let outline-sections-and-slides = (
-  // depth includes slide titles
-  outline.where(depth: none).or(outline.where(depth: 5))
-).and(
-  // target includes both section and slide titles
-  outline.where(target: heading.where(outlined: true)) // default
-    .or(outline.where(target: section-title.or(slide-title)))
-    .or(outline.where(target: slide-title.or(section-title)))
+#let outline-sections-and-slides = selector.and(
+  selector.or(
+    // depth includes slide titles
+    outline.where(depth: none),
+    outline.where(depth: 5),
+  ),
+  selector.or(
+    // target includes both section and slide titles
+    outline.where(target: heading.where(outlined: true)), // default
+    outline.where(target: section-title.or(slide-title)),
+    outline.where(target: slide-title.or(section-title)),
+  ),
 )
 
 // Template to format the outline using one paragraph per section, with section
@@ -126,10 +132,8 @@
   let (font-scheme, ..) = fonts
 
   set page(
-    ..page-args,
-    header-ascent: 0pt,
-    footer-descent: 0pt,
     fill: bg-color,
+    ..page-args,
   )
 
   // General text
@@ -163,9 +167,11 @@
 
   // Only section titles and slide titles should appear in outline
   // (and slide titles are disabled by default with outline(depth: 3))
-  show presentation-title
-    .or(presentation-subtitle)
-    .or(section-subtitle): set heading(outlined: false)
+  show selector.or(
+    presentation-title,
+    presentation-subtitle,
+    section-subtitle,
+  ): set heading(outlined: false)
 
   // Numbering: number only sections and show section titles without useless 
   // numbering of level 1 and 2 (which are always 0).
@@ -176,11 +182,13 @@
   // and slide subtitles make sense. Section slides should only have a subtitle
   // on the same slide, while normal "slides" can spread on several pages that
   // might have different subtitles.
-  show presentation-title
-    .or(presentation-subtitle)
-    .or(section-subtitle)
-    .or(block-title)
-    .or(block-subtitle): set heading(bookmarked: false)
+  show selector.or(
+    presentation-title,
+    presentation-subtitle,
+    section-subtitle,
+    block-title,
+    block-subtitle,
+  ): set heading(bookmarked: false)
 
   // Better default spacing for headings that are not "placed"
   show heading: set block(below: 1.5em)

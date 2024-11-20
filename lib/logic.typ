@@ -56,7 +56,6 @@
   if _subslide-step.get() < pause-index{ hider(it) } else { it } 
 }
 
-// XXX replace `opaque` with a callback set by `.with`
 // Increase pause counter and hide content if current `_subslide-step` is
 // smaller. Use this function as `#show: pause` or `#show: pause.with(...)`.
 // `updater` is a callback that returns a state update for `_subslide-count` to
@@ -122,7 +121,6 @@
   }
 }
 
-// XXX rewrite this with `.with`
 // Uncover `it` on all given subslide indices and/or from given index.
 // Subslide indices start at 1.
 // See `_process` for the other parameters.

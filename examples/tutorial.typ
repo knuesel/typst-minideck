@@ -430,26 +430,6 @@ slide[
     Second part
   ],
   )
-
-  #show: pause
-
-  #v(1em)
-  Paused enums require explicit numbering:
-  #v(1em)
-  #grid(columns: (50%, 50%),
-    ```typ
-    1. One
-    #show: pause
-    2. Two  // not `+ Two`
-    ```,
-    [
-      *Result:*
-      
-      1. One
-      #show: pause
-      2. Two
-    ],
-  )
 ]
 
 #slide[
@@ -491,6 +471,50 @@ slide[
   #only(2, 3)[content for 2 and 3 (no space reserved on 1)]
 
   Normal text: this content is always visible
+]
+
+#slide[
+  = Step-by-step lists and enumerations
+  
+  Currently, list markers don't get hidden properly (see #link("https://github.com/typst/typst/issues/619")[issue here]):
+  #grid(columns: (50%, 50%),
+    ```typ
+    + One
+    #show: pause
+    + Two
+    ```,
+    [
+      *Result:*
+      + One
+      #show: pause
+      + Two
+    ],
+  )
+
+  #show: pause
+  #v(1em)
+  As a workaround, consider using `only` instead of `pause` or `uncover`:
+  #grid(columns: (50%, 50%),
+    ```typ
+    + One
+    #only(2, 3)[
+      + Two
+    ]
+    #only(3)[
+      + Three
+    ]
+    ```,
+    [
+      *Result:*
+      + One
+      #only(4, 5)[
+        + Two
+      ]
+      #only(5)[
+        + Three
+      ]
+    ],
+  )
 ]
 
 #slide[

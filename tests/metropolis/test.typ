@@ -6,7 +6,7 @@
 
 #let (
   template, slide, section, title-slide, standout,
-  title-block, alert-block, example-block,
+  titled-block, alert-block, example-block,
 ) = minideck.config(
   theme: "metropolis",
   author: [Jane Smith],
@@ -73,23 +73,17 @@
 #slide[
   = Blocks
 
-  Show title blocks with `title-block`, `alert-block` and `example-block`.
-
-  Syntax: `#title-block(options...)[Title][Body]`.
-
-  Options: `transparent: false` for background, `width:` for fixed width.
-
   #set text(0.9em)
 
   #columns(2)[
-    #title-block()[Default][
+    #titled-block()[Default][
       Block with `auto` width and enough text to require several lines.
     ]
     #alert-block()[Alert][Block with `auto` width.]
     #example-block(width: 16em)[Example][Block with fixed width.]
     #colbreak()
 
-    #title-block(transparent: false)[Default][
+    #titled-block(transparent: false)[Default][
       Block with `auto` width and enough text to require several lines.
     ]
     #alert-block(transparent: false)[Alert][Block with `auto` width.]

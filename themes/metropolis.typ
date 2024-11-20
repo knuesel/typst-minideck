@@ -58,7 +58,8 @@
     place(horizon, line(length: 100%, stroke: cfg.colors.progress-bar.fg))
     block(height: 50%, below: 2.4em)
     it
-
+    // Get rid of extra vertical space introduced by placed titles?
+    v(0pt, weak: true)
     set text(0.9em)
     {
       set block(below: 1em)
@@ -102,7 +103,7 @@
 
 #let title-bar(cfg, it) = layouts.top-bar(
   fill: cfg.colors.fg,
-  align(horizon+start, pad(0.85em, text(cfg.colors.bg, it))),
+  align(horizon+start, pad(0.8em, text(cfg.colors.bg, it))),
 )
 
 #let template(cfg, it) = {
