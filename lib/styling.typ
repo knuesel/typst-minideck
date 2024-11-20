@@ -11,6 +11,8 @@
 #let block-title =           heading.where(level: 7)
 #let block-subtitle =        heading.where(level: 8)
 
+#let _in-outline = state("__minideck-in-outline", false)
+
 /*
 
   Minideck supports outlines with section titles, with slide titles, or both.
@@ -64,26 +66,30 @@
 // Control the spacing between sections with `spacing`, the indentation of
 // slide titles with `indent` and the spacing between section and first slide
 // title with `title-gap`.
-// This template is written to be used as `show: outline-templates` rather than
-// `show outline: outline-template` as otherwise the nested show-it rule for
-// `outline.entry` would be hard for users to override.
-#let outline-templates(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
-  // Spacing between sections (paragraphs)
-  show outline: set block(spacing: spacing)
+#let outline-doc-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, it) = {
+
+  show outline: it => {
+    _in-outline.update(true)
+    // Spacing between sections (paragraphs)
+    set block(spacing: spacing)
+    it
+    _in-outline.update(false)
+  }
   
   // Indent slide titles (every line after first paragraph line) under section
   show outline-sections-and-slides: set par(hanging-indent: indent)
 
   /*
     Outline entry: avoid `par` manipulations here as they would cause a new
-    paragraph. We want a new paragraph between
-    sections but not between slide titles.
+    paragraph. We want a new paragraph between sections (which can include
+    several slide titles each on one line) but not between individual slide
+    titles.
   */
 
   // Don't show fill and page number in outline entry.
   // This rule must come first to be processed last, as it returns a
   // non-outline.entry object which prevents further rules from being applied.
-  show outline.entry: it => it.body
+  show outline.entry: it => link(it.element.location(), it.body)
 
   // Make each section its own paragraph (with large spacing between
   // paragraphs using the outline block spacing).
@@ -94,7 +100,7 @@
       box(inset: (bottom: title-gap), it)
   }
 
-  doc
+  it
 }
 
 // Bibliography template

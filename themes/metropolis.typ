@@ -146,11 +146,18 @@
   show section-title: it => place(bottom, dy: -50%, pad(bottom: 0.9em, it))
   show slide-title: title-bar.with(cfg)
 
-  // Links
-  show link: set text(weight: "medium")
+  // Links in semibold except in the outline
+  show link: it => context {
+    if styling._in-outline.get() == false {
+      set text(weight: "medium")
+      it
+    } else {
+       it
+    }
+  }
 
   // Outline
-  show: outline-templates.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
+  show: outline-doc-template.with(cfg, spacing: 1.8em, title-gap: 0.3em, indent: 1em)
   // Make bold section titles only when slide titles are also shown
   show outline-sections-and-slides: it => {
     show outline.entry.where(level: 3): set text(weight: "bold")

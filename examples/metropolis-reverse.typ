@@ -1,7 +1,7 @@
 #import "@local/minideck:0.3.0" // XXX
 #import minideck.themes: *
 
-#let (template, slide, title-block) = minideck.config(
+#let (template, slide, titled-block) = minideck.config(
   color-scheme: (reverse: true),
   theme: "metropolis",
 )
@@ -14,7 +14,7 @@
   For a dark variant, simply reverse the color shades:
 
   #v(1em)
-  #title-block(transparent: false, width: 100%)[Configuration][
+  #titled-block(transparent: false, width: 100%)[Configuration][
     ```
 
     #minideck.config(

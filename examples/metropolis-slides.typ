@@ -114,9 +114,10 @@
   ```
 ]
 
-#slide(footer-text: [blob])[
+#slide[
   = Outline
   
+  #v(-0.8em)
   By default `#outline` shows only sections. To include slide titles:
   
   ```typ
@@ -139,6 +140,7 @@
   By default, content is (almost) centered vertically by adding fractional spacing above and below.
   Use `#slide(center: false)[...]` to disable this behavior.
 
+  #v(1em)
   Use `#standout[...]` to show a slide with simplified layout and inverted colors. Such slides default to `outlined: false`.
 ]
 
@@ -222,7 +224,7 @@
     move(dy: -0.5pt, image("metropolis-customized.svg", width: 100%, height: 100%))
   },
   fill: navy,
-)[= Appearance] // for TOC
+)[= Custom style] // for TOC
 
 #slide[
   = Custom layouts

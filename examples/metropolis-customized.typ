@@ -1,7 +1,7 @@
 #import "@local/minideck:0.3.0" // XXX
 #import minideck.themes: *
 
-#let (template, slide, title-block) = minideck.config(
+#let (template, slide, titled-block) = minideck.config(
   color-scheme: (shades: (navy, white)),
   theme: "metropolis",
 )
@@ -12,14 +12,14 @@
 #show: template
 
 #slide(margin: 1cm, footer: none)[
-  = Example
+  = Custom style
 
   Custom colors, smaller text & less spacing in title bar, smaller margins:
 
   #v(1em)
   #show raw.where(block: true): set text(0.9em)
   #show raw.where(block: true): set block(inset: 0.5em)
-  #title-block(transparent: false, width: 100%)[Configuration][
+  #titled-block(transparent: false, width: 100%)[Configuration][
     ```
     #let (template, slide) = minideck.config(
       color-scheme: (shades: (navy, white)),

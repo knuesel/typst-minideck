@@ -41,11 +41,18 @@
   show presentation-title
     .or(slide-title): set text(1.2em)
   show section-title: set text(1.3em)
-  // Color for links
-  show link: set text(cfg.colors.accents.at(0))
+  // Color for links except in the outline
+  show link: it => context {
+    if styling._in-outline.get() {
+      it
+    } else {
+      set text(cfg.colors.accents.first())
+      it
+    }
+  }
 
   // Outline
-  show: outline-templates.with(cfg, indent: 1em)
+  show: outline-doc-template.with(cfg, indent: 1em)
   show outline.entry.where(level: 5): it => box(list.item(it))
 
   show bibliography: bibliography-template.with(cfg)
