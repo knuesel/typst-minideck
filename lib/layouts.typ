@@ -104,7 +104,6 @@
   return targets.at(index).location().position()
 }
 
-// XXX use width in measure
 // Place `it` relative to the `index`-th match of the `target` selector.
 // If the target is not found (or the index invalid), `it` is passed to the
 // `default` function for placement.
@@ -126,19 +125,19 @@
   dy: 0pt,
   default: place,
   it,
-) = context {
+) = layout(size => {
   let other = _target-position(target, index)
   if other == none {
     return default(it)
   }
   let this = here().position()
-  let size = measure(it)
+  let size = measure(width: size.width, it)
   let x-shift = dx + _anchor-x-shift(anchor, size)
   let y-shift = dy + _anchor-y-shift(anchor, size)
   x-shift += if x == auto { other.x - this.x  + dx } else { x }
   y-shift += if y == auto { other.y - this.y  + dy } else { y}
   place(dx: x-shift, dy: y-shift, it)
-}
+})
 
 #let _height-metadata(it, label) = [#metadata((height: measure(it).height))#label]
 
