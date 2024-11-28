@@ -9,14 +9,14 @@
 
   Missing keys or keys set to `auto` will be taken from the default scheme.
 
-  The shades can be given as an array of at least two colors, or as a gradient,
-  or as a string. Accent colors must be given as an array of at least one color, or as a string. Strings refer to the names of standard color schemes.
+  The shades can be given as an array of at least two colors or as a gradient.
+  Accent colors must be given as an array of at least one color.
 
   The theme can request any number of shades by specifying desired gradient positions. If shades were given as an array, it is used directly when the theme requests the same number of shades (their positions are ignored). If the theme requests a different number, minideck will generate a gradient using the given shades at evenly spaced stops.
 
   The theme can also request any number of accent colors. Minideck will drop the last color(s) if fewer are requested than available. If more are requested than available, minideck will generate additional colors. Currently, new colors are selected to maximize hue differences. This doesn't produce particularly good looking palettes but the colors should at least be distinguishable. In a future version a smarter algorithm might be used.
 
-  The `color-scheme` function can be used to retrieve a scheme by name and to apply simple tranformations such as reversing the shades.
+  The `color-scheme` function can be used to inherit from a scheme and to apply simple tranformations such as reversing the shades.
   */
 #let schemes = (
   default: (

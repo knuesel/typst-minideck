@@ -695,11 +695,12 @@ slide[
 
   / `format`: can be `"4:3"` (default), `"16:9"`, a paper name, or a\ `(width:, height:)` dictionary
 
-  / `font-scheme`: switches a bunch of font settings with a name like
-    `"default"`, `"libertinus-sans"` or `"fira-sans-light"`, or a dict
+  / `font-scheme`: change font settings using a scheme name such as
+    `"libertinus-sans"` or `"fira-sans-light"`, or a dict (see below).\
+    Can also be an array of schemes (for themes that use several fonts)
 
-  / `color-scheme`: switches colors using a name like `"default"` or
-    `"phosphor"`, or dict like `(shades: (bg, fg), accents: (red, blue))`
+  / `color-scheme`: change colors using a scheme name like `"default"` or
+    `"phosphor"`, or dict (see below)
 
   / `theme`: can be a theme name or theme function
 
@@ -720,6 +721,108 @@ slide[
   / `logo:`: institution logo
 
   / `date:`: date, can be any content (event name, etc.)
+]
+
+#slide[
+  = Font schemes
+  #set text(0.9em)
+
+  A font scheme is a dict with fields
+
+  - `text`, `raw` and `math`: settings for regular text, raw and math elements
+  - `text-weights`: a dict of weight overrides for regular text
+  - `delta`: the weight step to use with `strong`
+  
+  For example, the `fira-sans-light` scheme is defined as follows:
+
+  ```typ
+  (
+    text: (font: "Fira Sans"),
+    text-weights: (regular: "light", medium: 350, bold: "regular"),
+    raw: (font: "Fira Mono", weight: "regular"),
+    math: (font: "Fira Math", weight: "light"),
+    delta: 100,
+  )
+  ```  
+
+  This will use light weight for regular text and regular for bold.
+]
+
+#slide[
+  #set text(0.9em)
+  Fields can be omitted to inherit from the default scheme.\
+  For example `libertinus-sans` is defined as
+  ```typ
+  (text: (font: "Libertinus Sans"))
+  ```
+
+  Standard schemes are stored in `minideck.fonts.schemes` and include
+  - `default`
+  - `libertinus-sans`
+  - `fira-sans`
+  - `fira-sans-light`
+
+  Standard schemes can be specified by name instead of dict.
+
+  `minideck.fonts.font-scheme()` can be used to inherit from a scheme:
+
+  ```
+  font-scheme(base: "fira-sans-light", delta: 300)
+  ```
+
+  The same arguments can be passed as dict to `minideck.config`:
+
+  ```
+  minideck.config(font-scheme: (base: "fira-sans-light", delta: 300))
+  ```
+]
+
+#slide[
+  = Color schemes
+  #set text(0.9em)
+
+  A color scheme is a dict with fields
+  - `shades`: colors of similar hues and increasing or decreasing lightness.
+
+    Can be an array of at least two colors, or a gradient.
+
+    Used for distinguishing elements based on lightness.
+
+    Typically the first shade is used as background color and the last shade as foreground (text) color.
+
+  - `accents`: colors of contrasting hues.
+
+    Must be an array of at least one color.
+  
+    Used for distinguishing elements based on hue.
+]
+
+#slide[
+  For example the default scheme is
+  
+  ```
+  (
+    shades: (white, black),
+    accents: (red, green, blue, purple),
+  )
+  ```
+
+  Standard schemes are stored in `minideck.colors.schemes` and include
+  `default` and `phosphor`.
+
+  Standard schemes can be specified by name instead of dict.
+
+  `minideck.colors.color-scheme()` can be used to inherit from a scheme and/or to reverse the shades:
+
+  ```
+  color-scheme(base: "phosphor", accents: (red,), reverse: true)
+  ```
+
+  The same arguments can be passed as dict to `minideck.config`:
+
+  ```
+  minideck.config(color-scheme: (base: "phosphor", reverse, true))
+  ```
 ]
 
 #slide[

@@ -42,7 +42,7 @@
   fira-sans-light: (
     text: (font: "Fira Sans"),
     text-weights: (regular: "light", medium: 350, bold: "regular"),
-    raw: (font: "Fira Mono", weight: "regular"),
+    raw: (font: "Fira Mono"),
     math: (font: "Fira Math", weight: "light"),
     delta: 100,
   ),
@@ -158,7 +158,6 @@
 // refer to the default scheme.
 // When given by value, a partial scheme can be given: missing fields or fields
 // with value `auto` will be taken from the default scheme.
-// If `reverse` is `true`, the order of shades is reversed.
 #let font-scheme(
   base: auto,
   text: auto,
