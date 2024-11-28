@@ -5,7 +5,6 @@
 #let (template, slide, section, title-slide, pause, uncover, only) = minideck.config(
   author: [Jane Smith],
   affiliation: [University of Rummidge],
-  logo: box(fill: luma(90%), inset: 15mm)[Logo],
   date: [Minideck Symposium, 4#super[th] September 2024],
 )
 
@@ -184,7 +183,13 @@ show heading: set text(1em/1.2)
 
 slide[
   = Schemes and themes
-  Schemes: easy to exchange or use with any theme:
+  Themes control the layout and general appearance
+
+  Schemes are declarative font and color settings:
+  - easy to share
+  - work with any theme
+
+  Here we use schemes to customize the default theme:
 
   ```typ
   minideck.config(
@@ -194,17 +199,8 @@ slide[
     font-scheme: "libertinus-sans") // scheme specified by name
   ```
 
-  #v(1fr)
-
   Three related concepts (see #link("https://github.com/knuesel/typst-minideck/tree/main/themes")[README] for a discussion) // XXX update link
-
-  - *theme:* controls layout and general appearance
-
-  - *color scheme:* palettes of colors the theme can use
-
-  - *font scheme(s):* fonts and related settings
-  
-  Themes and schemes can be passed as values or by name
+  // XXX link color wrong
 ]
 
 slide[
@@ -220,6 +216,7 @@ slide[
     - `default`
     - `libertinus-sans`
     - `fira-sans`
+    - `fira-sans-light`
   ]
 
   #v(1em)
@@ -246,7 +243,9 @@ slide(margin: 1.4cm)[
 
   A theme is actually a function with parameters.
 
-  To change parameters, give `minideck.config()` a configured theme function instead of a name:
+  Standard themes (and schemes) can be passed by name, so `"metropolis"` can be given instead of the `minideck.themes.metropolis` function.
+
+  To change parameters, give `minideck.config()` a configured theme function:
 
   ```typ
   #import minideck.themes: *
