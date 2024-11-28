@@ -92,21 +92,41 @@
   }
 }
 
-#let _target-position(target, index) = {
+// Return true if the physical page of `it` is `page`.
+// If `page` is "all", `true` is always returned.
+// If `page` is `auto`, `it` is tested against the current physical page.
+#let _page-filter(page, it) = {
+  if page == "all" {
+    return true 
+  }
+  let it-page = it.location().position().page
+  if page == auto {
+    return it-page == here().position().page
+  }
+  return page == it-page
+}
+
+#let _target-position(target, page, index) = {
+  if target == none {
+    return none
+  }
   if type(target) == dictionary {
     // Target given as absolute position so nothing to do
     return target
   }
-  let targets = query(target)
+  let targets = query(target).filter(_page-filter.with(page))
   if (index >= targets.len() or index < -targets.len()) {
     return none
   }
   return targets.at(index).location().position()
 }
 
-// Place `it` relative to the `index`-th match of the `target` selector.
-// If the target is not found (or the index invalid), `it` is passed to the
-// `default` function for placement.
+// Place `it` relative to the `index`-th match of the `target` selector,
+// considering only matches on the physical page `page`.
+// If `page` is `auto`, matches on the current page are considered.
+// If `page` is `"all"`, matches on all pages are considered.
+// If the target is not found or `none` (or the index invalid), `it` is passed
+// to the `default` function for placement.
 // The target position can also be specified directly by passing a dictionary
 // with `x` and `y` keys instead of a selector.
 // The `anchor` determines which point of `it` is aligned with the target
@@ -116,7 +136,8 @@
 // `y`: for example `x: 1cm` will disregard the `target` horizontal position,
 // instead shifting by `1cm` from the parent's origin.
 #let place-relative(
-  target,
+  target: none,
+  page: auto,
   index: 0,
   anchor: top+left,
   x: auto,
@@ -126,7 +147,7 @@
   default: place,
   it,
 ) = layout(size => {
-  let other = _target-position(target, index)
+  let other = _target-position(target, page, index)
   if other == none {
     return default(it)
   }

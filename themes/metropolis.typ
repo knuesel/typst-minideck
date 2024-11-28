@@ -133,7 +133,7 @@
 
   // Layout for titles
   show presentation-title: it => layouts.place-relative(
-    <__minideck-h2>,
+    target: <__minideck-h2>,
     anchor: bottom,
     default: _ => place(bottom, dy: -50%, pad(bottom: 1.38em, it)),
     pad(bottom: 1.08em, it),
