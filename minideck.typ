@@ -3,6 +3,7 @@
 #import "lib/colors.typ"
 #import "lib/fonts.typ"
 #import "lib/logic.typ"
+#import "lib/util.typ"
 
 // `field` is "header" or "footer"
 #let _process-head-foot(page-args, field, func, txt) = {
@@ -170,27 +171,99 @@
   return colors.color-scheme(base: theme-default, ..user-scheme)
 }
 
-#let _theme-cfg(
+// Configure a single (non-composite) theme and get its values
+#let _configure-theme(
+  plain-slide: none,
+  format: none,
+  metadata: none,
+  font-scheme: none,
+  color-scheme: none,
   theme,
-  plain-slide,
-  format,
-  metadata,
-  user-font-scheme,
-  user-color-scheme,
 ) = {
+  // Resolve theme function if given as name
+  if type(theme) == str {
+    let theme-dict = dictionary(themes)
+    if theme not in theme-dict {
+      panic("No theme named " + repr(theme))
+    }
+    theme = theme-dict.at(theme)
+  }
+
   let props = theme()
   let req = props.requirements
-  let fonts = _n-font-schemes(props.font-scheme, user-font-scheme, req.n-fonts)
-  let color-scheme = _color-scheme(props.color-scheme, user-color-scheme)
+  let fonts = _n-font-schemes(props.font-scheme, font-scheme, req.n-fonts)
+  let color-scheme = _color-scheme(props.color-scheme, color-scheme)
   let colors = colors.get-colors(color-scheme, req.shade-samples, req.n-accents)
 
-  return (
+  let cfg = (
     plain-slide: plain-slide,
     page-args: _format-args(format),
     metadata: metadata,
     fonts: fonts,
     colors: colors,
   )
+
+  let values = theme(cfg: cfg)
+
+  // Add cfg if missing, but keep version returned by theme if present
+  if "cfg" not in values {
+    values.cfg = cfg
+  }
+
+  return values
+}
+
+#let _compose-theme(theme-configurator, theme-spec) = {
+  if type(theme-spec) != dictionary {
+    theme-spec = (base: theme-spec)
+  }
+
+  if "base" not in theme-spec {
+    panic("A composite theme must define a base theme")
+  }
+
+  let values = (:)
+
+  if theme-spec.base != none {
+    values += theme-configurator(theme-spec.base)
+    // Rename cfg to base-cfg
+    values.base-cfg = values.remove("cfg")
+  }
+
+  for (name, theme) in theme-spec {
+    if name == "base" {
+      continue
+    }
+    if theme == none {
+      values.at(name) = none
+      continue
+    }
+    let v = theme-configurator(theme)
+    if name not in v {
+      let theme-str = if type(theme) == str { theme } else { repr(theme) }
+      panic("Cannot find '" + name + "' in theme '" + theme-str + "'")
+    }
+    values += ((name): v.at(name), (name + "-cfg"): v.cfg)
+  }
+
+  // Make single template function from all templates
+  let templates = ()
+  for (name, val) in values {
+    if name.ends-with("-template") and val != none {
+      templates.push(val)
+    }
+  }
+
+  // Remove sub-templates
+  values = util.filter-dict(values, (k, v) => not k.ends-with("-template"))
+
+  // Add template composed of sub-templates
+  values.template = it => templates.fold(it, (acc, f) => {
+   show: f
+   acc
+  })
+
+  return values
 }
 
 // Return a dictionary of functions that implement the given configuration
@@ -243,30 +316,23 @@
   logo: none,
   date: none,
 ) = {
-  let plain-slide = _plain-slide.with(handout: handout)
-
-  // Resolve theme function if given as name
-  if type(theme) == str {
-    let theme-dict = dictionary(themes)
-    if theme not in theme-dict { panic("No theme named " + repr(theme)) }
-    theme = theme-dict.at(theme)
-  }
-
-  let theme-cfg = _theme-cfg(
-    theme,
-    plain-slide,
-    format,
-    _metadata(author, affiliation, logo, date),
-    font-scheme,
-    color-scheme,
+  let theme-configurator = _configure-theme.with(
+    plain-slide: _plain-slide.with(handout: handout),
+    format: format,
+    metadata: _metadata(author, affiliation, logo, date),
+    font-scheme: font-scheme,
+    color-scheme: color-scheme,
   )
 
+  let theme-values = _compose-theme(theme-configurator, theme)
+  
   (
-    cfg: theme-cfg,
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
-    ..theme(cfg: theme-cfg),
+    ..theme-values,
+    // Can be used to inspect values returned by a sub-theme
+    theme-configurator: theme-configurator,
   )
   if cetz != none {
     let cetz-update(n) = cetz.draw.content((), logic.update-subslide-count(n))

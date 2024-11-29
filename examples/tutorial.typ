@@ -6,6 +6,7 @@
   author: [Jane Smith],
   affiliation: [University of Rummidge],
   date: [Minideck Symposium, 4#super[th] September 2024],
+  theme: (base: "simple", title-slide: "metropolis")
 )
 
 #show: template
@@ -14,7 +15,6 @@
 #show raw.where(block: true): set text(0.8em)
 
 #title-slide[
-  #v(2em)
   = Slides with minideck
   == Usage and features
 ]
@@ -26,6 +26,7 @@
 ]
 
 #section[ = Basic usage ]
+
 
 #slide[
   = Getting started
@@ -67,7 +68,7 @@
 #slide[
   = Outline
 
-  Default is to show only section titles. To change this:
+  By default only section titles are shown. To change this:
 
   ```typ
   #outline(depth: 5) // show section and slide titles, or:

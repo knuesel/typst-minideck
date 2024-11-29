@@ -66,7 +66,7 @@
 // Control the spacing between sections with `spacing`, the indentation of
 // slide titles with `indent` and the spacing between section and first slide
 // title with `title-gap`.
-#let outline-doc-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, it) = {
+#let outline-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
 
   show outline: it => {
     _in-outline.update(true)
@@ -100,23 +100,26 @@
       box(inset: (bottom: title-gap), it)
   }
 
-  it
+  doc
 }
 
 // Bibliography template
-#let bibliography-template(cfg, it) = {
-  set block(spacing: 2em)
-  set par(justify: false) // in case it's true globally
-  show regex("\[[0-9]+\]"): set align(top)
-  show "[Online]. Available: ": none
-  it
+#let bibliography-template(cfg, doc) = {
+  show bibliography: it => {
+    set block(spacing: 2em)
+    set par(justify: false) // in case it's true globally
+    show regex("\[[0-9]+\]"): set align(top)
+    show "[Online]. Available: ": none
+    it
+  }
+  doc
 }
 
 // Template to override all font weights for `font` using `weights`.
 // If `font` is `none` or `weights` are all default, no rule is applied.
-#let weights-template(font, weights, it) = {
+#let weights-template(font, weights, doc) = {
   if font == none or fonts.is-default-weights(weights) {
-    return it
+    return doc
   }
   let (f, w) = (font, weights)
   show text.where(font: f, weight: "thin"):       set text(weight: w.thin)
@@ -128,7 +131,7 @@
   show text.where(font: f, weight: "bold"):       set text(weight: w.bold)
   show text.where(font: f, weight: "extrabold"):  set text(weight: w.extrabold)
   show text.where(font: f, weight: "black"):      set text(weight: w.black)
-  it
+  doc
 }
 
 // Basic template: settings that most themes should apply.

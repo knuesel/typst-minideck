@@ -29,6 +29,15 @@
   }
 }
 
+// Return copy of `d` keeping only pairs `k: v` for which `f(k, v)` is `true`
+#let filter-dict(d, f) = {
+  let new = (:)
+  for (k, v) in d.pairs().filter(pair => f(..pair)) {
+    new.insert(k, v)
+  }
+  new
+}
+
 // Return dict with same fields as `d` and values mapped through `f(k,v)`
 #let map-dict(d, f) = {
   let new = (:)
