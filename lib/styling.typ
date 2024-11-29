@@ -66,15 +66,11 @@
 // Control the spacing between sections with `spacing`, the indentation of
 // slide titles with `indent` and the spacing between section and first slide
 // title with `title-gap`.
+// Note that `core-template` also applies some outline rules.
 #let outline-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
 
-  show outline: it => {
-    _in-outline.update(true)
-    // Spacing between sections (paragraphs)
-    set block(spacing: spacing)
-    it
-    _in-outline.update(false)
-  }
+  // Spacing between sections (paragraphs)
+  show outline: set block(spacing: spacing)
   
   // Indent slide titles (every line after first paragraph line) under section
   show outline-sections-and-slides: set par(hanging-indent: indent)
@@ -104,6 +100,7 @@
 }
 
 // Bibliography template
+// Note that `core-template` also applies some bibliography rules.
 #let bibliography-template(cfg, doc) = {
   show bibliography: it => {
     set block(spacing: 2em)
@@ -134,43 +131,23 @@
   doc
 }
 
-// Basic template: settings that most themes should apply.
-#let basic-template(cfg, doc) = {
-  let (page-args, fonts, colors) = cfg
-  let (bg-color, .., fg-color) = colors.shades
-  let (font-scheme, ..) = fonts
-
-  set page(
-    fill: bg-color,
-    ..page-args,
-  )
-
-  // General text
-  set text(fg-color, ..font-scheme.text)
-  show math.equation: set text(..font-scheme.math)
-  set strong(delta: font-scheme.delta)
-
-  // Redefine text weights according to font scheme
-  show: weights-template.with(
-    font-scheme.text.at("font", default: none),
-    font-scheme.text-weights,
-  )
-
-  // Raw text
-  show raw: set text(..font-scheme.raw)
-  show raw: set underline(stroke: 0pt) // no underline, it looks awful
-  show raw.where(block: true): set par(justify: false) // in case it's true globally
-
+// Core rules that should almost always be applied for correct functionality
+// (applied automatically by minideck, but themes or the user can disable it
+// by specifiying `core-template: none`)
+#let core-template(doc) = {
   // Bibliography
   set bibliography(title: none)
   
-  // Footnotes: recreate default separator but with our foreground color
-  set footnote.entry(separator: line(length: 30%, stroke: 0.5pt + fg-color))
-
   // Outline: unset title for consistency (all slide titles are defined through
   // headings) and so the slide layout works when the user shows the outline
   // in two columns. Default to only section titles in outline.
   set outline(title: none, depth: 3)
+
+  show outline: it => {
+    _in-outline.update(true)
+    it
+    _in-outline.update(false)
+  }
 
   /* Headings */
 
@@ -198,6 +175,40 @@
     block-title,
     block-subtitle,
   ): set heading(bookmarked: false)
+
+  doc
+}
+
+// Basic appearance settings that use only standard cfg fields.
+// Most themes will want to apply this template.
+#let basic-template(cfg, doc) = {
+  let (page-args, fonts, colors) = cfg
+  let (bg-color, .., fg-color) = colors.shades
+  let (font-scheme, ..) = fonts
+
+  set page(
+    fill: bg-color,
+    ..page-args,
+  )
+
+  // General text
+  set text(fg-color, ..font-scheme.text)
+  show math.equation: set text(..font-scheme.math)
+  set strong(delta: font-scheme.delta)
+
+ // Redefine text weights according to font scheme
+  show: weights-template.with(
+    font-scheme.text.at("font", default: none),
+    font-scheme.text-weights,
+  )
+
+  // Raw text
+  show raw: set text(..font-scheme.raw)
+  show raw: set underline(stroke: 0pt) // no underline, it looks awful
+  show raw.where(block: true): set par(justify: false) // in case it's true globally
+
+  // Footnotes: recreate default separator but with our foreground color
+  set footnote.entry(separator: line(length: 30%, stroke: 0.5pt + fg-color))
 
   // Better default spacing for headings that are not "placed"
   show heading: set block(below: 1.5em)

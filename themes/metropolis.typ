@@ -1,5 +1,5 @@
 #import "/lib/lib.typ": *
-#import styling:
+#import styling
 
 #let place-progress-bar(show-progress, colors) = context {
   if show-progress {
@@ -139,7 +139,7 @@
   it-body,
 )
 
-#let misc-template(cfg, doc) = {
+#let basic-template(cfg, doc) = {
   set page(
     // TODO: use 3em once typst supports giving abs margins
     margin: 66pt,
@@ -235,8 +235,7 @@
   cfg.colors += color-theme(cfg)
 
   return (
-    cfg: cfg,
-    misc-template: misc-template.with(cfg),
+    basic-template: basic-template.with(cfg),
     outline-template: outline-template.with(cfg),
     bibliography-template: styling.bibliography-template.with(cfg),
     slide: slide.with(cfg, cfg.plain-slide),

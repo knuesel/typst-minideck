@@ -1,5 +1,6 @@
 #import "themes/themes.typ"
 #import "lib/layouts.typ"
+#import "lib/styling.typ"
 #import "lib/colors.typ"
 #import "lib/fonts.typ"
 #import "lib/logic.typ"
@@ -254,14 +255,20 @@
   }
 
   // Make single template function from all templates
-  let templates = ()
+
+  let templates = (
+    // This template should almost always be applied
+    // (but can still be disabled by theme/user with e.g. core-template: none)
+    styling.core-template,
+  )
+
   for (name, val) in values {
     if name.ends-with("-template") and val != none {
       templates.push(val)
     }
   }
 
-  // Remove sub-templates
+  // Remove templates from theme values
   values = util.filter-dict(values, (k, v) => not k.ends-with("-template"))
 
   // Add template composed of sub-templates

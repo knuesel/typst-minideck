@@ -44,11 +44,10 @@
   plain-slide(offset: 4, footer-func: footer-func, ..args, it)
 }
 
-#let misc-template(cfg, doc) = {
-  // Set font size before template, so that cfg fonts can override it
+#let basic-template(cfg, doc) = {
   set text(24pt)
-  // Apply basic template
   show: styling.basic-template.with(cfg)
+
   // Color for links except in the outline
   show link: it => context {
     if styling._in-outline.get() {
@@ -88,7 +87,7 @@
     title-slide: title-slide.with(cfg, cfg.plain-slide),
     section: section.with(cfg, cfg.plain-slide),
     slide: slide.with(cfg, cfg.plain-slide),
-    misc-template: misc-template.with(cfg),
+    basic-template: basic-template.with(cfg),
     outline-template: outline-template.with(cfg),
     bibliography-template: styling.bibliography-template.with(cfg),
   )
