@@ -181,8 +181,9 @@ import minideck.themes: *
 let (template, slide) = minideck.config(
   color-scheme: (
     shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
-    accents: (olive,)), // default theme uses this for links
-  font-scheme: "libertinus-sans") // scheme specified by name
+  ),
+  font-scheme: "libertinus-sans",
+) // scheme specified by name
 show: template // OK because this template is almost idempotent
 show heading: set text(1em/1.2)
 
@@ -200,12 +201,10 @@ slide[
   minideck.config(
     color-scheme: (
       shades: (maroon.lighten(96%), maroon.darken(30%)), // (bg, fg)
-      accents: (olive,)), // default theme uses this for links
-    font-scheme: "libertinus-sans") // scheme specified by name
+    ),
+    font-scheme: "libertinus-sans", // scheme specified by name
+  )
   ```
-
-  Three related concepts (see #link("https://github.com/knuesel/typst-minideck/tree/main/themes")[README] for a discussion) // XXX update link
-  // XXX link color wrong
 ]
 
 slide[
@@ -832,6 +831,7 @@ slide[
 #slide[
   = Options for `slide`, `section` and `title-slide`
   #set text(0.8em)
+  #set terms(spacing: 1em)
 
   / `header-func:`: callback for header layout (`none` = leave header as is)
 
