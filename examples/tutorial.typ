@@ -6,7 +6,7 @@
   author: [Jane Smith],
   affiliation: [University of Rummidge],
   date: [Minideck Symposium, 4#super[th] September 2024],
-  theme: (base: "simple", title-slide: "metropolis")
+  theme: "simple",
 )
 
 #show: template
@@ -115,6 +115,10 @@
   - `outlined`: whether to include the slide in the outline
 
   - `header-text` and `footer-text` for simple content in header/footer
+
+  - `handout` to enable/disable dynamic content for this slide
+
+  - `template` for rules to apply just before the slide content
 
   - any `page` argument like `footer`, `margin` or `fill`
 ]
@@ -827,7 +831,7 @@ slide[
 
 #slide[
   = Options for `slide`, `section` and `title-slide`
-  #set text(0.9em)
+  #set text(0.8em)
 
   / `header-func:`: callback for header layout (`none` = leave header as is)
 
@@ -844,6 +848,8 @@ slide[
   / `offset:`: offset for headings in this slide (e.g. 4 for normal slides)
   
   / `outlined:`: include/exclude slide headings in outline
+
+  / `template:`: template to apply just before slide content (default is `none`)
 
   - plus any option accepted by `page`
 

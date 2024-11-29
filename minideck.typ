@@ -55,6 +55,7 @@
 // `footer-func` to `none`.
 #let _plain-slide(
   ..args,
+  template: none,
   header-func: none,
   footer-func: none,
   header-text: auto,
@@ -77,7 +78,13 @@
   set page(..page-args) if page-args.len() > 0
   set heading(offset: offset)
   show: _apply-outlined.with(outlined)
-  logic.subslides(handout: handout, steps: steps, it)
+
+  if template == none {
+    logic.subslides(handout: handout, steps: steps, it)
+  } else {
+    show: template
+    logic.subslides(handout: handout, steps: steps, it)
+  }
 }
 
 // Return paper name for given format string

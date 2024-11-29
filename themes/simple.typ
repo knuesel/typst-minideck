@@ -10,6 +10,7 @@
   plain-slide(offset: 0, ..args, {
     place(top, layouts.use-margin(top: 100%, left: 100%, md.logo))
     set align(horizon+center)
+    v(10%)
     it // titles and possibly other content
     set text(0.9em)
     {
