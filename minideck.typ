@@ -188,16 +188,23 @@
   plain-slide: none,
   format: none,
   metadata: none,
-  font-scheme: none,
-  color-scheme: none,
+  user-font-scheme: none,
+  user-color-scheme: none,
+  base-theme: none,
   theme,
 ) = {
-  theme = _resolve-theme(theme)
+  let props = _resolve-theme(theme)()
 
-  let props = theme()
+  // Override theme font and color schemes if base theme is given
+  if base-theme != none {
+    let base-props = _resolve-theme(base-theme)()
+    props.font-scheme = base-props.font-scheme
+    props.color-scheme = base-props.color-scheme
+  }
+
   let req = props.requirements
-  let fonts = _n-font-schemes(props.font-scheme, font-scheme, req.n-fonts)
-  let color-scheme = _color-scheme(props.color-scheme, color-scheme)
+  let fonts = _n-font-schemes(props.font-scheme, user-font-scheme, req.n-fonts)
+  let color-scheme = _color-scheme(props.color-scheme, user-color-scheme)
   let colors = colors.get-colors(color-scheme, req.shade-samples, req.n-accents)
 
   return (
@@ -215,7 +222,7 @@
   return theme(cfg: cfg)
 }
 
-#let _compose-theme(theme-values, theme-spec) = {
+#let _compose-theme(theme-config, theme-spec) = {
   if type(theme-spec) != dictionary {
     theme-spec = (base: theme-spec)
   }
@@ -227,7 +234,7 @@
   let values = (:)
 
   if theme-spec.base != none {
-    values += theme-values(theme-spec.base)
+    values += _theme-values(theme-config, theme-spec.base)
   }
 
   for (name, theme) in theme-spec {
@@ -238,7 +245,7 @@
       values.at(name) = none
       continue
     }
-    let v = theme-values(theme)
+    let v = _theme-values(theme-config.with(base-theme: theme-spec.base), theme)
     if name not in v {
       let theme-str = if type(theme) == str { theme } else { repr(theme) }
       panic("Cannot find '" + name + "' in theme '" + theme-str + "'")
@@ -320,14 +327,11 @@
     plain-slide: _plain-slide.with(handout: handout),
     format: format,
     metadata: _metadata(author, affiliation, logo, date),
-    font-scheme: font-scheme,
-    color-scheme: color-scheme,
+    user-font-scheme: font-scheme,
+    user-color-scheme: color-scheme,
   )
-  let composed-values = _compose-theme(
-    _theme-values.with(theme-config),
-    theme,
-  )
-  
+  let composed-values = _compose-theme(theme-config, theme)
+
   (
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
