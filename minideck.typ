@@ -171,8 +171,20 @@
   return colors.color-scheme(base: theme-default, ..user-scheme)
 }
 
-// Configure a single (non-composite) theme and get its values
-#let _configure-theme(
+// Resolve theme function if given as name
+#let _resolve-theme(theme) = {
+  if type(theme) == str {
+    let theme-dict = dictionary(themes)
+    if theme not in theme-dict {
+      panic("No theme named " + repr(theme))
+    }
+    return theme-dict.at(theme)
+  }
+  return theme
+}
+
+// Prepare configuration for a single (non-composite) theme
+#let _theme-config(
   plain-slide: none,
   format: none,
   metadata: none,
@@ -180,14 +192,7 @@
   color-scheme: none,
   theme,
 ) = {
-  // Resolve theme function if given as name
-  if type(theme) == str {
-    let theme-dict = dictionary(themes)
-    if theme not in theme-dict {
-      panic("No theme named " + repr(theme))
-    }
-    theme = theme-dict.at(theme)
-  }
+  theme = _resolve-theme(theme)
 
   let props = theme()
   let req = props.requirements
@@ -195,25 +200,22 @@
   let color-scheme = _color-scheme(props.color-scheme, color-scheme)
   let colors = colors.get-colors(color-scheme, req.shade-samples, req.n-accents)
 
-  let cfg = (
+  return (
     plain-slide: plain-slide,
     page-args: _format-args(format),
     metadata: metadata,
     fonts: fonts,
     colors: colors,
   )
-
-  let values = theme(cfg: cfg)
-
-  // Add cfg if missing, but keep version returned by theme if present
-  if "cfg" not in values {
-    values.cfg = cfg
-  }
-
-  return values
 }
 
-#let _compose-theme(theme-configurator, theme-spec) = {
+#let _theme-values(theme-config, theme) = {
+  theme = _resolve-theme(theme)
+  let cfg = theme-config(theme)
+  return theme(cfg: cfg)
+}
+
+#let _compose-theme(theme-values, theme-spec) = {
   if type(theme-spec) != dictionary {
     theme-spec = (base: theme-spec)
   }
@@ -225,9 +227,7 @@
   let values = (:)
 
   if theme-spec.base != none {
-    values += theme-configurator(theme-spec.base)
-    // Rename cfg to base-cfg
-    values.base-cfg = values.remove("cfg")
+    values += theme-values(theme-spec.base)
   }
 
   for (name, theme) in theme-spec {
@@ -238,12 +238,12 @@
       values.at(name) = none
       continue
     }
-    let v = theme-configurator(theme)
+    let v = theme-values(theme)
     if name not in v {
       let theme-str = if type(theme) == str { theme } else { repr(theme) }
       panic("Cannot find '" + name + "' in theme '" + theme-str + "'")
     }
-    values += ((name): v.at(name), (name + "-cfg"): v.cfg)
+    values.at(name) = v.at(name)
   }
 
   // Make single template function from all templates
@@ -316,23 +316,25 @@
   logo: none,
   date: none,
 ) = {
-  let theme-configurator = _configure-theme.with(
+  let theme-config = _theme-config.with(
     plain-slide: _plain-slide.with(handout: handout),
     format: format,
     metadata: _metadata(author, affiliation, logo, date),
     font-scheme: font-scheme,
     color-scheme: color-scheme,
   )
-
-  let theme-values = _compose-theme(theme-configurator, theme)
+  let composed-values = _compose-theme(
+    _theme-values.with(theme-config),
+    theme,
+  )
   
   (
     pause: logic.pause.with(handout: handout),
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
-    ..theme-values,
-    // Can be used to inspect values returned by a sub-theme
-    theme-configurator: theme-configurator,
+    ..composed-values,
+    // Can be used to configure a theme and inspect the returned values
+    theme-config: theme-config,
   )
   if cetz != none {
     let cetz-update(n) = cetz.draw.content((), logic.update-subslide-count(n))

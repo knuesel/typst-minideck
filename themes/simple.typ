@@ -85,7 +85,6 @@
   if cfg == none { return properties }
 
   return (
-    cfg: cfg,
     title-slide: title-slide.with(cfg, cfg.plain-slide),
     section: section.with(cfg, cfg.plain-slide),
     slide: slide.with(cfg, cfg.plain-slide),
