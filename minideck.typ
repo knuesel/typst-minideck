@@ -351,6 +351,7 @@
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
     ..composed-values,
+    plain-slide: _plain-slide.with(offset: 4, handout: handout),
     // Can be used to configure a theme and inspect the returned values
     theme-config: theme-config,
   )
