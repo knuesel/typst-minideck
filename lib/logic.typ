@@ -177,7 +177,7 @@
 // `--input handout=true` is passed on the command line, `false` otherwise.
 #let subslides(handout: auto, steps: auto, it) = {
   if _is-handout(handout) {
-    return pagebreak(weak: true) + _subslide-content(it)
+    return pagebreak(weak: true) + it
   }
   _subslide-count.update((1, 0))
   if steps == auto {
