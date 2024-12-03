@@ -842,6 +842,8 @@ slide[
   / `footer-text:`: content to pass to `footer-func` (`auto` = use default)
     
   / `handout:`: enable/disable dynamic content for this slide
+
+  / `freeze:`: states to freeze in subslides (array, `auto` or `none`)
   
   / `steps`: number of subslides (default is `auto`)
   

@@ -30,7 +30,14 @@
 // Show one subslide of the slide.
 // The subslide counter starts at 0 for every subslide, so that its
 // value can be used in the subslide to compare with `_subslide-step`.
-#let _subslide(n, it) = {
+#let _subslide(n, freeze, it) = {
+  if freeze == auto {
+    // freeze = (page, heading, footnote, math.equation).map(counter)
+    freeze = (math.equation,).map(counter)
+  } else if freeze == none {
+    freeze = ()
+  }
+
   // Do state updates in-between weak pagebreaks so they don't affect the footer
   // of the previous subslide, and are in force for the header of the next one.
   pagebreak(weak: true)
@@ -38,8 +45,18 @@
   // We don't reset the first value here as it's unnecessary and causes
   // convergence issues in Typst 0.12
   _subslide-count.update(((x, y)) => (x, 0))
-  // Revert page increment unless it's the first subslide for this slide
-  if n > 0 { counter(page).update(x => calc.max(0, x - 1)) }
+  // Freeze some states and counters
+  if n == 0 {
+    [#metadata(none)<__minideck-slide>]
+  } else  {
+    context {
+      let loc = query(selector(<__minideck-slide>).before(here()))
+        .last().location()
+      for s in freeze {
+        s.update(s.at(loc))
+      }
+    }
+  }
   pagebreak(weak: true)
 
   if n > 0 {
@@ -49,7 +66,7 @@
     it
   }
 }
-
+      
 // Hide content if current subslide step is smaller than pause index.
 #let _pause(updater, hider, it) = {
   let pause-index = _subslide-count.get().at(1)
@@ -148,22 +165,22 @@
 ) = _process(handout, opaque, updater, hider, indices.pos(), from, it)
 
 // Generate subslides with number of steps given explicitly
-#let _subslides-explicit(steps, it) = {
+#let _subslides-explicit(steps, freeze, it) = {
   for i in range(0, steps) {
-    _subslide(i, it)
+    _subslide(i, freeze, it)
   }
 }
 
 // Generate subslides with number of steps derived from the subslide counter.
 // This requires an up-to-date subslide counter (see `slide`).
-#let _subslides-auto(it) = {
+#let _subslides-auto(freeze, it) = {
   // Each slide is shown at least once
-  _subslide(0, it)
+  _subslide(0, freeze, it)
   // After showing slide once, _subslide-count holds the number of subslides
   context {
     let n = _subslide-count.get().first()
     for i in range(1, n) {
-      _subslide(i, it)
+      _subslide(i, freeze, it)
     }
   }
 }
@@ -175,14 +192,14 @@
 // If `handout` is `true`, dynamic features are disabled: all slide content is
 // shown in a single subslide. If `auto`, the value is taken as `true` if
 // `--input handout=true` is passed on the command line, `false` otherwise.
-#let subslides(handout: auto, steps: auto, it) = {
+#let subslides(handout: auto, steps: auto, freeze: auto, it) = {
   if _is-handout(handout) {
     return pagebreak(weak: true) + it
   }
   _subslide-count.update((1, 0))
   if steps == auto {
-    _subslides-auto(it)
+    _subslides-auto(freeze, it)
   } else {
-    _subslides-explicit(steps, it)
+    _subslides-explicit(steps, freeze, it)
   }
 }

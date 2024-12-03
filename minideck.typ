@@ -64,6 +64,7 @@
   steps: auto,
   offset: none,
   outlined: auto,
+  freeze: auto,
   it,
 ) = {
   if args.pos().len() > 0 {
@@ -80,10 +81,10 @@
   show: _apply-outlined.with(outlined)
 
   if template == none {
-    logic.subslides(handout: handout, steps: steps, it)
+    logic.subslides(handout: handout, steps: steps, freeze: freeze, it)
   } else {
     show: template
-    logic.subslides(handout: handout, steps: steps, it)
+    logic.subslides(handout: handout, steps: steps, freeze: freeze, it)
   }
 }
 
@@ -330,6 +331,7 @@
   color-scheme: auto,
   theme: "simple",
   handout: auto,
+  freeze: auto,
   cetz: none,
   fletcher: none,
   author: none,
@@ -338,7 +340,7 @@
   date: none,
 ) = {
   let theme-config = _theme-config.with(
-    plain-slide: _plain-slide.with(handout: handout),
+    plain-slide: _plain-slide.with(handout: handout, freeze: freeze),
     format: format,
     metadata: _metadata(author, affiliation, logo, date),
     user-font-scheme: font-scheme,
@@ -351,7 +353,7 @@
     uncover: logic.uncover.with(handout: handout),
     only: logic.only.with(handout: handout),
     ..composed-values,
-    plain-slide: _plain-slide.with(offset: 4, handout: handout),
+    plain-slide: _plain-slide.with(offset: 4, handout: handout, freeze: freeze),
     // Can be used to configure a theme and inspect the returned values
     theme-config: theme-config,
   )
