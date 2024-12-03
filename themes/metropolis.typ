@@ -97,17 +97,12 @@
     // Get rid of extra vertical space introduced by placed titles?
     v(0pt, weak: true)
     set text(0.9em)
-    {
-      set block(below: 1em)
-      md.author
-      parbreak()
-      md.date
-    }
-    block(above: 1.4em, {
-      set text(0.8em)
-      set block(spacing: 0.8em)
-      md.affiliation
-    })
+    md.author
+    v(1.2em, weak: true)
+    md.date
+    v(1.4em, weak: true)
+    set text(0.8em)
+    md.affiliation
   })
 }
     

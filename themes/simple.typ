@@ -13,19 +13,12 @@
     v(10%)
     it // titles and possibly other content
     set text(0.9em)
-    {
-      set block(above: 2.5em)
-      parbreak()
-      md.author
-    }
-    {
-      set text(0.8em)
-      set block(spacing: 0.8em)
-      parbreak()
-      md.affiliation
-    }
-    set block(above: 2.5em)
-    parbreak()
+    v(2.5em, weak: true)
+    md.author
+    set text(0.8em)
+    v(0.8em, weak: true)
+    md.affiliation
+    v(2.5em, weak: true)
     md.date
   })
 }
