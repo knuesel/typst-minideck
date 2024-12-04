@@ -109,19 +109,74 @@
   date: date,
 )
 
-// Helper function to convert `user-scheme` to arguments for
-// `fonts.font-scheme`.
-// TODO: merge this with the similar code for color schemes
-#let _one-font-scheme(theme-default, user-scheme) = {
-  if type(user-scheme) == str {
-    // Full scheme given by name, no use for defaults
-    return fonts.font-scheme(base: user-scheme)
+// Return true if `spec` is a valid font/color scheme specification, i.e.
+// - a scheme name, or
+// - a dict with valid keys (dict values are not checked), or
+// - `auto`,
+// - an array of the above (if allowed).
+#let _is-scheme-spec(allow-array: false, schemes, keys, spec) = {
+  if spec == auto {
+    return true
   }
-  if user-scheme == auto {
-    user-scheme = (:)
+  if type(spec) == str {
+    return spec in schemes
   }
-  return fonts.font-scheme(base: theme-default, ..user-scheme)
+  if type(spec) == dictionary {
+    return spec.keys().all(k => k in keys)
+  }
+  if allow-array and type(spec) == array {
+    return spec.all(x => _is-scheme-spec(allow-array: false, x))
+  }
+  return false
 }
+
+#let _is-font-spec = _is-scheme-spec.with(
+  allow-array: true,
+  fonts.schemes,
+  fonts.schemes.default.keys() + ("base",),
+)
+
+#let _is-color-spec = _is-scheme-spec.with(
+  allow-array: false,
+  colors.schemes,
+  colors.schemes.default.keys() + ("base", "reverse"),
+)
+
+// Return `user-spec` if it is a valid font/color scheme specification,
+// otherwise return `user-spec.theme-name` if that is a valid specification,
+// and if not throw an error.
+#let _scheme-spec-for-theme(is-scheme-spec, user-spec, theme-name) = {
+  if is-scheme-spec(user-spec) {
+    return user-spec
+  }
+  if type(user-spec) == dictionary {
+    let spec = user-spec.at(theme-name, default: auto)
+    if is-scheme-spec(spec) {
+      return spec
+    }
+  }
+  panic("Invalid scheme specification: " + repr(user-spec))
+}
+
+#let _font-spec-for-theme = _scheme-spec-for-theme.with(_is-font-spec)
+#let _color-spec-for-theme = _scheme-spec-for-theme.with(_is-color-spec)
+
+// Convert `user-spec` (scheme name or dict of arguments for
+// `fonts.font-scheme`/`colors.color-scheme` constructor or `auto`) to a font
+// scheme
+#let _scheme-from-spec(constructor, user-spec, default) = {
+  if type(user-spec) == str {
+    // Full scheme given by name, no use for defaults
+    return constructor(base: user-spec)
+  }
+  if user-spec == auto {
+    user-spec = (:)
+  }
+  return constructor(base: default, ..user-spec)
+}
+
+#let _font-scheme-from-spec = _scheme-from-spec.with(fonts.font-scheme)
+#let _color-scheme-from-spec = _scheme-from-spec.with(colors.color-scheme)
 
 // Make requested number of font schemes based on the user specification and
 // theme default. Both the user and the theme can specifiy an array of schemes,
@@ -135,48 +190,49 @@
 // to prevent this). If more schemes are
 // required that specified, the first scheme (which should be the most generic)
 // is reused as many times as necessary.
-#let _n-font-schemes(theme-default, user-schemes, n) = {
+#let _font-schemes-from-specs(n, specs, theme-default) = {
   // Make sure we have arrays of schemes
   if type(theme-default) != array {
     theme-default = (theme-default,)
   }
-  if user-schemes == auto {
+  if specs == auto {
     // Special meaning of auto: use full theme array rather than an array
     // (auto,) that would use only the first value of the theme array
-    user-schemes = theme-default
+    specs = theme-default
   }
-  if type(user-schemes) != array {
-    user-schemes = (user-schemes,)
+  if type(specs) != array {
+    specs = (specs,)
   }
 
   // Ignore theme schemes beyond the user array length
-  theme-default = theme-default.slice(0, user-schemes.len())
+  theme-default = theme-default.slice(0, specs.len())
 
   // Repeat first scheme if theme has not enough
   for _ in range(theme-default.len(), n) {
     theme-default.push(theme-default.first())
   }
   // Same for user
-  for _ in range(user-schemes.len(), n) {
-    user-schemes.push(user-schemes.first())
+  for _ in range(specs.len(), n) {
+    specs.push(specs.first())
   }
 
-  return array.zip(theme-default, user-schemes).slice(0, n).map(
-    ((theme, user)) => _one-font-scheme(theme, user)
+  return array.zip(theme-default, specs).slice(0, n).map(
+    ((theme, user)) => _font-scheme-from-spec(user, theme)
   )
 }
 
-// Helper function to convert `user-scheme` to arguments for
-// `colors.color-scheme`.
-#let _color-scheme(theme-default, user-scheme) = {
-  if type(user-scheme) == str {
-    // Full scheme given by name, no use for defaults
-    return colors.color-scheme(base: user-scheme)
-  }
-  if user-scheme == auto {
-    user-scheme = (:)
-  }
-  return colors.color-scheme(base: theme-default, ..user-scheme)
+// Make n font schemes for given theme based on full user spec (which can be
+// a dict of scheme specs for various themes) and given default scheme
+#let _font-schemes(n, user-spec, theme-name, default-scheme) = {
+  let spec = _font-spec-for-theme(user-spec, theme-name)
+  return _font-schemes-from-specs(n, spec, default-scheme)
+}
+
+// Make color scheme for given theme based on full user spec (which can be
+// a dict of scheme specs for various themes) and given default scheme
+#let _color-scheme(user-spec, theme-name, default-scheme) = {
+  let spec = _color-spec-for-theme(user-spec, theme-name)
+  return _color-scheme-from-spec(spec, default-scheme)
 }
 
 // Resolve theme function if given as name
@@ -191,28 +247,54 @@
   return theme
 }
 
-// Prepare configuration for a single (non-composite) theme
+// Prepare configuration for a single (non-composite) theme.
+// For a non-base theme, when a base theme is given we use it for the default
+// font and color schemes, so the precedence is:
+//   user-spec for theme > user-spec for base > base default > theme default
 #let _theme-config(
   plain-slide: none,
   format: none,
   metadata: none,
-  user-font-scheme: none,
-  user-color-scheme: none,
+  user-font-spec: none,
+  user-color-spec: none,
   base-theme: none,
   theme,
 ) = {
   let props = _resolve-theme(theme)()
+  let theme-name = props.name
+  let req = props.requirements
 
-  // Override theme font and color schemes if base theme is given
+  let default-font-scheme = props.font-scheme
+  let default-color-scheme = props.color-scheme
+
+  // Override default schemes if base theme is given
   if base-theme != none {
     let base-props = _resolve-theme(base-theme)()
-    props.font-scheme = base-props.font-scheme
-    props.color-scheme = base-props.color-scheme
+    default-font-scheme = _font-schemes(
+      req.n-fonts,
+      user-font-spec,
+      base-props.name,
+      base-props.font-scheme,
+    )
+    default-color-scheme = _color-scheme(
+      user-color-spec,
+      base-props.name,
+      base-props.color-scheme,
+    )
   }
 
-  let req = props.requirements
-  let fonts = _n-font-schemes(props.font-scheme, user-font-scheme, req.n-fonts)
-  let color-scheme = _color-scheme(props.color-scheme, user-color-scheme)
+  let fonts = _font-schemes(
+    req.n-fonts,
+    user-font-spec,
+    theme-name,
+    default-font-scheme,
+  )
+  let color-scheme = _color-scheme(
+    user-color-spec,
+    theme-name,
+    default-color-scheme,
+
+  )
   let colors = colors.get-colors(color-scheme, req.shade-samples, req.n-accents)
 
   return (
@@ -236,7 +318,7 @@
   }
 
   if "base" not in theme-spec {
-    panic("A composite theme must define a base theme")
+    panic("A composite theme must define a base theme (though it can be `none`)")
   }
 
   let values = (:)
@@ -258,7 +340,7 @@
       let theme-str = if type(theme) == str { theme } else { repr(theme) }
       panic("Cannot find '" + name + "' in theme '" + theme-str + "'")
     }
-    values.at(name) = v.at(name)
+    values.insert(name, v.at(name))
   }
 
   // Make single template function from all templates
@@ -341,8 +423,8 @@
     plain-slide: _plain-slide.with(handout: handout),
     format: format,
     metadata: _metadata(author, affiliation, logo, date),
-    user-font-scheme: font-scheme,
-    user-color-scheme: color-scheme,
+    user-font-spec: font-scheme,
+    user-color-spec: color-scheme,
   )
   let composed-values = _compose-theme(theme-config, theme)
 

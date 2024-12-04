@@ -210,6 +210,7 @@
 }
 
 #let properties = (
+  name: "metropolis",
   font-scheme: "fira-sans-light",
   color-scheme: (
     shades: (white, rgb("#23373b")), // dark teal

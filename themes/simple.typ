@@ -61,6 +61,7 @@
 }
 
 #let properties = (
+  name: "simple",
   font-scheme: fonts.schemes.default,
   color-scheme: (
     shades: (white, luma(15%)),

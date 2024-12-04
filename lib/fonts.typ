@@ -151,6 +151,18 @@
 // Normalize standard schemes
 #let schemes = util.map-dict(_abnormal-schemes, (k, v) => _normalize(v))
 
+// Return true if the given value is a string that is a valid scheme name or
+// a dict in which all keys are valid scheme keys (the values are not checked).
+#let is-font-scheme(scheme) = {
+  if type(scheme) == str {
+    return scheme in schemes
+  }
+  if type(scheme) == dictionary {
+    return scheme.keys().all(k => k in schemes.default)
+  }
+  return false
+}
+
 // Make scheme (dict with fields `text`, `text-weights`, `raw`, `math` and
 // `delta`) from given base scheme, overriding fields with the given
 // values when they are not `auto`.
