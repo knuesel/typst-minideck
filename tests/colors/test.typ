@@ -55,7 +55,6 @@ Other example:\
 #show-colors(_sample-shades((white, red, black), util.linspace(0%, 100%, 4)))\
 #show-colors(_sample-shades(gradient.linear(white, navy), util.linspace(0%, 100%, 4)))\
 #show-colors(_sample-shades(gradient.linear(white, navy), (10%, 90%, 100%)))\
-// Gradient samples in matching number -> disregard gradient positions
 #show-colors(_sample-shades((white, red, black), (10%, 90%, 100%)))\
 
 

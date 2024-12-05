@@ -1,5 +1,4 @@
 #import "/lib/lib.typ": *
-#import styling
 
 #let place-progress-bar(show-progress, colors) = context {
   if show-progress {

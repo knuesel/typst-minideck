@@ -1,3 +1,10 @@
+// Return the index and value of the (first) minimum element in v
+#let find-min(v) = v.enumerate().fold((0, v.first()), (a, b) => {
+  let (ia, xa) = a
+  let (ib, xb) = b
+  if xb < xa { b } else { a }
+}) 
+
 // Return `n` evenly-spaced values between `a` and `b`
 #let linspace(a, b, n) = {
   if n == 0 { return () }
@@ -5,8 +12,15 @@
   range(n).map(i => a + (b - a)/(n - 1) * i)
 }
 
-// Convert length to absolute length for given text size
- #let simple-length-to-abs(len, text-size) = len.abs + text-size * len.em
+// Convert length to absolute length for given text size.
+// If text-size is auto, len.to-asbolute() is used (requires context)
+#let simple-length-to-abs(len, text-size) = {
+  if text-size == auto {
+    len.to-absolute()
+  } else {
+    len.abs + text-size * len.em
+  }
+}
 
 // Convert ratios simple or relative length or ratios to absolute for given text
 // and layout size
@@ -162,4 +176,75 @@
     counter(page).final().first()
   }
   return (i, n)
+}
+
+
+// Return target elements for given outline (for headings only)
+#let outline-elements(it) = query(it.target).filter(
+  x => x.func() == heading and (it.depth == none or x.level <= it.depth)
+)
+
+// Return outline headings as groups `(title: ..., children: (...,))`,
+// with one group for each `level1` heading. In each group, the `title`
+// field contains the `level1` heading, and the `children` field contains all
+// `level2` headings between this `level1` heading and the next one.
+#let outline-groups(level1, level2, elements) = {
+  let groups = ()
+  let title = none
+  let children = ()
+  for e in elements {
+    if e.level == level1 {
+      if title != none or children.len() > 0 {
+        groups.push((title: title, children: children))
+      }
+      title = e
+      children = ()
+    }
+    if e.level == level2  {
+      children.push(e)
+    }
+  }
+  if title != none or children.len() > 0 {
+    groups.push((title: title, children: children))
+  }
+  return groups
+}
+
+// Return the body of the given outline item with link to its target, and with
+// numbering applied if any, using the index `i` (zero-based).
+#let format-outline-item(i, it) = {
+  let text = it.body    
+  if it.numbering != none {
+    let preceding-zeros = (0,) * (it.level - 1)
+    let number = numbering(it.numbering, ..preceding-zeros, i + 1)
+    text = number + [~] + text
+  }
+  return link(it.location(), text) 
+}
+
+// Return outline items ready to be used for layout. If `levels` is 1, each
+// item corresponds to a single title (section or slide).
+// If `levels` is 2, each item is a dict with keys `title` (the section title)
+// If `levels` is auto it is determined automatically based on `it`.
+// and `children` (the array of slide titles for that section).
+// The parameters `level1` and `level2` control the heading levels for the title
+// and children respectively. If `auto`, they are determined automatically.
+#let outline-items(levels: auto, level1: auto, level2: auto, it) = {
+  let elements = outline-elements(it)
+  let unique-levels = elements.map(e => e.level).dedup().sorted()
+  levels = coalesce(levels, calc.min(2, unique-levels.len()))
+  if levels == 1 {
+    return elements
+  }
+  level1 = coalesce(level1, unique-levels.at(0))
+  level2 = coalesce(level2, unique-levels.at(1))
+  let groups = outline-groups(level1, level2, elements)
+
+  // Construct non-heading items to avoid recursion issues
+  groups.enumerate().map(((i, group)) => {
+    let children = group.children.map(child => {
+      link(child.location(), child.body)
+    })
+    (title: format-outline-item(i, group.title), children: children)
+  })
 }

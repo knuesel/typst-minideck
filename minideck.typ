@@ -125,7 +125,7 @@
     return spec.keys().all(k => k in keys)
   }
   if allow-array and type(spec) == array {
-    return spec.all(x => _is-scheme-spec(allow-array: false, x))
+    return spec.all(x => _is-scheme-spec(allow-array: false, schemes, keys, x))
   }
   return false
 }
@@ -205,7 +205,9 @@
   }
 
   // Ignore theme schemes beyond the user array length
-  theme-default = theme-default.slice(0, specs.len())
+  if theme-default.len() > specs.len() {
+    theme-default = theme-default.slice(0, specs.len())
+  }
 
   // Repeat first scheme if theme has not enough
   for _ in range(theme-default.len(), n) {

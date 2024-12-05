@@ -1,5 +1,4 @@
 #import "/lib/lib.typ": *
-#import styling
 
 #let footer-func(..args) = text(0.8em, layouts.basic-footer(..args))
 

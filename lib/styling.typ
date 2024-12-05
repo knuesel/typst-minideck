@@ -132,8 +132,8 @@
 }
 
 // Core rules that should almost always be applied for correct functionality
-// (applied automatically by minideck, but themes or the user can disable it
-// by specifiying `core-template: none`)
+// (applied automatically by minideck, but themes or the user can override or
+// disable it by setting `core-template: ...` to a function or `none`)
 #let core-template(doc) = {
   // Bibliography
   set bibliography(title: none)
@@ -141,7 +141,7 @@
   // Outline: unset title for consistency (all slide titles are defined through
   // headings) and so the slide layout works when the user shows the outline
   // in two columns. Default to only section titles in outline.
-  set outline(title: none, depth: 3)
+  set outline(title: none)
 
   show outline: it => {
     _in-outline.update(true)
@@ -159,11 +159,6 @@
     section-subtitle,
   ): set heading(outlined: false)
 
-  // Numbering: number only sections and show section titles without useless 
-  // numbering of level 1 and 2 (which are always 0).
-  let section-numbering(..args) = str(args.pos().at(2)) + "."
-  show section-title: set heading(numbering: section-numbering)
-    
   // Exclude certain titles from PDF outline: only section titles, slide titles
   // and slide subtitles make sense. Section slides should only have a subtitle
   // on the same slide, while normal "slides" can spread on several pages that
@@ -210,8 +205,15 @@
   // Footnotes: recreate default separator but with our foreground color
   set footnote.entry(separator: line(length: 30%, stroke: 0.5pt + fg-color))
 
+  // Enable numbering for sections, but hide useless numbering levels 1 and 2
+  // (which are always 0)
+  let section-numbering(..args) = str(args.pos().at(2)) + "."
+  show section-title: set heading(numbering: section-numbering)
+    
   // Better default spacing for headings that are not "placed"
   show heading: set block(below: 1.5em)
+
+  set outline(depth: 3)
 
   doc
 }
