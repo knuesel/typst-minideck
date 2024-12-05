@@ -70,7 +70,7 @@
 #let outline-template(cfg, spacing: 1em, indent: 0em, title-gap: 0em, doc) = {
 
   // Spacing between sections (paragraphs)
-  show outline: set block(spacing: spacing)
+  show outline: set par(spacing: spacing)
   
   // Indent slide titles (every line after first paragraph line) under section
   show outline-sections-and-slides: set par(hanging-indent: indent)
