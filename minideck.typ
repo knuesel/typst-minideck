@@ -357,9 +357,6 @@
     }
   }
 
-  // Remove templates from theme values
-  values = util.filter-dict(values, (k, v) => not k.ends-with("-template"))
-
   // Add template composed of sub-templates
   values.template = it => templates.fold(it, (acc, f) => {
    show: f
