@@ -139,7 +139,7 @@
 #let _is-color-spec = _is-scheme-spec.with(
   allow-array: false,
   colors.schemes,
-  colors.schemes.default.keys() + ("base", "reverse"),
+  colors.schemes.default.keys() + ("base", "arrange", "reverse"),
 )
 
 // Return `user-spec` if it is a valid font/color scheme specification,

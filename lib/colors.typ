@@ -201,10 +201,13 @@
 // When given by value, a partial scheme can be given: missing fields or fields
 // with value `auto` will be taken from the default scheme.
 // If `reverse` is `true`, the order of shades is reversed.
+// The accents can be reordered by passing an array of indices to `arrange`:
+// the accent array will be indexed at these indices to produce a new array.
 #let color-scheme(
   base: auto,
   shades: auto,
   accents: auto,
+  arrange: none,
   reverse: false,
 ) = {
   // This function takes fields as parameters instead of a dict, to present
@@ -235,6 +238,12 @@
   shades = util.coalesce(shades, base.shades, schemes.default.shades)
   accents = util.coalesce(accents, base.accents, schemes.default.shades)
 
+  if arrange != none {
+    if type(arrange) != array {
+      panic("arrange must be an array of indices, or none")
+    }
+    accents = arrange.map(i => accents.at(i))
+  }
   if reverse {
     shades = _reverse-shades(shades)
   }
