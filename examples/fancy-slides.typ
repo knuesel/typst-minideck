@@ -7,8 +7,6 @@
   accents: (rgb("#67b765"),),
 )
 
-// XXX todo: for outline group template, use background image instead of gradient
-
 // #let outline-icon = scale(x: -100%, image("leaf.svg", width: 1.3em))
 // #let logo = layout(size => {
 //   let img = image("logo.svg", width: 40%)
@@ -32,7 +30,7 @@
 
 #show: template
 
-#set outline(depth: 5)
+#set outline(depth: 3)
 
 #title-slide[
   = Fancy
@@ -61,7 +59,7 @@
   = B2
 ]
 
-#section[ = Yet more stuff #lorem(10)]
+#section[ = Yet more stuff #lorem(5)]
 
 #slide[
   = C
@@ -73,3 +71,10 @@
 ]
 
 #section[ = Last stuff]
+
+#section[
+  #show minideck.section-title: set heading(numbering: none)
+   = Appendix
+]
+
+#section[ = One more thing ]

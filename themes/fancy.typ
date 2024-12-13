@@ -32,7 +32,7 @@
       ..font-title.text,
       size: number.size,
       fill: title-accent,
-      str(i),
+      if i == none { none } else { str(i) },
     ),
     std.text(text.size, it),
   )
@@ -103,15 +103,20 @@
   show section-title: set text(size: 1.3em)
   show section-title: set text(..font-small-title.text)
 
-  show section-title: it => numbered-title(
-    cfg,
-    align: horizon,
-    number: (size: 1.6em, width: 1.2em),
-    text: (size: 1em, width: auto),
-    gutter: 0.8em,
-    counter(heading).get().at(2),
-    it.body,
-  )
+  show section-title: it => {
+    if it.numbering == none {
+      return it
+    }
+    numbered-title(
+      cfg,
+      align: horizon,
+      number: (size: 1.6em, width: 1.2em),
+      text: (size: 1em, width: auto),
+      gutter: 0.8em,
+      counter(heading).get().at(2),
+      it.body,
+    )
+  }
 
   plain-slide(
     offset: 2,
@@ -189,7 +194,7 @@
   spacing: 2em,
   insert: none,
   columns: auto,
-  gutter: 4% + 0pt,
+  gutter: 6% + 0pt,
   items,
 ) = {
   let inserts = (none, ..(v(spacing, weak: true),) * (items.len() - 1), none)
@@ -203,7 +208,7 @@
   outline-columns(columns, gutter, items3.join())
 }
 
-// Format the outline item with index `i`.
+// Format the outline item with number `i`, or `none` if unnumbered.
 // The `it` argument can be a single piece of content (for single-level
 // outlines) or a dict with `title` and `children` keys (for two-level
 // outlines).
@@ -219,16 +224,22 @@
   number = (size: 1.6em, width: 1.2em) + util.coalesce(number, (:))
   text = (size: 0.9em, width: auto) + util.coalesce(text, (:))
   if type(it) == dictionary {
-    let (font-main, font-title, font-small-title) = cfg.fonts
     // The item is a dict with title and children
+    let (font-main, font-title, font-small-title) = cfg.fonts
     it = block({
       heading(
         level: 7,
         outlined: false,
-        std.text(..font-small-title.text, it.title),
+        numbering: none,
+        std.text(
+          ..font-small-title.text,
+          link(it.title.location(), it.title.body),
+        ),
       )
       it.children.intersperse(linebreak()).join()
     })
+  } else {
+    it = link(it.location(), it.body)
   }
   numbered-title(
     cfg,
@@ -266,9 +277,18 @@
   placer = _func-or-args(outline-placer, placer)
   show outline: it => {
     let items = util.outline-items(it)
-      .enumerate()
-      .map(((i, it)) => item-template(i + 1, it))
-    placer(items)
+    let i = 0
+    let formatted = ()
+    for item in items {
+      let main-item = if type(item) == dictionary { item.title } else { item }
+      if main-item.numbering != none {
+        i += 1
+        formatted.push(item-template(i, item))
+      } else {
+        formatted.push(item-template(none, item))
+      }
+    }
+    placer(formatted)
   }
   doc
 }
