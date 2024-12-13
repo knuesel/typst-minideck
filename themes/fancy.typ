@@ -12,6 +12,32 @@
   place(top+left, block(..measure(it, ..size), fill: bg))
 })
 
+#let numbered-title(
+  cfg,
+  align: none,
+  number: none,
+  text: none,
+  gutter: none,
+  i,
+  it,
+) = {
+  let (bg-accent, title-accent, ..) = cfg.colors.accents
+  let (font-main, font-title, font-small-title) = cfg.fonts
+  set grid.cell(breakable: false)
+  grid(
+    columns: (number.width, text.width),
+    align: align,
+    column-gutter: gutter,
+    std.text(
+      ..font-title.text,
+      size: number.size,
+      fill: title-accent,
+      str(i),
+    ),
+    std.text(text.size, it),
+  )
+}
+
 #let title-slide(
   cfg,
   plain-slide,
@@ -77,6 +103,16 @@
   show section-title: set text(size: 1.3em)
   show section-title: set text(..font-small-title.text)
 
+  show section-title: it => numbered-title(
+    cfg,
+    align: horizon,
+    number: (size: 1.6em, width: 1.2em),
+    text: (size: 1em, width: auto),
+    gutter: 0.8em,
+    counter(heading).get().at(2),
+    it.body,
+  )
+
   plain-slide(
     offset: 2,
     background: place(
@@ -120,8 +156,6 @@
   set text(28pt)
   show: styling.basic-template.with(cfg)
   set outline(depth: 5)
-
-  show heading: set heading(numbering: none)
 
   // Color for links except in the outline
   show link: it => context {
@@ -169,39 +203,41 @@
   outline-columns(columns, gutter, items3.join())
 }
 
-// Format the outline item with index `i` (zero-based).
+// Format the outline item with index `i`.
 // The `it` argument can be a single piece of content (for single-level
 // outlines) or a dict with `title` and `children` keys (for two-level
 // outlines).
 #let outline-item-template(
   cfg,
   align: top,
-  number-size: 1.6em,
-  number-width: 1.2em,
-  text-size: 0.9em,
-  text-width: auto,
+  number: auto,
+  text: auto,
   gutter: 0.8em,
   i,
   it,
 ) = {
-  let (bg-accent, title-accent, ..) = cfg.colors.accents
-  let (font-main, font-title, font-small-title) = cfg.fonts
-
+  number = (size: 1.6em, width: 1.2em) + util.coalesce(number, (:))
+  text = (size: 0.9em, width: auto) + util.coalesce(text, (:))
   if type(it) == dictionary {
+    let (font-main, font-title, font-small-title) = cfg.fonts
     // The item is a dict with title and children
     it = block({
-      heading(level: 7, text(..font-small-title.text, it.title), outlined: false)
+      heading(
+        level: 7,
+        outlined: false,
+        std.text(..font-small-title.text, it.title),
+      )
       it.children.intersperse(linebreak()).join()
     })
   }
-
-  set grid.cell(breakable: false)
-  grid(
-    columns: (number-width, text-width),
+  numbered-title(
+    cfg,
     align: align,
-    column-gutter: gutter,
-    text(..font-title.text, size: number-size, fill: title-accent, str(i + 1)),
-    text(text-size, it),
+    number: number,
+    text: text,
+    gutter: gutter,
+    i,
+    it,
   )
 }
 
@@ -231,7 +267,7 @@
   show outline: it => {
     let items = util.outline-items(it)
       .enumerate()
-      .map(args => item-template(..args))
+      .map(((i, it)) => item-template(i + 1, it))
     placer(items)
   }
   doc

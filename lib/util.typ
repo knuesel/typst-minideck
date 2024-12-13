@@ -210,11 +210,11 @@
   return groups
 }
 
-// Return the body of the given outline item with link to its target, and with
-// numbering applied if any, using the index `i` (zero-based).
-#let format-outline-item(i, it) = {
+// Return the body of the given outline item with link to its target, optionally
+// with numbering applied if any, using the index `i` (zero-based).
+#let format-outline-item(apply-numbering, i, it) = {
   let text = it.body    
-  if it.numbering != none {
+  if apply-numbering and it.numbering != none {
     let preceding-zeros = (0,) * (it.level - 1)
     let number = numbering(it.numbering, ..preceding-zeros, i + 1)
     text = number + [~] + text
@@ -229,7 +229,15 @@
 // and `children` (the array of slide titles for that section).
 // The parameters `level1` and `level2` control the heading levels for the title
 // and children respectively. If `auto`, they are determined automatically.
-#let outline-items(levels: auto, level1: auto, level2: auto, it) = {
+// If `apply-number` is true, the titles will be returned with numbering
+// pre-applied.
+#let outline-items(
+  apply-numbering: false,
+  levels: auto,
+  level1: auto,
+  level2: auto,
+  it,
+) = {
   let elements = outline-elements(it)
   let unique-levels = elements.map(e => e.level).dedup().sorted()
   levels = coalesce(levels, calc.min(2, unique-levels.len()))
@@ -245,6 +253,9 @@
     let children = group.children.map(child => {
       link(child.location(), child.body)
     })
-    (title: format-outline-item(i, group.title), children: children)
+    (
+      title: format-outline-item(apply-numbering, i, group.title),
+      children: children,
+    )
   })
 }
